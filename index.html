@@ -144,6 +144,15 @@
 .eugen-capture-icons{display:flex;gap:3px;align-items:center;flex-wrap:wrap;min-height:38px}
 .eugen-capture-icons img.piece{width:31px;height:31px;max-width:none;max-height:none;object-fit:contain;transform:none;position:static;pointer-events:none}
 .eugen-capture-empty{font-size:13px;color:#a8bacd}
+
+/* v4.8: public lobby + touch friendly controls */
+.arena-public-search{border:1px solid #55bda0;background:linear-gradient(135deg,#0b403b,#102b43);padding:18px;border-radius:16px;margin:16px 0 26px}
+.arena-public-search h2{margin:0 0 9px;color:#ffda77}
+.arena-public-search p{line-height:1.5}
+#livePublicTwo{background:linear-gradient(130deg,#168a5d,#116c77);color:white;font-weight:800;border-radius:12px;padding:16px 20px;width:100%;font-size:clamp(16px,3vw,20px);min-height:56px;cursor:pointer}
+#livePublicTwo:disabled{opacity:.7;cursor:wait}
+#livePublicInfo{font-size:14px;color:#bbecda}
+@media(max-width:700px){.arena-public-search{padding:14px}.arena-public-search p{font-size:14px}.live-actions button,.live-actions input{min-height:48px}}
 </style>
 <style>
 /* Bauernumwandlung gegen Eugen: eigenes Fenster außerhalb der versteckten Aufgabenseite */
@@ -751,7 +760,14 @@ body>header{background:#07182a!important;border-bottom:1px solid #24415e!importa
 <div class="card" style="max-width:790px">
 <h2>Freundschaftsspiel starten</h2>
 <div class="live-actions" style="align-items:center"><label for="liveTimeSelect"><strong>Schachuhr:</strong></label><select aria-label="Zeit pro Spieler" id="liveTimeSelect"><option value="3">3 Minuten (Blitz)</option><option value="5">5 Minuten (Blitz)</option><option selected="" value="10">10 Minuten (Schnellschach)</option><option value="15">15 Minuten (Schnellschach)</option></select></div>
-<div class="live-actions"><button id="liveCreate" type="button">♔ Raum erstellen · Weiß</button></div>
+<div class="arena-public-search">
+  <h2>🃏 Allgemeiner Tisch für zwei</h2>
+  <p>Wie in „Тысяча Арена“: ein Klick — wir suchen einen Gegner. Der erste Spieler wartet, der zweite wird automatisch verbunden.</p>
+  <button id="livePublicTwo" type="button">🌐 Allgemeiner Tisch · 2 Spieler</button>
+  <p id="livePublicInfo" role="status">Automatische Suche benötigt die Server-Version dieser Arena.</p>
+</div>
+<h3>Oder privat mit einem Freund spielen</h3>
+<div class="live-actions"><button id="liveCreate" type="button">♔ Privaten Raum erstellen · Weiß</button></div>
 <p>Oder Raumcode von deinem Freund eingeben:</p>
 <div class="live-actions"><input aria-label="Raumcode" autocapitalize="characters" id="liveCodeInput" maxlength="36" placeholder="z. B. EUGEN-ABC123" type="text"/><button id="liveJoin" type="button">♚ Raum beitreten · Schwarz</button></div>
 <p id="liveMenuStatus" role="status">Bereit zum Verbinden.</p>
@@ -1683,7 +1699,7 @@ rebuild();
   const existing=document.querySelector('script[data-peerjs]');if(existing){if(typeof window.Peer==='function')ok();else{existing.addEventListener('load',ok,{once:true});existing.addEventListener('error',()=>no(Error('PeerJS konnte nicht geladen werden.')),{once:true})}return}
   const script=document.createElement('script');script.src='https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';script.dataset.peerjs='true';script.onload=ok;script.onerror=()=>no(Error('PeerJS nicht verfügbar – Internet prüfen.'));document.head.appendChild(script)
  })}
- function closeSession(){token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
+ function closeSession(){if(publicRoomInfo){const prev=publicRoomInfo;publicRoomInfo=null;fetch('/api/match/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,room:prev.room})}).catch(()=>{});}token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
  function id(){let a=new Uint8Array(7);crypto.getRandomValues(a);return 'EUGEN-'+Array.from(a,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase()}
  const valid=s=>/^EUGEN-[0-9A-F]{14}$/.test(String(s||'').trim().toUpperCase());
  function peerReady(name,myToken){return new Promise(async(ok,no)=>{
@@ -1753,9 +1769,9 @@ rebuild();
   c.on('close',()=>{if(conn!==thisConn)return;if(host())tick();conn=null;connected=false;if(host())clockRunning=false;setStatus('Verbindung unterbrochen. Die Uhr wurde angehalten. Für eine neue Partie einen neuen Raum erstellen.');render()});
   c.on('error',e=>{if(conn===thisConn)setStatus('Verbindungsfehler: '+String(e?.message||e))});
  }
- async function create(){closeSession();let myToken=token;side='w';room='HOST';show('liveGame');timeControl=Number($l('liveTimeSelect').value)*60000;baseReset(timeControl);setStatus('Raum wird erstellt …');
-  try{let name=await peerReady(id(),myToken);if(token!==myToken)return;room=name;$l('liveRoomCode').textContent=name;peer.on('connection',connect);setStatus('Raum bereit. Teile den Einladungslink oder Raumcode.');linkHint();render()}
-  catch(e){if(token===myToken)setStatus('Verbindung zum Vermittlungsserver fehlgeschlagen: '+String(e?.message||e))}
+ async function create(publicRoom=null){closeSession();let myToken=token;side='w';room='HOST';show('liveGame');timeControl=Number($l('liveTimeSelect').value)*60000;baseReset(timeControl);setStatus('Raum wird erstellt …');
+  try{let name=await peerReady(typeof publicRoom==='string' ? publicRoom : id(),myToken);if(token!==myToken)return;room=name;$l('liveRoomCode').textContent=name;peer.on('connection',connect);setStatus('Raum bereit. Teile den Einladungslink oder Raumcode.');linkHint();render();return name}
+  catch(e){if(token===myToken)setStatus('Verbindung zum Vermittlungsserver fehlgeschlagen: '+String(e?.message||e));return null}
  }
  async function join(text){const code=String(text||'').trim().toUpperCase();if(!valid(code)){menuStatus('Ungültiger Raumcode. Er beginnt mit EUGEN- und hat 14 weitere Zeichen.');return}
   closeSession();let myToken=token;side='b';room=code;show('liveGame');baseReset();$l('liveRoomCode').textContent=code;setStatus('Verbinde mit dem Gastgeber …');linkHint();
@@ -1812,6 +1828,33 @@ rebuild();
   }}
  function linkHint(){const online=/^https?:$/.test(location.protocol);$l('liveLinkHint').textContent=online?'Teile den Einladungslink. Dein Freund öffnet ihn und klickt auf „Raum beitreten“.':'Aus einer lokalen HTML-Datei bitte Raumcode teilen; beide brauchen die Arena. Einladungslinks funktionieren erst auf deiner HTTPS-Webseite.'}
  function link(){const u=new URL(location.href);u.hash='live='+encodeURIComponent(room);return u.href}
+
+ // Öffentlicher Zweiertisch: Matchmaking auf unserem Node-Server, Partie weiterhin über PeerJS.
+ const publicClientId=(()=>{let x=sessionStorage.getItem('schachPublicClientV48');if(!x){x='c'+Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');sessionStorage.setItem('schachPublicClientV48',x)}return x})();
+ let publicRoomInfo=null, publicBusy=false;
+ async function publicApi(path, data){const r=await fetch('/api/match/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,...data})});if(!r.ok)throw Error(r.status===404?'Der öffentliche Tisch ist abgelaufen. Bitte neu versuchen.':'Der Spielserver ist nicht erreichbar ('+r.status+').');return r.json()}
+ async function publicPlay(){
+  if(publicBusy)return;publicBusy=true;const button=$l('livePublicTwo');button.disabled=true;
+  const info=$l('livePublicInfo');info.textContent='Suche einen freien Gegner …';
+  try{
+   const result=await publicApi('join',{time:Number($l('liveTimeSelect').value)});
+   if(result.role==='host'){
+    const actual=await create(result.room);
+    if(!actual)throw Error('Raum konnte nicht geöffnet werden. Bitte versuche es erneut.');
+    publicRoomInfo={room:result.room,role:'host'};
+    await publicApi('heartbeat',{room:result.room,ready:true});
+    setStatus('🟢 Allgemeiner Tisch ist bereit. Warte auf einen zweiten Spieler …');
+   }else{
+    await join(result.room);
+    publicRoomInfo={room:result.room,role:'guest'};
+    setStatus('Verbinde mit deinem Gegner am allgemeinen Tisch …');
+   }
+   info.textContent='Öffentlicher Tisch geöffnet.';
+  }catch(err){info.textContent='⚠️ '+(err?.message||err);if(publicRoomInfo)closeSession()}
+  finally{button.disabled=false;publicBusy=false}
+ }
+ $l('livePublicTwo').onclick=publicPlay;
+ setInterval(()=>{if(!publicRoomInfo||$l('liveGame').hidden)return;publicApi('heartbeat',{room:publicRoomInfo.room,ready:publicRoomInfo.role==='host'}).catch(()=>{});},12000);
  $l('openLive').addEventListener('click',()=>{closeSession();show('liveMenu');menuStatus('Bereit zum Verbinden.');const code=new URLSearchParams(location.hash.slice(1)).get('live');if(code){$l('liveCodeInput').value=code;menuStatus('Einladung gefunden – auf „Raum beitreten“ klicken.')}});
  $l('liveBackHome').onclick=()=>{closeSession();show('courseHome')};$l('liveBackMenu').onclick=()=>{closeSession();show('liveMenu')};
  $l('liveCreate').onclick=create;$l('liveJoin').onclick=()=>join($l('liveCodeInput').value);
