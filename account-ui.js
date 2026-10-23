@@ -1,7 +1,9 @@
 /* Eugens Schach Arena 4.9: independent persistent login and invite by nick */
 (()=>{'use strict';
  const $=id=>document.getElementById(id);
- const menu=$('liveMenu');if(!menu)return;
+ const menu=$('liveMenu');
+ const profileHost=document.querySelector('#profilesView .profile-panel');
+ if(!menu||!profileHost)return;
  const tokenKey='eugens_schach_login_v49';let token='',player=null,busy=false,polling=false;
  const panel=document.createElement('section');panel.className='chess-account card';panel.innerHTML=`
   <h2>🔐 Mein Schach-Konto</h2>
@@ -16,9 +18,12 @@
    <p id="chessFriendStatus" role="status"></p>
    <div id="chessInvitations"></div>
   </div>`;
- const header=menu.querySelector('h1');header.insertAdjacentElement('afterend',panel);
+ // Account belongs in the profile screen, not the live matchmaking screen.
+ panel.id='chessAccountPanel';
+ const profileIdentity=profileHost.querySelector('.profile-identity');
+ profileHost.insertBefore(panel,profileIdentity||profileHost.firstChild);
  const style=document.createElement('style');style.textContent=`
-  .chess-account{margin:18px auto;max-width:790px;border:1px solid #4083a2;background:#112d49;border-radius:14px;padding:17px;color:#eaf6ff}
+  .chess-account{box-sizing:border-box;margin:16px 0 22px;width:100%;max-width:100%;border:1px solid #4083a2;background:#112d49;border-radius:14px;padding:17px;color:#eaf6ff}
   .chess-account h2{color:#f5cf74;margin:0 0 8px}.chess-account h3{margin:15px 0 6px}
   .chess-account input{min-height:43px;max-width:100%;padding:9px;border-radius:8px;background:#0b2039;color:white;border:1px solid #6487a7}
   .chess-account label{display:block;margin:10px 0}.chess-account label input{display:block;width:100%;margin-top:4px}
@@ -49,7 +54,7 @@
  if(invites.length){const h=document.createElement('strong');h.textContent='📩 Einladungen';el.append(h)}
  for(const invite of invites){const row=document.createElement('div');row.className='chess-invite';const name=document.createElement('span');name.textContent=invite.from+' fordert dich heraus! ';const btn=document.createElement('button');btn.type='button';btn.textContent='♟️ Annehmen';btn.onclick=async()=>{btn.disabled=true;try{const answer=await api('friends/accept',{token,id:invite.id});$('liveCodeInput').value=answer.room;$('liveJoin').click();friendMessage('Verbinde mit '+invite.from+' …')}catch(e){friendMessage('⚠️ '+e.message);btn.disabled=false}};row.append(name,btn);el.append(row)}
  }catch(e){friendMessage('⚠️ '+e.message)}finally{polling=false}}
- setInterval(()=>{if(player&&!menu.hidden)inbox()},4500);
+ setInterval(()=>{if(player&&(!menu.hidden||!$('profilesView').hidden))inbox()},4500);
  async function autoLogin(){try{token=localStorage.getItem(tokenKey)||'';if(!token)return render();const result=await api('account/me',{token});player=result.player;render();await inbox()}
  catch(e){token='';player=null;localStorage.removeItem(tokenKey);render();message('Bitte anmelden. '+e.message)}}autoLogin();
 })();
