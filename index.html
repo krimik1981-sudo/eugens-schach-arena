@@ -672,6 +672,104 @@ header{background:#0b1928;border-bottom-color:rgba(236,191,116,.2)}
   body:has(#courseHome[hidden]) .arena-bottomnav.premium-bottomnav { display:none !important; }
 }
 </style>
+
+<style id="premium-v62-responsive-unified">
+/* Eugens Schach Arena 6.2: unified Premium Dark navigation and inner pages. */
+:root{--arena62-bg:#081421;--arena62-card:#122237;--arena62-line:rgba(232,189,119,.28);--arena62-gold:#eec17a;--arena62-muted:#b0c0d4}
+html{overflow-x:hidden}
+body{background:var(--arena62-bg)}
+.arena-shell,.arena-content,.arena-page{min-width:0;box-sizing:border-box}
+.arena-page:not(.premium-v6-home){color:#eef1f6;max-width:1150px;margin:0 auto;padding:24px clamp(16px,3vw,28px) 32px}
+.arena-page:not(.premium-v6-home) > h2{font:700 clamp(23px,3vw,32px)/1.18 Georgia,serif;color:#fff;letter-spacing:-.02em;margin:13px 0 8px;overflow-wrap:anywhere}
+.arena-page:not(.premium-v6-home) > p{font:400 clamp(13px,1.6vw,15px)/1.55 system-ui,-apple-system,sans-serif;color:var(--arena62-muted);margin:0 0 16px;max-width:67ch}
+.arena-page .arena-feature{background:linear-gradient(120deg,#1c3047,#101f31 75%);border:1px solid var(--arena62-line);border-radius:17px;box-shadow:0 8px 24px #0003}
+.arena-page .arena-feature h2{font:700 clamp(22px,3vw,31px)/1.2 Georgia,serif;color:#f8f2e9}
+.arena-page .arena-feature p{color:var(--arena62-muted);font-size:14px;line-height:1.5}
+.arena-page .arena-featurepiece{color:var(--arena62-gold);text-shadow:none;opacity:.75}
+.arena-page .arena-card,.arena-page .arena-card.blue,.arena-page .arena-card.green,.arena-page .arena-card.amber,.arena-page .arena-card.violet,.arena-page .arena-card.teal{min-width:0;min-height:150px;background:linear-gradient(145deg,#1b2d41,#0d1b2b)!important;border:1px solid var(--arena62-line)!important;border-radius:16px;color:#f2f2f5;box-shadow:0 7px 18px #0003;gap:8px;padding:16px 10px}
+.arena-page .arena-card>span{color:var(--arena62-gold)}
+.arena-page .arena-card strong{font-size:clamp(15px,1.9vw,19px);line-height:1.3;overflow-wrap:anywhere}
+.arena-page .arena-card small,.arena-page .arena-card em{color:var(--arena62-muted);line-height:1.35}
+.arena-page .arena-card em{color:var(--arena62-gold);font-weight:650}
+.arena-page .arena-homebottom{grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.arena-page .arena-block{background:linear-gradient(135deg,#17283d,#102033);border:1px solid var(--arena62-line);border-radius:15px;padding:17px;min-width:0}
+.arena-page .arena-block h3{font:700 19px/1.25 Georgia,serif;color:#f7f1e9}
+.arena-page .arena-block p{color:var(--arena62-muted);min-height:0;line-height:1.45}
+.arena-page .arena-action{background:linear-gradient(130deg,#f2cd8a,#c89751);color:#172130;border-radius:11px;min-height:43px;font-weight:750;white-space:normal}
+.arena-page .arena-optiongrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.arena-page .arena-option{min-width:0;min-height:95px;gap:7px;padding:18px;background:linear-gradient(115deg,#1b3048,#122237);border:1px solid var(--arena62-line);border-radius:15px;color:#f5f5f6;box-shadow:0 5px 15px #0002;overflow-wrap:anywhere}
+.arena-page .arena-option b{font:700 clamp(16px,2vw,20px)/1.28 system-ui,-apple-system,sans-serif}
+.arena-page .arena-option small{color:var(--arena62-muted);font-size:13px;line-height:1.4}
+.arena-page .arena-back{border:1px solid var(--arena62-line);border-radius:10px;background:#172a40;color:var(--arena62-gold);padding:9px 12px;max-width:100%;white-space:normal}
+.arena-page button:focus-visible,.premium-v6-home button:focus-visible{outline:3px solid var(--arena62-gold);outline-offset:2px}
+.arena-page[data-panel="profil"] .arena-optiongrid,.arena-page[data-panel="freunde"] .arena-optiongrid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.arena-page .arena-statslink{border:1px solid var(--arena62-line);border-radius:12px;background:#172638;color:var(--arena62-gold);padding:13px 14px;text-align:left;white-space:normal;overflow-wrap:anywhere}
+.premium-brandbar{min-width:0}.premium-brandbar > div{min-width:0}.premium-brand-name{overflow-wrap:normal;word-break:normal}.premium-welcome-text{flex:1;overflow:hidden}.premium-welcome-text strong{overflow-wrap:anywhere;line-height:1.12}.premium-welcome-arrow{flex:0 0 auto}
+.premium-hero-piece{pointer-events:none}
+.premium-feature-label strong,.premium-feature-label small{overflow-wrap:anywhere}
+@media(max-width:740px){
+  body>header{display:none!important}
+  .arena-shell{width:100%;max-width:100%;overflow:clip}
+  .arena-content{width:100%;padding:0 0 calc(78px + env(safe-area-inset-bottom))!important}
+  .premium-hero{min-height:0!important;padding:15px 15px 1px!important;border-radius:0 0 15px 15px!important}
+  .premium-brandbar{display:grid!important;grid-template-columns:38px minmax(0,1fr) 37px!important;gap:9px!important;align-items:center!important}
+  .premium-logo{font-size:37px!important;line-height:1!important}
+  .premium-brand-name{font:700 clamp(19px,5.3vw,25px)/1.11 Georgia,serif!important;letter-spacing:-.25px!important;overflow-wrap:normal!important}
+  .premium-brand-sub{font-size:clamp(10px,2.75vw,12px)!important;line-height:1.2!important;margin-top:4px!important}
+  .premium-notice{width:35px!important;height:35px!important;font-size:19px!important}
+  .premium-hero-piece{font-size:62px!important;top:68px!important;right:14px!important;opacity:.20!important;z-index:0!important}
+  .premium-hero:before{top:45px!important;font-size:38px!important;opacity:.4!important}
+  .premium-welcome{margin:17px 0 11px!important;padding:11px 12px!important;gap:11px!important;border-radius:15px!important;min-height:70px!important}
+  .premium-avatar{width:42px!important;height:42px!important;font-size:26px!important}
+  .premium-welcome-text strong{font:700 clamp(17px,4.7vw,22px)/1.12 Georgia,serif!important;display:block;overflow-wrap:anywhere!important}
+  .premium-welcome-text small{font-size:12px!important;line-height:1.3!important}
+  .premium-welcome-arrow{font-size:25px!important;margin-left:0!important}
+  .premium-start-content{padding:17px 13px 24px!important}
+  .premium-section-head{align-items:center!important;gap:8px!important;margin-bottom:11px!important}
+  .premium-section-head h2{font-size:clamp(21px,5.6vw,27px)!important;line-height:1.15!important;letter-spacing:-.02em!important;min-width:0!important}
+  .premium-section-head>button{font-size:11px!important;padding:5px 0 5px 4px!important;flex-shrink:0!important}
+  .premium-feature-grid{gap:9px!important}
+  .premium-feature{height:149px!important;border-radius:14px!important}
+  .premium-feature-illustration{inset:0 0 46px!important;font-size:73px!important}
+  .premium-dame .premium-feature-illustration,.premium-online .premium-feature-illustration,.premium-training .premium-feature-illustration{font-size:68px!important}
+  .premium-feature-label{padding:8px 30px 9px 10px!important;gap:2px!important}
+  .premium-feature-label strong{font-size:clamp(13px,3.75vw,16px)!important;line-height:1.15!important}
+  .premium-feature-label small{font-size:10px!important;line-height:1.15!important}
+  .premium-feature-next{width:25px!important;height:25px!important;right:7px!important;bottom:9px!important;font-size:23px!important}
+  .premium-continue{margin-top:14px!important;padding:12px!important}
+  .premium-continue-row{gap:9px!important;padding:8px!important}
+  .premium-mini-board{width:50px!important;height:50px!important;font-size:30px!important}
+  .premium-continue-row strong{font-size:13px!important}
+  .premium-continue-row small{font-size:11px!important}
+  .premium-continue-btn{padding:8px 9px!important;font-size:11px!important}
+  .premium-quick-grid{gap:7px!important;margin-top:10px!important}
+  .premium-quick-grid button{min-height:80px!important;padding:10px 6px!important;gap:5px!important}
+  .premium-quick-grid button span:first-child{font-size:23px!important}
+  .premium-quick-grid button strong{font-size:clamp(10px,2.9vw,12px)!important;line-height:1.2!important;overflow-wrap:anywhere}
+  .arena-page:not(.premium-v6-home){padding:18px 13px 24px!important;max-width:100%!important}
+  .arena-page:not(.premium-v6-home)>h2{font-size:clamp(23px,6vw,28px)!important;line-height:1.15!important;margin:12px 0 8px!important}
+  .arena-page:not(.premium-v6-home)>p{font-size:13px!important;line-height:1.45!important;margin:0 0 13px!important}
+  .arena-page .arena-feature{padding:14px!important;margin-bottom:11px!important}
+  .arena-page .arena-feature h2{font-size:22px!important}
+  .arena-page .arena-featurepiece{font-size:47px!important}
+  .arena-page .arena-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+  .arena-page .arena-card{min-height:134px!important;padding:12px 8px!important;gap:6px!important}
+  .arena-page .arena-card>span{font-size:28px!important}
+  .arena-page .arena-card strong{font-size:15px!important}
+  .arena-page .arena-card small,.arena-page .arena-card em{font-size:11px!important;line-height:1.25!important}
+  .arena-page .arena-homebottom{grid-template-columns:1fr!important;gap:10px!important;margin-top:11px!important}
+  .arena-page .arena-block{padding:13px!important}
+  .arena-page .arena-block h3{font-size:17px!important;margin:0 0 6px!important}
+  .arena-page .arena-block p{font-size:12px!important;margin:0 0 9px!important}
+  .arena-page .arena-optiongrid{grid-template-columns:1fr!important;gap:9px!important;margin-top:12px!important}
+  .arena-page .arena-option{min-height:0!important;padding:13px 14px!important;gap:5px!important;border-radius:13px!important}
+  .arena-page .arena-option b{font-size:16px!important;line-height:1.25!important}
+  .arena-page .arena-option small{font-size:12px!important}
+  .arena-bottomnav.premium-bottomnav{padding-top:7px!important;min-height:64px!important}
+  .arena-bottomnav.premium-bottomnav>button{min-height:48px!important}
+}
+@media(max-width:350px){.premium-brand-name{font-size:18px!important}.premium-logo{font-size:31px!important}.premium-brandbar{grid-template-columns:32px minmax(0,1fr) 32px!important}.premium-feature-label strong{font-size:12px!important}.arena-bottomnav.premium-bottomnav>button>small{font-size:9px!important}}
+</style>
 </head><body>
 <header>♟ <span class="brand-eugen">Eugens</span> <span class="brand-schach">Schach</span> <span class="brand-arena">Arena</span> <span aria-hidden="true" class="flag-divider"></span></header>
 <section class="course-home" id="courseHome">
