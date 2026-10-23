@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 
-<html lang="de"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/><meta content="#101b29" name="theme-color"/><title>Eugens Schach Arena – 5 Kurse und Schwerfiguren-Matt</title>
+<html lang="de"><head><meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Schach Arena"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png"/>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/><meta content="#101b29" name="theme-color"/><title>Eugens Schach Arena – 5 Kurse und Schwerfiguren-Matt</title>
 <style>
 :root{font-family:system-ui,-apple-system,Arial,sans-serif;color:#f0f4f8;background:#101b29}*{box-sizing:border-box}body{margin:0}header{background:#17283a;border-bottom:1px solid #ffffff10;padding:17px max(15px,calc((100vw - 1150px)/2));font-weight:850;font-size:25px;display:flex;align-items:center;gap:10px}.brand-eugen,.brand-schach,.brand-arena{display:inline-block;letter-spacing:.2px}.brand-eugen{color:#111;text-shadow:0 0 1px #fff,0 0 2px #fff,0 1px 0 #fff}.brand-schach{color:#d61f26;text-shadow:0 1px 0 rgba(0,0,0,.35)}.brand-arena{color:#f2c94c;text-shadow:0 1px 0 rgba(0,0,0,.35)}.flag-divider{display:inline-block;width:34px;height:18px;border-radius:4px;vertical-align:middle;background:linear-gradient(to bottom,#111 0 33.33%,#d61f26 33.33% 66.66%,#f2c94c 66.66% 100%);box-shadow:0 0 0 1px #ffffff28}main{max-width:1150px;margin:0 auto;padding:25px 14px 45px}h1{font-size:clamp(23px,4vw,37px);margin:0 0 6px}p{color:#bac9db;line-height:1.5}.intro{margin:0 0 23px}.layout{display:grid;grid-template-columns:minmax(0,650px) minmax(265px,1fr);gap:24px;align-items:start}.board-area{min-width:0}.wood{padding:13px;background:linear-gradient(135deg,#9a7146,#4b3020 55%,#8e643e);border-radius:14px;box-shadow:0 16px 35px #0008,inset 0 2px 2px #fff5,inset 0 -4px 4px #0007}.boardwrap{position:relative}.board{width:100%;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));border:3px solid #3a2518;overflow:hidden;border-radius:3px;touch-action:manipulation}.sq{border:0;cursor:pointer;position:relative;min-width:0;min-height:0;width:100%;height:100%;padding:0;display:flex;justify-content:center;align-items:center;appearance:none;-webkit-appearance:none;outline:none}.light{background:#f1dfbe}.dark{background:#ae8057}.sq.sel{background:#eed05c}.sq.correct{background:#7dbc6b}.sq.bad{background:#d16b61}.sq:focus-visible{outline:4px solid #4ca5ff;outline-offset:-4px;z-index:2}.piece{width:89%;height:89%;filter:drop-shadow(0 2px 1px #0003);display:block;pointer-events:none;transition:transform .18s ease}.sq.sel .piece{transform:scale(1.09)}.sq:active .piece{transform:scale(.93)}.coord{position:absolute;font-size:clamp(9px,1.4vw,13px);font-weight:850;line-height:1;pointer-events:none}.rank{top:4px;left:4px}.file{bottom:4px;right:4px}.light .coord{color:#986d48}.dark .coord{color:#f8e6cd}.marker{position:absolute;width:27%;height:27%;border-radius:50%;background:#242e35a0;pointer-events:none}.target{position:absolute;inset:3px;border:5px solid #1c3826a0;border-radius:50%;pointer-events:none}.overlay{position:absolute;inset:0;background:#06101bdc;z-index:5;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;border-radius:4px}.overlay.visible{display:flex;animation:pop .22s ease-out}@keyframes pop{from{opacity:0}to{opacity:1}}.overlay img{display:none;width:50%;max-width:270px;aspect-ratio:1;object-fit:cover;border:5px solid white;border-radius:50%;box-shadow:0 12px 20px #0008}.overlay img.ready{display:block}.no{font-weight:1000;font-size:clamp(43px,10vw,76px);color:#ff6262;text-shadow:2px 4px 0 #531010}.overlay small{font-weight:750;font-size:17px}.boardfoot{display:flex;justify-content:space-between;color:#d0dfec;padding:13px 3px 0;font-size:13px}.card{background:#1c2d43;padding:23px;border-radius:18px;box-shadow:0 12px 30px #0002}.card h2{margin:0 0 12px;font-size:26px}.hint{min-height:75px;font-size:17px;line-height:1.5;color:#e1eaf2}.stats{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0}.stat{background:#2b415d;border-radius:10px;padding:12px;font-size:15px}.status{min-height:55px;line-height:1.5;font-size:17px;font-weight:600}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}button.action{border:0;border-radius:10px;background:#348ce9;color:white;font-size:16px;padding:13px 16px;font-weight:800;cursor:pointer}button.secondary{background:#405570}.footnote{font-size:12px;margin-top:26px}.toast{background:#203d36;color:#c7f8d8;padding:8px 12px;border-radius:8px;display:none}.toast.visible{display:block}.legend{font-size:14px;margin-top:10px;color:#bbcde0}@media(max-width:820px){.layout{grid-template-columns:1fr}.card{padding:20px}.hint{min-height:0}.boardfoot{font-size:12px}}@media(max-width:420px){main{padding:17px 9px 35px}.wood{padding:8px}.board{border-width:2px}.coord{font-size:9px}.rank{top:2px;left:2px}.file{bottom:2px;right:2px}.card h2{font-size:22px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
@@ -538,7 +545,65 @@ body>header{background:#07182a!important;border-bottom:1px solid #24415e!importa
 @media(max-width:470px) {
  .sq .coord, .ct-square .ct-coord, .pt-square .pt-coordinate {font-size:12px!important}
 }
-</style></head><body>
+</style><style id="mobile-layout-v50">
+/* Eugens Schach Arena 5.0: phone-first layout, desktop unchanged. */
+@media (max-width: 760px) {
+  html { -webkit-text-size-adjust: 100%; }
+  body { width: 100%; min-width: 0; overflow-x: hidden; }
+  header { padding: 12px max(12px, env(safe-area-inset-right)) 12px max(12px, env(safe-area-inset-left)); font-size: clamp(17px, 5vw, 22px); gap: 5px; flex-wrap: wrap; }
+  header .flag-divider { width: 26px; height: 15px; }
+  main { padding: 12px 8px 34px; }
+  .intro { margin-bottom: 11px; font-size: 14px; line-height: 1.4; }
+  .rook-game { width: 100%; max-width: 100%; padding: 10px 4px calc(30px + env(safe-area-inset-bottom)); }
+  .rook-game > h1 { font-size: clamp(21px, 6vw, 27px); line-height: 1.15; margin: 11px 5px 6px; }
+  .rook-game > .intro { margin: 4px 5px 12px; }
+  .rook-game-layout { display: flex; flex-direction: column; align-items: stretch; gap: 10px; min-width: 0; }
+  .rook-game-layout > * { min-width: 0; width: 100%; }
+  .wood.rook-board-frame, #liveBoardFrame { box-sizing: border-box; width: 100%; max-width: 100%; padding: 5px; border-width: 0; border-radius: 9px; margin: 0; }
+  .rook-board, #liveBoard, #eugenBoard { width: 100%; max-width: 100%; aspect-ratio: 1 / 1; touch-action: manipulation; }
+  .rook-board .rook-square { touch-action: manipulation; }
+  .rook-board .piece, .rook-board img.piece { max-width: 94%; max-height: 94%; object-fit: contain; }
+  .rook-panel { width: 100%; padding: 12px; border-radius: 12px; gap: 10px; }
+  .rook-panel h2 { font-size: clamp(18px, 5vw, 22px); margin: 0; }
+  .live-clock-panel { gap: 7px; margin: 5px 0; }
+  .live-clock-row { padding: 8px 4px; gap: 2px; min-width: 0; }
+  .live-clock-row span { font-size: 12px; }
+  .live-clock-row strong { font-size: clamp(23px, 7vw, 32px); }
+  #liveStatus, .rook-status { min-height: 0; padding: 9px; font-size: 14px; }
+  .live-actions, .rook-controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .live-actions button, .rook-controls button, button.action, .course-return { min-height: 45px; padding: 10px 12px; font-size: 14px; line-height: 1.25; white-space: normal; }
+  .rook-controls button { flex: 1 1 44%; }
+  .live-actions button { flex: 1 1 43%; }
+  .live-actions input, .live-actions select { width: 100%; min-width: 0; max-width: 100%; min-height: 45px; font-size: 16px; }
+  .live-code { font-size: 14px; letter-spacing: .02em; overflow-wrap: anywhere; }
+  .live-help { font-size: 12px; line-height: 1.4; }
+  .eugen-captures { gap: 6px; padding: 8px; margin: 6px 0; }
+  .eugen-capture-group { padding: 7px; }
+  .eugen-capture-icons img.piece { width: 25px; height: 25px; }
+  #liveMenu, .heavy-menu, .course-home, .profile-shell, #historyView { width: 100%; max-width: 100%; padding-left: 10px; padding-right: 10px; }
+  #liveMenu .card { padding: 13px; width: 100%; max-width: 100%; }
+  #liveMenu .card h2 { font-size: 21px; }
+  .arena-public-search { padding: 12px; margin: 12px 0 20px; }
+  #livePublicTwo { min-height: 54px; font-size: 17px; }
+  .chess-account { width: 100%; max-width: 100%; margin: 10px auto; padding: 12px; }
+  .chess-account input { font-size: 16px; }
+  .chess-auth-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chess-auth-actions button { flex: 1 1 45%; }
+  .profile-grid, .history-layout { grid-template-columns: minmax(0,1fr); }
+  .profile-panel, .history-side { padding: 12px; }
+  .history-board, .history-board .board { max-width: 100%; }
+  .course-home .course-tile { min-height: 0; }
+  .overlay, #livePromotion { max-width: 100%; }
+}
+@media (max-width: 390px) {
+  .rook-game { padding-left: 2px; padding-right: 2px; }
+  .rook-panel { padding: 10px; }
+  .wood.rook-board-frame, #liveBoardFrame { padding: 3px; }
+  .live-actions button, .rook-controls button { font-size: 13px; padding: 9px 8px; }
+  .live-clock-row strong { font-size: 24px; }
+}
+</style>
+</head><body>
 <header>♟ <span class="brand-eugen">Eugens</span> <span class="brand-schach">Schach</span> <span class="brand-arena">Arena</span> <span aria-hidden="true" class="flag-divider"></span></header>
 <section class="course-home" id="courseHome">
 <div class="arena-shell">
@@ -756,7 +821,7 @@ body>header{background:#07182a!important;border-bottom:1px solid #24415e!importa
 <section class="heavy-menu" hidden="" id="liveMenu">
 <button class="course-return" id="liveBackHome" type="button">← Alle Kurse</button>
 <h1>🌐 Live gegen Freunde</h1>
-<p class="intro">Kostenlos 1 gegen 1. Erstelle einen privaten Raum oder tritt dem Raum deines Freundes bei. Keine Registrierung in der Arena nötig.</p>
+<p class="intro">Kostenlos 1 gegen 1. Erstelle einen privaten Raum oder tritt dem Raum deines Freundes bei. Einmal registrieren, dann dauerhaft angemeldet bleiben und Freunde per Spielernamen einladen.</p>
 <div class="card" style="max-width:790px">
 <h2>Freundschaftsspiel starten</h2>
 <div class="live-actions" style="align-items:center"><label for="liveTimeSelect"><strong>Schachuhr:</strong></label><select aria-label="Zeit pro Spieler" id="liveTimeSelect"><option value="3">3 Minuten (Blitz)</option><option value="5">5 Minuten (Blitz)</option><option selected="" value="10">10 Minuten (Schnellschach)</option><option value="15">15 Minuten (Schnellschach)</option></select></div>
@@ -783,6 +848,15 @@ body>header{background:#07182a!important;border-bottom:1px solid #24415e!importa
 <aside class="rook-panel">
 <h2 id="liveHeadline">Warte auf Freund …</h2>
 <p aria-live="polite" id="liveStatus" role="status">Verbinde …</p>
+<section class="arena-chat" id="arenaChat" aria-label="Chat und Emojis während der Partie">
+<button type="button" id="arenaChatToggle" class="arena-chat-toggle" aria-expanded="false" aria-controls="arenaChatBody">💬 Chat & Emojis <span id="arenaChatUnread" hidden>●</span></button>
+<div id="arenaChatBody" hidden>
+<p class="arena-chat-hint">Nur für die zwei Spieler dieser Partie. Nachrichten werden nicht gespeichert.</p>
+<div class="arena-chat-emojis" id="arenaChatEmojis" aria-label="Schnelle Reaktionen"></div>
+<div id="arenaChatMessages" class="arena-chat-messages" role="log" aria-live="polite" aria-relevant="additions text"></div>
+<form id="arenaChatForm" class="arena-chat-form"><input id="arenaChatInput" type="text" maxlength="200" autocomplete="off" placeholder="Nachricht schreiben (max. 200 Zeichen)" aria-label="Nachricht schreiben"><button type="submit" id="arenaChatSend">Senden ➤</button></form>
+<p id="arenaChatInfo" class="arena-chat-hint" role="status">Chat ist verfügbar, sobald dein Gegner verbunden ist.</p>
+</div></section><div id="arenaEmojiToast" class="arena-emoji-toast" hidden aria-live="polite"></div>
 <div aria-label="Schachuhren" class="live-clock-panel"><div class="live-clock-row"><span>⚪ Weiß</span><strong id="liveClockWhite">10:00</strong></div><div class="live-clock-row"><span>⚫ Schwarz</span><strong id="liveClockBlack">10:00</strong></div></div><p class="live-help"><span id="liveTimeLabel">Zeit: 10 Minuten pro Spieler</span> · <span id="liveMoveLabel">Züge: 0</span></p>
 <div class="live-actions" style="margin:12px 0"><button id="liveOfferDraw" type="button">🤝 Remis anbieten</button><button class="live-danger" id="liveResign" type="button">🏳 Aufgeben</button><button hidden="" id="liveRematch" type="button">🔄 Rückspiel anbieten</button></div>
 <div class="live-answer" hidden="" id="liveDrawAnswer"><strong>Dein Freund bietet Remis an.</strong><div class="live-actions"><button id="liveDrawAccept" type="button">Remis annehmen</button><button id="liveDrawDecline" type="button">Ablehnen</button></div></div>
@@ -1678,6 +1752,58 @@ rebuild();
  let snapshotReceivedAt=Date.now(),updateInterval=null,latencyTimer=null;
  let liveMoves=[],liveFrames=[],liveRecordId="";
  const asSide=()=>white?'w':'b',opponent=s=>s==='w'?'b':'w',host=()=>side==='w';
+
+ // Chat wird über dieselbe PeerJS-Verbindung wie die Züge übertragen.
+ const ARENA_EMOJIS=['😂','😡','👏','👍','😭','🎉','😎','❤️'];
+ let lastChatSent=0,emojiTimeout=null;
+ function chatConnected(){return connected&&!!conn?.open}
+ function chatInfo(text){$l('arenaChatInfo').textContent=text}
+ function addChatLine(label,message,mine){
+  const log=$l('arenaChatMessages');const item=document.createElement('div');item.className='arena-chat-item'+(mine?' mine':'');
+  const name=document.createElement('strong');name.textContent=label+': ';
+  item.append(name,document.createTextNode(message));log.append(item);
+  while(log.children.length>40)log.firstElementChild.remove();log.scrollTop=log.scrollHeight;
+  if(!mine&&$l('arenaChatBody').hidden)$l('arenaChatUnread').hidden=false;
+ }
+ function showEmoji(symbol,from){
+  const toast=$l('arenaEmojiToast');toast.replaceChildren();
+  const face=document.createElement('span');face.className='emoji';face.textContent=symbol;
+  const label=document.createElement('span');label.textContent=from;
+  toast.append(face,label);toast.hidden=false;
+  clearTimeout(emojiTimeout);emojiTimeout=setTimeout(()=>{toast.hidden=true},2600);
+ }
+ function sendChat(kind,value){
+  if(!chatConnected()){chatInfo('Bitte zuerst mit einem Gegner verbinden.');return false}
+  const now=Date.now();if(now-lastChatSent<700){chatInfo('Bitte nicht so schnell senden.');return false}
+  if(kind==='emoji') {if(!ARENA_EMOJIS.includes(value))return false;}
+  else if(kind==='text') {value=String(value||'').trim().slice(0,200);if(!value)return false;}
+  else return false;
+  lastChatSent=now;
+  send({type:'arena-chat-v1',kind,value});
+  if(kind==='emoji')showEmoji(value,'Du');else addChatLine('Du',value,true);
+  chatInfo('Gesendet');return true;
+ }
+ function receiveChat(msg){
+  if(!chatConnected()||msg?.type!=='arena-chat-v1')return false;
+  const kind=msg.kind,value=msg.value;
+  if(typeof value!=='string')return true;
+  if(kind==='emoji'&&ARENA_EMOJIS.includes(value)){showEmoji(value,'Gegner');return true}
+  if(kind==='text'&&value.length<=200&&value.trim()){addChatLine('Gegner',value,false);return true}
+  return true;
+ }
+ function resetChat(){
+  $l('arenaChatMessages').replaceChildren();$l('arenaChatUnread').hidden=true;
+  $l('arenaChatInput').value='';clearTimeout(emojiTimeout);$l('arenaEmojiToast').hidden=true;
+  chatInfo('Chat ist verfügbar, sobald dein Gegner verbunden ist.');
+ }
+ $l('arenaChatToggle').addEventListener('click',()=>{
+  const body=$l('arenaChatBody');body.hidden=!body.hidden;
+  $l('arenaChatToggle').setAttribute('aria-expanded',String(!body.hidden));
+  if(!body.hidden)$l('arenaChatUnread').hidden=true;
+ });
+ const emojiEl=$l('arenaChatEmojis');
+ for(const symbol of ARENA_EMOJIS){const b=document.createElement('button');b.type='button';b.textContent=symbol;b.title=symbol;b.addEventListener('click',()=>sendChat('emoji',symbol));emojiEl.appendChild(b)}
+ $l('arenaChatForm').addEventListener('submit',e=>{e.preventDefault();const input=$l('arenaChatInput');if(sendChat('text',input.value))input.value=''});
  const setStatus=s=>{notice=s;$l('liveStatus').textContent=s};
  const menuStatus=s=>$l('liveMenuStatus').textContent=s;
  const show=id=>{for(const name of ['courseHome','heavyMenu','trainingView','rookGame','eugenMenu','eugenGame','liveMenu','liveGame']){let el=$l(name);if(el)el.hidden=name!==id}};
@@ -1699,7 +1825,7 @@ rebuild();
   const existing=document.querySelector('script[data-peerjs]');if(existing){if(typeof window.Peer==='function')ok();else{existing.addEventListener('load',ok,{once:true});existing.addEventListener('error',()=>no(Error('PeerJS konnte nicht geladen werden.')),{once:true})}return}
   const script=document.createElement('script');script.src='https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';script.dataset.peerjs='true';script.onload=ok;script.onerror=()=>no(Error('PeerJS nicht verfügbar – Internet prüfen.'));document.head.appendChild(script)
  })}
- function closeSession(){if(publicRoomInfo){const prev=publicRoomInfo;publicRoomInfo=null;fetch('/api/match/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,room:prev.room})}).catch(()=>{});}token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
+ function closeSession(){resetChat();if(publicRoomInfo){const prev=publicRoomInfo;publicRoomInfo=null;fetch('/api/match/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,room:prev.room})}).catch(()=>{});}token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
  function id(){let a=new Uint8Array(7);crypto.getRandomValues(a);return 'EUGEN-'+Array.from(a,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase()}
  const valid=s=>/^EUGEN-[0-9A-F]{14}$/.test(String(s||'').trim().toUpperCase());
  function peerReady(name,myToken){return new Promise(async(ok,no)=>{
@@ -1752,6 +1878,7 @@ rebuild();
   apply(m);clockAt=Date.now();sync();return true
  }
  function data(msg){if(!msg||typeof msg!=='object')return;
+  if(msg.type==='arena-chat-v1'){receiveChat(msg);return;}
   if(host()){
    if(msg.type==='join'){sync();return}
    if(msg.type==='move'){if(!hostMove(msg.from,msg.to,msg.promotion,'b')){setStatus('Ungültigen Zug des Gastes abgewiesen.');sync()}}
@@ -1764,9 +1891,9 @@ rebuild();
  }
  function connect(c){
   if(conn&&conn!==c&&conn.open){c.close();return}conn=c;const thisConn=c;
-  c.on('open',()=>{if(conn!==thisConn)return;connected=true;clockAt=Date.now();if(host()){clockRunning=!outcome;setStatus('Freund verbunden. Weiß beginnt!');sync()}else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'})}render()});
+  c.on('open',()=>{if(conn!==thisConn)return;connected=true;clockAt=Date.now();chatInfo('Verbunden – Nachrichten und Emojis sind bereit.');if(host()){clockRunning=!outcome;setStatus('Freund verbunden. Weiß beginnt!');sync()}else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'})}render()});
   c.on('data',data);
-  c.on('close',()=>{if(conn!==thisConn)return;if(host())tick();conn=null;connected=false;if(host())clockRunning=false;setStatus('Verbindung unterbrochen. Die Uhr wurde angehalten. Für eine neue Partie einen neuen Raum erstellen.');render()});
+  c.on('close',()=>{if(conn!==thisConn)return;if(host())tick();conn=null;connected=false;chatInfo('Verbindung getrennt.');if(host())clockRunning=false;setStatus('Verbindung unterbrochen. Die Uhr wurde angehalten. Für eine neue Partie einen neuen Raum erstellen.');render()});
   c.on('error',e=>{if(conn===thisConn)setStatus('Verbindungsfehler: '+String(e?.message||e))});
  }
  async function create(publicRoom=null){closeSession();let myToken=token;side='w';room='HOST';show('liveGame');timeControl=Number($l('liveTimeSelect').value)*60000;baseReset(timeControl);setStatus('Raum wird erstellt …');
@@ -2611,6 +2738,25 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
 .arena-feedback-toast strong{color:#fff;font-size:clamp(33px,6vw,64px);text-shadow:0 3px 12px #000}
 .arena-feedback-toast.good strong{color:#7cffab}
 .arena-feedback-toast.bad strong{color:#ff9696}
+
+/* v5.2: Chat und Reaktionen, nur im Live-Schach */
+.arena-chat{margin:12px 0;border:1px solid #48627d;background:#13283d;border-radius:13px;overflow:hidden}
+.arena-chat-toggle{display:block;width:100%;text-align:left;background:#24435f;color:white;border:0;border-radius:0;padding:13px 14px;font-size:16px;font-weight:750;cursor:pointer}
+#arenaChatUnread{display:inline-block;color:#ffcf70;margin-left:8px}
+#arenaChatBody{padding:10px}
+#arenaChatBody[hidden],.arena-emoji-toast[hidden],#arenaChatUnread[hidden]{display:none!important}
+.arena-chat-hint{font-size:12px;line-height:1.4;color:#b9ccdf;margin:4px 0 9px}
+.arena-chat-emojis{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-bottom:10px}
+.arena-chat-emojis button{padding:5px 0;min-width:0;min-height:37px;background:#263e55;border:1px solid #47647a;border-radius:8px;font-size:21px;line-height:1.1}
+.arena-chat-messages{height:145px;overflow-y:auto;overscroll-behavior:contain;background:#0c2032;border:1px solid #39536b;border-radius:9px;padding:8px;display:flex;flex-direction:column;gap:5px}
+.arena-chat-item{overflow-wrap:anywhere;font-size:13px;color:#fff;background:#294158;border-radius:10px;padding:7px 9px;align-self:flex-start;max-width:95%}
+.arena-chat-item.mine{background:#176550;align-self:flex-end}
+.arena-chat-form{display:flex;gap:6px;margin:9px 0 3px}
+.arena-chat-form input{flex:1;width:1px;min-width:0;padding:9px;border-radius:8px;border:1px solid #526a83;background:#0c2032;color:white;font-size:14px}
+.arena-chat-form button{padding:8px 10px;background:#147b65;color:#fff;font-size:13px;border-radius:8px;white-space:nowrap}
+.arena-emoji-toast{position:fixed;z-index:5000;left:50%;top:32%;transform:translateX(-50%);background:#102739ed;color:white;border:2px solid #ecc16c;box-shadow:0 12px 34px #0008;border-radius:22px;padding:14px 25px;text-align:center;max-width:88vw;pointer-events:none;font-size:21px}
+.arena-emoji-toast .emoji{display:block;font-size:56px;line-height:1.3}
+@media(max-width:650px){.arena-chat-emojis{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.arena-chat-emojis button{min-height:43px}.arena-chat-toggle{min-height:48px}.arena-chat-form button{min-height:43px}}
 </style>
 <script id="arena-training-feedback-script">
 /* Bestehende persönliche RICHTIG-/NEIN-Fotos auch in den neuen Trainings verwenden. */
@@ -2944,4 +3090,4 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
  // Standardansicht: zuerst Grundlagen / Züge lernen, statt Schachaufgaben.
  setMode(true);
 })();
-</script></body></html>
+</script><script src="account-ui.js" defer></script></body></html>

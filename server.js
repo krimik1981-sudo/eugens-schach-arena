@@ -3,6 +3,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const accounts = require('./account-storage');
 const PORT = Number(process.env.PORT || 10000);
 const ROOT = __dirname;
 const rooms = new Map();
@@ -17,6 +18,22 @@ function readBody(req) {return new Promise((resolve, reject)=>{let parts=[],n=0;
 async function api(req,res) {
  if(req.method!=='POST')return json(res,405,{error:'Method not allowed'});
  let data;try{data=await readBody(req)}catch{return json(res,400,{error:'Invalid request'})}
+ if(req.url.startsWith('/api/account/') || req.url.startsWith('/api/friends/')) {
+   try {
+     let out;
+     if(req.url==='/api/account/register') out=await accounts.signup(data.nick,data.password);
+     else if(req.url==='/api/account/login') out=await accounts.login(data.nick,data.password);
+     else if(req.url==='/api/account/me') out={player:await accounts.auth(data.token)};
+     else if(req.url==='/api/account/logout') {await accounts.logout(data.token);out={ok:true}}
+     else {const player=await accounts.auth(data.token);
+       if(req.url==='/api/friends/invite') out=await accounts.invite(player,data.nick,data.room);
+       else if(req.url==='/api/friends/inbox') out={invites:await accounts.inbox(player)};
+       else if(req.url==='/api/friends/accept') out=await accounts.accept(player,data.id);
+       else return json(res,404,{error:'Unknown endpoint'});
+     }
+     return json(res,200,out);
+   }catch(e){return json(res,e.status||500,{error:e.message||'Ошибка аккаунта'})}
+ }
  if(!validClient(data.clientId))return json(res,400,{error:'Invalid player identifier'});
  clean();
  if(req.url==='/api/match/join') {
@@ -43,13 +60,13 @@ async function api(req,res) {
  }
  return json(res,404,{error:'No such endpoint'});
 }
-const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.png':'image/png','.svg':'image/svg+xml','.webp':'image/webp','.ico':'image/x-icon'};
+const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.png':'image/png','.svg':'image/svg+xml','.webp':'image/webp','.ico':'image/x-icon','.webmanifest':'application/manifest+json; charset=utf-8'};
 const server=http.createServer(async(req,res)=>{
  let url;try{url=new URL(req.url,'http://localhost')}catch{return json(res,400,{error:'Bad URL'})}
  if(url.pathname.startsWith('/api/')) {req.url=url.pathname;return api(req,res)}
  if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405);return res.end()}
  const pathname=url.pathname==='/'?'/index.html':url.pathname;
- if(!/^\/(?:index\.html|[a-zA-Z0-9_-]+\.(?:css|js|png|svg|webp|ico))$/.test(pathname) || pathname==='/server.js' || pathname==='/server.test.js') {res.writeHead(404);return res.end('Not found')}
+ if(!/^\/(?:index\.html|[a-zA-Z0-9_-]+\.(?:css|js|png|svg|webp|ico|webmanifest))$/.test(pathname) || pathname==='/server.js' || pathname==='/server.test.js') {res.writeHead(404);return res.end('Not found')}
  const filename=path.resolve(ROOT,'.'+decodeURIComponent(pathname));
  if(!filename.startsWith(ROOT+path.sep)){res.writeHead(403);return res.end()}
  fs.stat(filename,(err,stat)=>{if(err||!stat.isFile()){res.writeHead(404);return res.end('Not found')}
