@@ -891,7 +891,7 @@ body{background:var(--arena62-bg)}
     <div class="premium-hero-shade"></div>
     <div class="premium-brandbar"><span class="premium-logo" aria-hidden="true">♞</span><div><div class="premium-brand-name">Eugens Schach <span>Arena</span></div><div class="premium-brand-sub">Schach. Spiel. Training. Community.</div></div><button class="premium-notice" data-page="freunde" type="button" aria-label="Freunde und Einladungen">♧</button></div>
     <div class="premium-hero-piece" aria-hidden="true">♚</div>
-    <button class="premium-welcome" type="button" data-page="profil"><span class="premium-avatar" aria-hidden="true">♟</span><span class="premium-welcome-text"><strong>Hallo, <span id="premiumUserName">Schachspieler</span></strong><small>Schön, dass du da bist!</small></span><span class="premium-welcome-arrow">›</span></button>
+    <button class="premium-welcome" type="button" data-page="profil"><span class="premium-avatar" aria-hidden="true">♟</span><span class="premium-welcome-text"><strong>Hallo, <span id="premiumUserName">Gast</span></strong><small>Schön, dass du da bist!</small></span><span class="premium-welcome-arrow">›</span></button>
   </section>
   <section class="premium-start-content">
     <div class="premium-section-head"><h2>Schnell starten</h2><button type="button" data-page="schach">Alle Modi <span>›</span></button></div>
@@ -3466,8 +3466,43 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
  // Standardansicht: zuerst Grundlagen / Züge lernen, statt Schachaufgaben.
  setMode(true);
 })();
-</script><script src="account-ui.js" defer></script><script>/* premium home greeting only: no account/session data is modified */
-(function(){function updatePremiumName(){var source=document.getElementById('profileNameInput');var target=document.getElementById('premiumUserName');if(source&&target&&source.value.trim()){target.textContent=source.value.trim().slice(0,28)}}document.addEventListener('DOMContentLoaded',function(){updatePremiumName();var el=document.getElementById('profileNameInput');if(el){el.addEventListener('change',updatePremiumName);el.addEventListener('input',updatePremiumName)}setTimeout(updatePremiumName,1000);setTimeout(updatePremiumName,3000)})})();</script><script id="v68-online-rooms-script">
+</script><script src="account-ui.js" defer></script><style id="v69-account-greeting-style">
+.premium-welcome-text{min-width:0!important;overflow:visible!important;}
+.premium-welcome-text strong{min-width:0;overflow-wrap:break-word!important;word-break:normal!important;hyphens:none;}
+@media(max-width:740px){
+  .premium-welcome{align-items:center!important;}
+  .premium-welcome-text strong{font-size:clamp(16px,4.25vw,21px)!important;line-height:1.2!important;}
+  .premium-welcome-text small{font-size:11px!important;}
+}
+</style>
+<script id="v69-account-greeting">
+/* v6.9 - use the authenticated account nickname, not the independent local profile. */
+(function(){'use strict';
+  const byId=id=>document.getElementById(id);
+  function updateGreeting(){
+    const target=byId('premiumUserName');
+    if(!target)return;
+    const logged=byId('chessLoggedIn');
+    const who=byId('chessWho');
+    const signedIn=!!(logged&&!logged.hidden&&who);
+    const text=signedIn?who.textContent||'':'';
+    const match=text.match(/Angemeldet:\s*(.+)$/);
+    const nick=match?match[1].trim().slice(0,24):'';
+    target.textContent=nick||'Gast';
+    const strong=target.parentElement;
+    if(strong)strong.setAttribute('aria-label','Hallo, '+(nick||'Gast')+'!');
+  }
+  function init(){
+    updateGreeting();
+    const who=byId('chessWho'),logged=byId('chessLoggedIn');
+    if(who)new MutationObserver(updateGreeting).observe(who,{childList:true,characterData:true,subtree:true});
+    if(logged)new MutationObserver(updateGreeting).observe(logged,{attributes:true,attributeFilter:['hidden']});
+    window.addEventListener('pageshow',updateGreeting);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+  else init();
+})();
+</script><script id="v68-online-rooms-script">
 (function(){'use strict';
   const $=id=>document.getElementById(id);
   function page(name){
