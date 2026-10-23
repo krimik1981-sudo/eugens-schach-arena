@@ -626,7 +626,53 @@ header{background:#0b1928;border-bottom-color:rgba(236,191,116,.2)}
 .premium-bottomnav{background:rgba(8,19,32,.97)!important;border-top:1px solid var(--premium-stroke)!important;backdrop-filter:blur(18px)}.premium-bottomnav button{color:#a8b6ce!important;font-size:26px!important;min-width:0}.premium-bottomnav button small{font:500 11px system-ui,sans-serif!important;margin-top:4px}.premium-bottomnav button.active,.premium-bottomnav button[aria-current="page"]{color:var(--premium-gold)!important}
 @media(max-width:720px){body>header{display:none!important}.arena-content{padding:0!important}.arena-shell{padding:0!important}.premium-hero{border-radius:0;min-height:265px;padding:26px 17px 0}.premium-hero-piece{right:8px;top:76px;font-size:125px}.premium-welcome{margin-top:90px}.premium-start-content{padding:22px 16px 116px}.premium-feature{height:168px}.premium-brand-name{font-size:21px}.premium-bottomnav{display:flex!important}.premium-v6-home .premium-feature-label strong{font-size:17px}}
 @media(max-width:390px){.premium-hero-piece{opacity:.75;font-size:106px}.premium-brand-name{font-size:19px}.premium-feature-grid{gap:10px}.premium-feature{height:158px}.premium-feature-label strong{font-size:15px!important}.premium-continue-row{flex-wrap:wrap}.premium-continue-btn{margin-left:auto}.premium-quick-grid{gap:7px}.premium-quick-grid button{padding:10px 7px}.premium-quick-grid button strong{font-size:11px}}
-</style></head><body>
+</style>
+<style id="premium-v61-mobile-fix">
+/* Premium Dark 6.1 — iPhone/Android layout hotfix */
+@media (max-width: 740px) {
+  html, body { width:100%; max-width:100%; overflow-x:hidden; }
+  .arena-shell, .arena-content, .arena-page { min-width:0; max-width:100%; }
+  .arena-content { padding:0 0 calc(88px + env(safe-area-inset-bottom)) !important; }
+  .arena-page:not(.premium-v6-home) { padding:18px 16px 30px !important; }
+  .arena-page:not(.premium-v6-home) > h2 { font-size:clamp(21px,6vw,27px) !important; line-height:1.2 !important; margin:6px 0 9px !important; overflow-wrap:break-word; }
+  .arena-page:not(.premium-v6-home) > p { font-size:14px !important; line-height:1.45 !important; margin:0 0 15px !important; }
+  .arena-optiongrid { display:grid !important; grid-template-columns:minmax(0,1fr) !important; gap:11px !important; margin-top:14px !important; }
+  .arena-option { min-height:0 !important; padding:16px !important; border-radius:15px !important; gap:7px !important; max-width:100%; }
+  .arena-option b { font-size:clamp(16px,4.7vw,19px) !important; line-height:1.25 !important; overflow-wrap:anywhere; }
+  .arena-option small { font-size:13px !important; line-height:1.4 !important; }
+  .arena-statslink { max-width:100%; font-size:13px !important; line-height:1.35 !important; white-space:normal !important; }
+  .arena-bottomnav.premium-bottomnav {
+    position:fixed !important; bottom:0 !important; left:0 !important; right:0 !important;
+    z-index:3000 !important; display:grid !important;
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    width:100% !important; box-sizing:border-box !important;
+    gap:0 !important; margin:0 !important;
+    padding:7px 8px calc(7px + env(safe-area-inset-bottom)) !important;
+    min-height:62px !important; align-items:stretch !important;
+    background:rgba(7,18,31,.97) !important;
+    border-top:1px solid rgba(238,193,122,.3) !important;
+  }
+  .arena-bottomnav.premium-bottomnav > button {
+    box-sizing:border-box !important; display:flex !important;
+    flex-direction:column !important; justify-content:center !important; align-items:center !important;
+    gap:3px !important; width:100% !important; min-width:0 !important;
+    max-width:100% !important; padding:4px 0 3px !important; margin:0 !important;
+    background:transparent !important; border:0 !important;
+    font-size:22px !important; line-height:1.1 !important;
+    text-align:center !important; overflow:hidden !important;
+  }
+  .arena-bottomnav.premium-bottomnav > button > span { display:block !important; font-size:23px !important; line-height:1 !important; }
+  .arena-bottomnav.premium-bottomnav > button > small {
+    display:block !important; width:100% !important;
+    font:500 clamp(9px,2.8vw,11px)/1.2 system-ui,-apple-system,sans-serif !important;
+    letter-spacing:0 !important; text-align:center !important;
+    white-space:nowrap !important; overflow:hidden !important;
+  }
+  .premium-start-content { padding-bottom:25px !important; }
+  body:has(#courseHome[hidden]) .arena-bottomnav.premium-bottomnav { display:none !important; }
+}
+</style>
+</head><body>
 <header>♟ <span class="brand-eugen">Eugens</span> <span class="brand-schach">Schach</span> <span class="brand-arena">Arena</span> <span aria-hidden="true" class="flag-divider"></span></header>
 <section class="course-home" id="courseHome">
 <div class="arena-shell">
