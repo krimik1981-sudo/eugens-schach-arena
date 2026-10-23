@@ -604,6 +604,26 @@ body>header{background:#07182a!important;border-bottom:1px solid #24415e!importa
 }
 </style>
 <style>
+/* 6.3: Public Dame room and responsive private chat */
+.dame-public-search{display:flex;flex-direction:column;gap:9px;background:#112e42;border:1px solid #b7965e88;border-radius:13px;padding:13px}
+.dame-public-search strong{color:#f5d495;font-size:16px}.dame-public-search .dame-note{margin:0}
+#damePublicPlay{background:linear-gradient(115deg,#b98742,#efd193)!important;color:#102030!important;min-height:46px;font-size:16px}
+#damePublicInfo{color:#cfdef2;font-size:13px;overflow-wrap:anywhere}
+.dame-private-room{border:1px solid #40536c;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:9px}
+.dame-private-room summary{cursor:pointer;color:#f5d495;font-weight:700;padding:5px 0}
+.dame-private-room[open] > :not(summary){margin-top:9px}
+.dame-chat{border:1px solid #3a5169;border-radius:12px;padding:9px}
+#dameChatToggle{width:100%;background:#1c354e!important;color:#f1d29c!important}
+#dameChatUnread{color:#f4b94b}
+#dameChatBody[hidden],#dameChatUnread[hidden]{display:none!important}
+#dameChatBody{padding:9px 3px;display:flex;flex-direction:column;gap:10px}
+.dame-chat-messages{min-height:60px;max-height:175px;overflow:auto;background:#0d2031;border-radius:8px;padding:10px;overflow-wrap:anywhere;font-size:14px}
+.dame-chat-item{margin-bottom:5px}.dame-chat-item.mine{text-align:right;color:#f5d495}
+.dame-chat-emojis{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+.dame-chat-emojis button{font-size:20px!important;min-width:0;padding:4px!important;background:#213d58!important}
+#dameChatForm{display:flex;gap:6px}#dameChatForm input{min-width:0;flex:1;padding:10px;background:#10283d;border:1px solid #536a7f;border-radius:8px;color:white;font-size:16px}
+#dameChatForm button{flex-shrink:0}#dameChatInfo{color:#becce0}
+@media(max-width:480px){.dame-chat-emojis{grid-template-columns:repeat(4,minmax(0,1fr))}}
 /* Eugens Schach Arena 6.0 – Premium Dark. Preserves original chess, dame, account and live handlers. */
 :root{--premium-bg:#071320;--premium-surface:#111f30;--premium-gold:#eec17a;--premium-gold-dark:#ba7e39;--premium-stroke:rgba(234,196,136,.21)}
 body{background:var(--premium-bg);color:#eef2f8}
@@ -835,7 +855,9 @@ body{background:var(--arena62-bg)}
 <div id="dameComputerColorBox"><label for="dameComputerColor">Meine Farbe gegen Computer</label><select id="dameComputerColor"><option value="w">⚪ Weiß – du beginnst</option><option value="b">⚫ Schwarz – Computer beginnt</option></select></div>
 <label for="dameLevel">Computerstärke</label><select id="dameLevel"><option value="easy">Anfänger</option><option selected="" value="medium">Fortgeschritten</option><option value="hard">Profi</option></select>
 <div hidden="" id="dameOnlineBox">
-<h3>🌐 Online-Dame gegen Freunde</h3>
+<h3>🌐 Online-Dame</h3>
+<div class="dame-public-search"><strong>🎯 Allgemeiner Tisch · Dame</strong><p class="dame-note">Ein Klick: Wir suchen automatisch einen Gegner. Der erste Spieler wartet, der zweite wird verbunden.</p><button id="damePublicPlay" type="button">🌍 Gegner automatisch finden</button><span id="damePublicInfo" role="status" aria-live="polite">Bereit zur Gegnersuche.</span></div>
+<details class="dame-private-room"><summary>🔒 Privater Raum mit Freund</summary>
 <p class="dame-note">Wähle deine Farbe. Dein Freund bekommt automatisch die andere Farbe. Beide öffnen die Arena auf ihrer eigenen HTTPS-Webseite.</p>
 <label for="dameHostColor">Meine Farbe als Gastgeber</label><select id="dameHostColor"><option value="w">⚪ Weiß (erster Zug)</option><option value="b">⚫ Schwarz (zweiter Zug)</option></select><button id="dameCreate" type="button">🌐 Raum erstellen</button>
 <label for="dameJoinCode">Raumcode des Freundes</label>
@@ -843,6 +865,8 @@ body{background:var(--arena62-bg)}
 <button id="dameJoin" type="button">🌐 Raum beitreten</button>
 <div aria-live="polite" id="dameOnlineStatus" role="status">Noch nicht verbunden.</div>
 <div hidden="" id="dameInvite"><span class="dame-note">Dein Raumcode</span><strong id="dameRoomCode"></strong><button id="dameCopyLink" type="button">🔗 Einladungslink kopieren</button><button id="dameCopyCode" type="button">Code kopieren</button></div>
+</details>
+<div class="dame-chat"><button type="button" id="dameChatToggle" aria-expanded="false">💬 Chat &amp; Emojis <span id="dameChatUnread" hidden>●</span></button><div id="dameChatBody" hidden><div class="dame-chat-messages" id="dameChatMessages" aria-live="polite"></div><div id="dameChatEmojis" class="dame-chat-emojis"></div><form id="dameChatForm"><input id="dameChatInput" maxlength="200" autocomplete="off" placeholder="Nachricht an Gegner…" aria-label="Nachricht"/><button type="submit">Senden</button></form><small id="dameChatInfo">Chat ist nach der Verbindung verfügbar.</small></div></div>
 <button hidden="" id="dameDisconnect" type="button">Verbindung trennen</button>
 <p class="dame-note">Die Online-Verbindung nutzt PeerJS/WebRTC. Beide Geräte müssen online und die Seiten geöffnet bleiben. Keine Registrierung erforderlich; der öffentliche Vermittlungsdienst ist jedoch nicht garantiert verfügbar.</p>
 </div><div aria-live="polite" id="dameStatus" role="status">Weiß beginnt.</div><div class="dame-stats"><span id="dameCountWhite">⚪ 12</span><span id="dameCountBlack">⚫ 12</span></div>
@@ -1002,7 +1026,7 @@ body{background:var(--arena62-bg)}
 <p class="intro">Kostenlos 1 gegen 1. Erstelle einen privaten Raum oder tritt dem Raum deines Freundes bei. Registrierung und Anmeldung findest du jetzt unter „Profil → Konto erstellen / Anmelden“. Danach kannst du Freunde per Spielernamen einladen.</p>
 <div class="card" style="max-width:790px">
 <h2>Freundschaftsspiel starten</h2>
-<div class="live-actions" style="align-items:center"><label for="liveTimeSelect"><strong>Schachuhr:</strong></label><select aria-label="Zeit pro Spieler" id="liveTimeSelect"><option value="3">3 Minuten (Blitz)</option><option value="5">5 Minuten (Blitz)</option><option selected="" value="10">10 Minuten (Schnellschach)</option><option value="15">15 Minuten (Schnellschach)</option></select></div>
+<div class="live-actions" style="align-items:center"><label for="liveTimeSelect"><strong>Schachuhr:</strong></label><select aria-label="Zeit pro Spieler" id="liveTimeSelect"><option value="3">3 Minuten (Blitz)</option><option value="5">5 Minuten (Blitz)</option><option selected="" value="10">10 Minuten (Schnellschach)</option><option value="15">15 Minuten (Schnellschach)</option><option value="30">30 Minuten (Langschach)</option><option value="0">Ohne Zeitlimit (unbegrenzt)</option></select></div>
 <div class="arena-public-search">
   <h2>🃏 Allgemeiner Tisch für zwei</h2>
   <p>Wie in „Тысяча Арена“: ein Klick — wir suchen einen Gegner. Der erste Spieler wartet, der zweite wird automatisch verbunden.</p>
@@ -2025,13 +2049,13 @@ rebuild();
   render();return true
  }
  function tick(){
-  if(!host()||!clockRunning||outcome||!connected)return;
+  if(!host()||!clockRunning||outcome||!connected||timeControl===0)return;
   let elapsed=Math.max(0,Date.now()-clockAt);let c=asSide();remaining[c]=Math.max(0,remaining[c]-elapsed);clockAt=Date.now();
   if(remaining[c]===0){finish({reason:'timeout',winner:opponent(c),loser:c});sync()}
  }
- function displayRemaining(c){let v=remaining[c];if(clockRunning&&!outcome&&connected&&asSide()===c)v=Math.max(0,v-(Date.now()-clockAt));return Math.max(0,v)}
- function clockText(ms){let total=Math.ceil(ms/1000),minutes=Math.floor(total/60),seconds=total%60;return String(minutes).padStart(2,'0')+':'+String(seconds).padStart(2,'0')}
- function drawClocks(){for(const c of ['w','b']){const el=$l(c==='w'?'liveClockWhite':'liveClockBlack');if(!el)continue;el.textContent=clockText(displayRemaining(c));el.classList.toggle('active',clockRunning&&!outcome&&connected&&asSide()===c);el.classList.toggle('low',displayRemaining(c)<30000)}}
+ function displayRemaining(c){if(timeControl===0)return Infinity;let v=remaining[c];if(clockRunning&&!outcome&&connected&&asSide()===c)v=Math.max(0,v-(Date.now()-clockAt));return Math.max(0,v)}
+ function clockText(ms){if(!Number.isFinite(ms))return '∞';let total=Math.ceil(ms/1000),minutes=Math.floor(total/60),seconds=total%60;return String(minutes).padStart(2,'0')+':'+String(seconds).padStart(2,'0')}
+ function drawClocks(){for(const c of ['w','b']){const el=$l(c==='w'?'liveClockWhite':'liveClockBlack');if(!el)continue;el.textContent=clockText(displayRemaining(c));el.classList.toggle('active',timeControl!==0&&clockRunning&&!outcome&&connected&&asSide()===c);el.classList.toggle('low',timeControl!==0&&displayRemaining(c)<30000)}}
  function endCheck(){
   let turn=asSide(),legal=egLegal(position,turn,ep,castle);
   if(!legal.length){finish(egCheck(position,turn)?{reason:'mate',winner:opponent(turn)}:{reason:'stalemate'});return}
@@ -2109,7 +2133,7 @@ rebuild();
    cell.addEventListener('click',()=>click(sq));el.appendChild(cell)
   }
   $l('liveHeadline').textContent=outcome?'🏁 '+outText():!connected?'Warte auf Verbindung …':side===turn?'♔ Du bist am Zug':'♚ Dein Freund ist am Zug';
-  $l('liveTimeLabel').textContent='Zeit: '+(timeControl/60000)+' Minuten pro Spieler';$l('liveMoveLabel').textContent='Züge: '+moveNo;
+  $l('liveTimeLabel').textContent=timeControl===0?'Ohne Zeitlimit – keine Schachuhr':'Zeit: '+(timeControl/60000)+' Minuten pro Spieler';$l('liveMoveLabel').textContent='Züge: '+moveNo;
   const answerDrawVisible=connected&&!outcome&&drawOffer===side;
   const answerRematchVisible=connected&&!!outcome&&rematchOffer===side;
   $l('liveDrawAnswer').hidden=!answerDrawVisible;$l('liveRematchAnswer').hidden=!answerRematchVisible;
@@ -2685,10 +2709,41 @@ boardEl.addEventListener('click',function(e){
 // Live-Dame: Gastgeber ist autoritativ. Schwarze Züge werden dort legalitätsgeprüft.
 const box=document.getElementById('dameOnlineBox'),info=document.getElementById('dameOnlineStatus');
 const netStatus=s=>{info.textContent=s};
-function discardNetwork(){onlineGeneration++;onlineConnected=false;onlineSide=null;onlineHost=false;onlineHostSide='w';onlineRoom='';try{onlineConn?.close()}catch(e){}try{onlinePeer?.destroy()}catch(e){}onlineConn=null;onlinePeer=null;document.getElementById('dameInvite').hidden=true;document.getElementById('dameDisconnect').hidden=true;netStatus('Nicht verbunden.');}
+const publicDameClient=(()=>{const key='damePublicClientV63';let v=sessionStorage.getItem(key);if(!v){v='d'+Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');sessionStorage.setItem(key,v)}return v})();
+let publicDameRoom=null,publicDameBusy=false,lastDameChat=0;
+const dameChatEmojis=['😂','👏','👍','🎉','😎','❤️','😮','🤝'];
+function dameChatInfo(txt){document.getElementById('dameChatInfo').textContent=txt}
+function dameChatLine(who,message,mine){const panel=document.getElementById('dameChatMessages');const el=document.createElement('div');el.className='dame-chat-item'+(mine?' mine':'');el.textContent=who+': '+message;panel.appendChild(el);while(panel.children.length>40)panel.firstElementChild.remove();panel.scrollTop=panel.scrollHeight;if(!mine&&document.getElementById('dameChatBody').hidden)document.getElementById('dameChatUnread').hidden=false;}
+function dameChatSend(kind,value){if(!onlineConnected||!onlineConn?.open){dameChatInfo('Bitte zuerst mit einem Gegner verbinden.');return false}if(Date.now()-lastDameChat<650)return false;if(kind==='emoji'&&!dameChatEmojis.includes(value))return false;if(kind==='text'){value=String(value||'').trim().slice(0,200);if(!value)return false}if(!['emoji','text'].includes(kind))return false;lastDameChat=Date.now();onlineConn.send({type:'dame-chat-v1',kind,value});dameChatLine('Du',value,true);return true;}
+function clearDameChat(){document.getElementById('dameChatMessages').replaceChildren();document.getElementById('dameChatInput').value='';document.getElementById('dameChatUnread').hidden=true;dameChatInfo('Chat ist nach der Verbindung verfügbar.');}
+document.getElementById('dameChatToggle').addEventListener('click',()=>{const p=document.getElementById('dameChatBody');p.hidden=!p.hidden;document.getElementById('dameChatToggle').setAttribute('aria-expanded',String(!p.hidden));if(!p.hidden)document.getElementById('dameChatUnread').hidden=true});
+for(const symbol of dameChatEmojis){const b=document.createElement('button');b.type='button';b.textContent=symbol;b.onclick=()=>dameChatSend('emoji',symbol);document.getElementById('dameChatEmojis').append(b)}
+document.getElementById('dameChatForm').addEventListener('submit',e=>{e.preventDefault();const x=document.getElementById('dameChatInput');if(dameChatSend('text',x.value))x.value=''});
+async function damePublicApi(action,data={}){const r=await fetch('/api/dame-match/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicDameClient,...data})});if(!r.ok)throw Error('Matchmaking-Server nicht erreichbar ('+r.status+').');return r.json()}
+async function damePublicPlay(){if(publicDameBusy)return;publicDameBusy=true;const btn=document.getElementById('damePublicPlay');btn.disabled=true;const label=document.getElementById('damePublicInfo');label.textContent='Suche freien Gegner …';try{
+ discardNetwork();const result=await damePublicApi('join');const gen=onlineGeneration;publicDameRoom={room:result.room,role:result.role};modeEl.value='online';
+ if(result.role==='host'){
+  onlineHost=true;onlineHostSide='w';onlineSide='w';onlineRoom=result.room;init();netStatus('Gegner wird gesucht …');await setupPeer(result.room);if(gen!==onlineGeneration)return;
+  onlinePeer.on('connection',attachConnection);await damePublicApi('heartbeat',{room:result.room,ready:true});
+  label.textContent='🟢 Du wartest auf einen Gegner. Bitte diese Seite geöffnet lassen.';netStatus('Allgemeiner Dame-Tisch offen. Warte auf einen Gegner …');
+ }else{
+  onlineHost=false;onlineSide=null;onlineRoom=result.room;init();netStatus('Ein Gegner wurde gefunden! Verbinde …');await setupPeer(undefined);if(gen!==onlineGeneration)return;
+  attachConnection(onlinePeer.connect(result.room,{reliable:true}));label.textContent='🟢 Gegner gefunden. Verbindung wird hergestellt …';
+ }
+ }catch(e){label.textContent='⚠️ '+(e?.message||e);discardNetwork()}finally{publicDameBusy=false;btn.disabled=false}}
+document.getElementById('damePublicPlay').addEventListener('click',damePublicPlay);
+setInterval(()=>{if(!publicDameRoom)return;damePublicApi('heartbeat',{room:publicDameRoom.room,ready:publicDameRoom.role==='host'}).catch(e=>{document.getElementById('damePublicInfo').textContent='⚠️ '+e.message})},12000);
+
+function discardNetwork(){if(publicDameRoom){const previous=publicDameRoom;publicDameRoom=null;damePublicApi('leave',{room:previous.room}).catch(()=>{});}clearDameChat();onlineGeneration++;onlineConnected=false;onlineSide=null;onlineHost=false;onlineHostSide='w';onlineRoom='';try{onlineConn?.close()}catch(e){}try{onlinePeer?.destroy()}catch(e){}onlineConn=null;onlinePeer=null;document.getElementById('dameInvite').hidden=true;document.getElementById('dameDisconnect').hidden=true;netStatus('Nicht verbunden.');}
 function broadcast(){if(modeEl.value!=='online'||!onlineHost||!onlineConnected||!onlineConn?.open)return;onlineConn.send({type:'dame-state',seq:onlineSequence,hostSide:onlineHostSide,board:[...board],turn,forced,gameOver,matchId:dameMatchId,message:statusEl.textContent});}
 function onlineSyncReceived(data){if(onlineHost||!data||data.type!=='dame-state'||!Array.isArray(data.board)||data.board.length!==64)return;if(!data.board.every(p=>p===null||['w','W','b','B'].includes(p)))return;if(data.turn!=='w'&&data.turn!=='b')return;if(!Number.isSafeInteger(data.seq)||data.seq<onlineSequence)return;if(!['w','b'].includes(data.hostSide))return;onlineHostSide=data.hostSide;onlineSide=other(onlineHostSide);netStatus('✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß (du beginnst).':'Schwarz (Gastgeber beginnt).'));if(data.forced!==null&&(!Number.isInteger(data.forced)||data.forced<0||data.forced>63))return;const previousEnded=gameOver,previousMatch=dameMatchId;onlineSequence=data.seq;dameMatchId=typeof data.matchId==='string'&&data.matchId.length<100?data.matchId:dameMatchId;board=data.board.slice();turn=data.turn;forced=data.forced;gameOver=!!data.gameOver;selected=null;history=[];busy=false;render();status(data.message||'Stellung synchronisiert.');if(gameOver&&(!previousEnded||previousMatch!==dameMatchId))reportDameWin(other(turn));}
 function onlineHandleData(data){if(!data||typeof data!=='object')return;
+ if(data.type==='dame-chat-v1'){
+  if(!onlineConnected)return;const v=data.value;
+  if(typeof v==='string'&&((data.kind==='emoji'&&dameChatEmojis.includes(v))||(data.kind==='text'&&v.length<=200&&v.trim())))dameChatLine('Gegner',v,false);
+  return;
+ }
+
  if(onlineHost&&data.type==='dame-move'){
   if(!onlineConnected||turn!==other(onlineHostSide)||gameOver||!Number.isInteger(data.from)||!Number.isInteger(data.to)||data.seq!==onlineSequence)return;
   const legalMove=options(board,turn,forced).find(m=>m.from===data.from&&m.to===data.to);
@@ -2697,7 +2752,7 @@ function onlineHandleData(data){if(!data||typeof data!=='object')return;
  else if(data.type==='dame-hello'&&onlineHost)broadcast();
 }
 function attachConnection(c){if(onlineConn&&onlineConn!==c&&onlineConnected){try{c.close()}catch(e){}return;}onlineConn=c;const gen=onlineGeneration;
- c.on('open',()=>{if(gen!==onlineGeneration)return;onlineConnected=true;document.getElementById('dameDisconnect').hidden=false;netStatus(onlineHost?'✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.')+' Dein Freund ist beigetreten.':'✅ Verbindung hergestellt. Warte auf die Farbzuweisung …');if(onlineHost)broadcast();else c.send({type:'dame-hello'});render();});
+ c.on('open',()=>{if(gen!==onlineGeneration)return;onlineConnected=true;dameChatInfo('Du kannst jetzt schreiben und Emojis senden.');if(publicDameRoom)document.getElementById('damePublicInfo').textContent='✅ Gegner verbunden!';document.getElementById('dameDisconnect').hidden=false;netStatus(onlineHost?'✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.')+' Dein Freund ist beigetreten.':'✅ Verbindung hergestellt. Warte auf die Farbzuweisung …');if(onlineHost)broadcast();else c.send({type:'dame-hello'});render();});
  c.on('data',data=>{if(gen===onlineGeneration)onlineHandleData(data)});
  const lost=()=>{if(gen!==onlineGeneration)return;onlineConnected=false;netStatus('⚠️ Verbindung unterbrochen. Bitte einen neuen Raum erstellen.');render()};
  c.on('close',lost);c.on('error',e=>{if(gen===onlineGeneration)netStatus('Verbindungsfehler: '+(e?.message||'Unbekannt'))});
