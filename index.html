@@ -822,7 +822,44 @@ body{background:var(--arena62-bg)}
  #courseHome .arena-content{padding-bottom:115px!important}
 }
 </style>
-</head><body>
+<style id="v68-online-rooms-styles">
+/* Premium Dark: two independent online waiting-room entry screens */
+#courseHome .arena-page[data-panel="freunde"],
+#courseHome .arena-page[data-panel^="v68-"]{box-sizing:border-box;max-width:100%;overflow-x:hidden;padding:clamp(12px,3vw,24px)!important;}
+.v68-online-list,.v68-entry{width:100%;max-width:760px;margin:0 auto;color:#eef2fa;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.v68-kicker{display:block;font:700 10px/1.5 system-ui,sans-serif;letter-spacing:2px;color:#dbb775}
+.v68-online-list>h2{font:700 clamp(27px,6vw,38px)/1.16 Georgia,serif!important;color:#f5e7d1!important;margin:8px 0 10px!important}
+.v68-online-list>p{font-size:clamp(13px,3vw,16px)!important;line-height:1.5;color:#aebed5!important;margin:0 0 20px!important}
+.v68-room-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.v68-room-choice{appearance:none;border:1px solid #caa36585!important;border-radius:19px!important;overflow:hidden;min-width:0;display:flex;flex-direction:column;align-items:stretch;padding:0!important;background:#071525!important;box-shadow:0 13px 32px #0004;cursor:pointer;text-align:left!important}
+.v68-room-choice img{width:100%;height:clamp(135px,24vw,238px);object-fit:cover;display:block}
+.v68-room-choice-text{display:flex;flex-direction:column;gap:5px;padding:14px;min-width:0}
+.v68-room-choice-text b{font:700 clamp(18px,4vw,25px)/1.16 Georgia,serif;color:#f6d194}
+.v68-room-choice-text small{color:#c2cee0;font-size:12px;line-height:1.4}
+.v68-room-choice-text>span{color:#f9d897;font-size:13px;font-weight:700;margin-top:5px}
+.v68-room-choice:focus-visible,.v68-enter:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.v68-friend-link,.v68-back{background:transparent!important;border:0!important;color:#e6c58a!important;font-size:13px!important;padding:12px 0!important;text-align:left!important;cursor:pointer}
+.v68-friend-link{display:block;margin-top:18px}
+.v68-entry{background:radial-gradient(ellipse at 70% 12%,#342e28 0%,transparent 45%),linear-gradient(155deg,#05111f,#0b1e35 70%,#06111e);padding:14px 13px 20px;border:1px solid #bc955c66;border-radius:22px;min-height:0}
+.v68-entry-heading{display:flex;align-items:center;gap:10px;margin:6px 2px 14px}
+.v68-symbol{font-size:clamp(40px,10vw,58px);color:#e9bc71;line-height:1}
+.v68-entry-heading h2{font:700 clamp(26px,6vw,44px)/1.1 Georgia,serif!important;color:#fff!important;margin:3px 0!important;word-break:normal}
+.v68-entry em{font-style:normal;color:#ecc07a}
+.v68-entry-art{height:clamp(155px,46vw,295px);background-size:cover;background-position:center 53%;border-radius:17px 17px 0 0;position:relative}
+.v68-entry-art::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#09192b,transparent 55%);pointer-events:none}
+.v68-art-schach{background-image:url('raum-schach.webp')}.v68-art-dame{background-image:url('raum-dame.webp')}
+.v68-entry-panel{border:1px solid #b69358;border-radius:0 0 18px 18px;padding:18px 18px 20px;background:linear-gradient(135deg,#091727,#10243a);text-align:center;display:flex;flex-direction:column;align-items:stretch;gap:8px}
+.v68-entry-panel h3{font:700 clamp(29px,7vw,45px)/1.16 Georgia,serif!important;color:#fff!important;margin:0!important}
+.v68-entry-panel>p{color:#c3cddd!important;font-size:clamp(13px,3.5vw,16px)!important;line-height:1.52!important;margin:6px 0 8px!important}
+.v68-entry-panel .v68-time-label{text-align:left;color:#dec391;font-size:12px;font-weight:750}
+.v68-entry-panel select{box-sizing:border-box;max-width:100%;width:100%;border:1px solid #bc965f!important;background:#112b42!important;color:#f7e6c7!important;border-radius:12px;padding:11px 12px;font-size:15px;min-height:42px}
+.v68-time-note{display:block;font-size:11px;color:#b5c4d6;line-height:1.35}
+.v68-enter{appearance:none;width:100%;border:1px solid #fff1cc!important;border-radius:28px!important;background:linear-gradient(105deg,#be8844,#f1d191,#c99757)!important;color:#07172a!important;font:750 clamp(16px,4vw,21px)/1.2 Georgia,serif!important;min-height:55px;padding:14px 18px!important;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 4px 20px #d7a66045;cursor:pointer;margin-top:5px}
+.v68-enter span{position:absolute;right:19px;font:25px system-ui}
+.v68-room-status{color:#bacbe0;font-size:12px;line-height:1.35;padding-top:2px}
+@media(max-width:550px){.v68-room-grid{grid-template-columns:1fr;gap:12px}.v68-room-choice{flex-direction:row;min-height:123px}.v68-room-choice img{width:40%;height:130px;flex-shrink:0}.v68-room-choice-text{justify-content:center;padding:12px}.v68-entry{padding:10px}.v68-entry-panel{padding:16px 13px}.v68-entry-art{height:clamp(170px,49vw,245px)}}
+@media(prefers-reduced-motion:no-preference){.v68-room-choice,.v68-enter{transition:transform .18s ease,box-shadow .18s ease}.v68-room-choice:active,.v68-enter:active{transform:scale(.987)}}
+</style></head><body>
 <header>♟ <span class="brand-eugen">Eugens</span> <span class="brand-schach">Schach</span> <span class="brand-arena">Arena</span> <span aria-hidden="true" class="flag-divider"></span></header>
 <section class="course-home" id="courseHome">
 <div class="arena-shell">
@@ -989,13 +1026,47 @@ body{background:var(--arena62-bg)}
 </div></div>
 <div class="arena-page" data-panel="analyse" hidden=""><button class="arena-back" data-page="schach" type="button">← Schach-Übersicht</button><h2>📊 Partieanalyse</h2><p>Partien speichern, nachspielen und auf Wunsch mit Stockfish untersuchen.</p><div class="arena-optiongrid"><button class="arena-option" data-open="openHistoryHome"><b>📚 Meine Partien</b><small>Partien und Analyse öffnen</small></button></div></div>
 <div class="arena-page" data-panel="freunde" hidden>
-  <h2>🌐 Online spielen</h2>
-  <p>Suche einen Gegner oder spiele mit Freunden.</p>
-  <div class="arena-optiongrid arena-v65-choicegrid">
-    <button class="arena-option" data-open="openLive" type="button"><b>♟ Online-Schach</b><small>Gegner finden · Spielraum · 3–30 Min. oder ohne Zeitlimit</small></button>
-    <button class="arena-option" data-dame-online="true" type="button"><b>⛀ Online-Dame</b><small>Gegner automatisch finden oder Freund einladen</small></button>
-    <button class="arena-option" data-open="openProfiles" type="button"><b>👥 Freunde & Einladungen</b><small>Freundesliste und Einladungen verwalten</small></button>
+  <div class="v68-online-list">
+    <span class="v68-kicker">EUGENS SCHACH ARENA · ONLINE</span>
+    <h2>Wähle deinen Spielraum</h2>
+    <p>Zwei getrennte Räume. Der erste Spieler wartet, der zweite startet die Partie automatisch.</p>
+    <div class="v68-room-grid">
+      <button class="v68-room-choice" type="button" data-v68-room="schach" aria-label="Schach-Raum öffnen">
+        <img src="raum-schach.webp" alt="Goldene und schwarze Schachfiguren" loading="lazy">
+        <span class="v68-room-choice-text"><b>♞ Schach-Raum</b><small>Online-Schach · 2 Spieler</small><span>Raum öffnen →</span></span>
+      </button>
+      <button class="v68-room-choice" type="button" data-v68-room="dame" aria-label="Dame-Raum öffnen">
+        <img src="raum-dame.webp" alt="Goldene und schwarze Dame-Spielsteine" loading="lazy">
+        <span class="v68-room-choice-text"><b>⛀ Dame-Raum</b><small>Online-Dame · 2 Spieler</small><span>Raum öffnen →</span></span>
+      </button>
+    </div>
+    <button class="v68-friend-link" data-open="openProfiles" type="button">♧ Freunde &amp; Einladungen verwalten</button>
   </div>
+</div>
+<div class="arena-page" data-panel="v68-schach" hidden>
+  <section class="v68-entry">
+    <button class="v68-back" type="button" data-v68-back>← Beide Spielräume</button>
+    <div class="v68-entry-heading"><span class="v68-symbol">♞</span><div><span class="v68-kicker">SPIELEN · BEGEGNEN · WELTWEIT</span><h2>Online-<em>Schach</em></h2></div></div>
+    <div class="v68-entry-art v68-art-schach" role="img" aria-label="Goldener und schwarzer Springer vor einem Globus"></div>
+    <div class="v68-entry-panel"><span class="v68-kicker">2 SPIELER · AUTOMATISCHER START</span><h3>Schach-<em>Raum</em></h3>
+    <p>Wer diesen Raum betritt, spielt automatisch mit. Der erste Spieler wartet, beim zweiten beginnt die Partie.</p>
+    <label class="v68-time-label" for="v68ChessTime">Schachuhr</label>
+    <select id="v68ChessTime"><option value="0" selected>∞ Ohne Zeitlimit</option><option value="30">30 Minuten</option><option value="15">15 Minuten</option><option value="10">10 Minuten</option><option value="5">5 Minuten</option><option value="3">3 Minuten</option></select>
+    <small class="v68-time-note">Beide Spieler wählen dieselbe Zeit, um zusammenzukommen.</small>
+    <button id="v68JoinChess" class="v68-enter" type="button">Raum betreten <span>›</span></button>
+    <span class="v68-room-status">♟ Wartet auf deinen Eintritt</span></div>
+  </section>
+</div>
+<div class="arena-page" data-panel="v68-dame" hidden>
+  <section class="v68-entry">
+    <button class="v68-back" type="button" data-v68-back>← Beide Spielräume</button>
+    <div class="v68-entry-heading"><span class="v68-symbol">⛀</span><div><span class="v68-kicker">SPIELEN · VERBINDEN · SOFORT</span><h2>Online-<em>Dame</em></h2></div></div>
+    <div class="v68-entry-art v68-art-dame" role="img" aria-label="Goldene und schwarze Dame-Spielsteine vor einem Globus"></div>
+    <div class="v68-entry-panel"><span class="v68-kicker">2 SPIELER · AUTOMATISCHER START</span><h3>Dame-<em>Raum</em></h3>
+    <p>Wer diesen Raum betritt, spielt automatisch mit. Der erste Spieler wartet, beim zweiten beginnt die Partie.</p>
+    <button id="v68JoinDame" class="v68-enter" type="button">Raum betreten <span>›</span></button>
+    <span class="v68-room-status">⛀ Wartet auf deinen Eintritt</span></div>
+  </section>
 </div>
 <div class="arena-page" data-panel="statistik" hidden="">
 <h2>🏆 Spielerstatistik &amp; Rangliste</h2>
@@ -3396,4 +3467,36 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
  setMode(true);
 })();
 </script><script src="account-ui.js" defer></script><script>/* premium home greeting only: no account/session data is modified */
-(function(){function updatePremiumName(){var source=document.getElementById('profileNameInput');var target=document.getElementById('premiumUserName');if(source&&target&&source.value.trim()){target.textContent=source.value.trim().slice(0,28)}}document.addEventListener('DOMContentLoaded',function(){updatePremiumName();var el=document.getElementById('profileNameInput');if(el){el.addEventListener('change',updatePremiumName);el.addEventListener('input',updatePremiumName)}setTimeout(updatePremiumName,1000);setTimeout(updatePremiumName,3000)})})();</script></body></html>
+(function(){function updatePremiumName(){var source=document.getElementById('profileNameInput');var target=document.getElementById('premiumUserName');if(source&&target&&source.value.trim()){target.textContent=source.value.trim().slice(0,28)}}document.addEventListener('DOMContentLoaded',function(){updatePremiumName();var el=document.getElementById('profileNameInput');if(el){el.addEventListener('change',updatePremiumName);el.addEventListener('input',updatePremiumName)}setTimeout(updatePremiumName,1000);setTimeout(updatePremiumName,3000)})})();</script><script id="v68-online-rooms-script">
+(function(){'use strict';
+  const $=id=>document.getElementById(id);
+  function page(name){
+    const root=$('courseHome');
+    if(!root)return;
+    root.hidden=false;
+    root.querySelectorAll('[data-panel]').forEach(el=>el.hidden=(el.dataset.panel!==name));
+    root.querySelectorAll('.arena-navitem').forEach(el=>el.classList.toggle('active',el.dataset.page==='freunde'));
+    root.querySelectorAll('.arena-bottomnav button').forEach(el=>{if(el.dataset.page==='freunde')el.style.color='#ecc07a'});
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll('[data-v68-room]').forEach(el=>el.addEventListener('click',()=>page('v68-'+el.dataset.v68Room)));
+  document.querySelectorAll('[data-v68-back]').forEach(el=>el.addEventListener('click',()=>page('freunde')));
+  $('v68JoinChess')?.addEventListener('click',()=>{
+    const time=$('v68ChessTime')?.value||'0';
+    const target=$('liveTimeSelect');if(target)target.value=time;
+    const open=$('openLive'), join=$('livePublicTwo');
+    if(!open||!join){$('v68JoinChess').nextElementSibling.textContent='Schachraum nicht verfügbar.';return;}
+    // Use the existing live-chess matchmaking and game board; do not create a parallel fake game.
+    open.click();
+    join.click();
+  });
+  $('v68JoinDame')?.addEventListener('click',()=>{
+    const nav=$('courseHome')?.querySelector('[data-page="dame"]');
+    nav?.click();
+    const mode=$('dameMode');
+    if(mode && mode.value!=='online'){mode.value='online';mode.dispatchEvent(new Event('change',{bubbles:true}));}
+    const start=$('damePublicPlay');
+    if(start){start.click();}else{const status=$('dameOnlineStatus');if(status)status.textContent='Dame-Raum nicht verfügbar.';}
+  });
+})();
+</script></body></html>
