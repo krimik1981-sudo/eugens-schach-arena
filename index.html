@@ -790,6 +790,38 @@ body{background:var(--arena62-bg)}
 }
 @media(max-width:350px){.premium-brand-name{font-size:18px!important}.premium-logo{font-size:31px!important}.premium-brandbar{grid-template-columns:32px minmax(0,1fr) 32px!important}.premium-feature-label strong{font-size:12px!important}.arena-bottomnav.premium-bottomnav>button>small{font-size:9px!important}}
 </style>
+<style id="v65-clean-navigation">
+/* v6.5 — one clear destination per main tab, no duplicated start-page links */
+#courseHome .arena-sidebar, #courseHome .arena-topbar, #courseHome .premium-quick-grid,
+#courseHome [data-panel="schach"] {display:none!important}
+#courseHome .arena-shell{display:block;width:100%;max-width:1000px;margin-inline:auto;min-height:100dvh}
+#courseHome .arena-content{padding:clamp(12px,3vw,24px) clamp(12px,3vw,28px) 115px!important}
+#courseHome .arena-bottomnav{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;
+  inset:auto 0 0;z-index:3000;gap:0;background:#081522;border-top:1px solid #756344;
+  padding:7px max(6px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));
+  box-shadow:0 -6px 25px #0009}
+#courseHome .arena-bottomnav button{display:flex;min-width:0;flex-direction:column;justify-content:center;
+  align-items:center;gap:4px;padding:8px 0!important;font-size:clamp(22px,3vw,26px)!important;
+  background:transparent;border:0;color:#c2c8d0;line-height:1.1}
+#courseHome .arena-bottomnav small{display:block;white-space:nowrap;font-size:clamp(10px,2.65vw,12px)!important;letter-spacing:0}
+#courseHome .arena-page:not([hidden]){display:block!important}
+#courseHome .arena-page[data-panel="spielen"] .arena-optiongrid,
+#courseHome .arena-page[data-panel="freunde"] .arena-optiongrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#courseHome .arena-option{box-sizing:border-box;min-width:0;min-height:96px;text-align:left;padding:16px!important;
+ border-radius:16px!important;background:#12253a!important;border:1px solid #544831!important;color:#f5e9cc!important}
+#courseHome .arena-option b{display:block;font-size:clamp(16px,3.8vw,19px)!important;line-height:1.3}
+#courseHome .arena-option small{display:block;margin-top:9px;color:#b8c7d7;font-size:clamp(12px,3vw,14px)!important;line-height:1.45}
+#courseHome .arena-v65-learnlinks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+#courseHome .premium-hero{min-height:0!important}
+#courseHome .premium-section-head button[data-page="spielen"]{display:none}
+@media(max-width:620px){
+ #courseHome .arena-page[data-panel="spielen"] .arena-optiongrid,
+ #courseHome .arena-page[data-panel="freunde"] .arena-optiongrid,
+ #courseHome .arena-v65-learnlinks{grid-template-columns:1fr}
+ #courseHome .arena-option{min-height:76px;padding:14px!important}
+ #courseHome .arena-content{padding-bottom:115px!important}
+}
+</style>
 </head><body>
 <header>♟ <span class="brand-eugen">Eugens</span> <span class="brand-schach">Schach</span> <span class="brand-arena">Arena</span> <span aria-hidden="true" class="flag-divider"></span></header>
 <section class="course-home" id="courseHome">
@@ -847,7 +879,14 @@ body{background:var(--arena62-bg)}
 </div>
 <div class="arena-homebottom"><div class="arena-block"><h3>⚡ Schnell spielen</h3><p>Wähle eine Schwierigkeit und spiele gegen Eugen.</p><button class="arena-action" data-open="openEugen">♟ Gegen Eugen spielen →</button></div><div class="arena-block"><h3>🌐 Gegen Freunde</h3><p>Erstelle einen Raum und lade einen Freund ein.</p><button class="arena-action" data-open="openLive">Live-Spiel starten →</button></div><div class="arena-block"><h3>📚 Meine Partien</h3><p>Gespeicherte Partien ansehen und analysieren.</p><button class="arena-action" data-open="openHistoryHome">Partiearchiv öffnen →</button></div></div>
 </div>
-<div class="arena-page" data-panel="spielen" hidden=""><button class="arena-back" data-page="schach" type="button">← Schach-Übersicht</button><h2>⚔️ Schach spielen</h2><p>Wähle deinen Gegner.</p><div class="arena-optiongrid"><button class="arena-option" data-open="openEugen"><b>🤖 Gegen Eugen</b><small>Anfänger · Fortgeschritten · Profi</small></button><button class="arena-option" data-open="openLive"><b>🌐 Live gegen Freunde</b><small>Raum erstellen und Einladung teilen</small></button></div></div>
+<div class="arena-page" data-panel="spielen" hidden>
+  <h2>♟ Spielen</h2>
+  <p>Wähle ein Spiel gegen den Computer oder am selben Gerät. Online findest du im Reiter „Online“.</p>
+  <div class="arena-optiongrid arena-v65-choicegrid">
+    <button class="arena-option" data-open="openEugen" type="button"><b>♟ Schach gegen Computer</b><small>Anfänger · Fortgeschritten · Profi</small></button>
+    <button class="arena-option" data-page="dame" type="button"><b>⛀ Dame spielen</b><small>Gegen Computer oder zu zweit am Gerät</small></button>
+  </div>
+</div>
 <div class="arena-page" data-panel="dame" hidden=""><button class="arena-back" data-page="start" type="button">← Spiele auswählen</button><h2>🔴 Dame</h2><p>Schlagpflicht · Mehrfachschläge · fliegende Damen · Umwandlung während eines Schlagzugs.</p>
 <button class="dame-training-link" data-page="dame-training" type="button">🎯 Dame-Training öffnen – 27 Aufgaben →</button>
 <div class="dame-layout"><div class="dame-board-area"><div aria-label="Damebrett" class="dame-board" id="dameBoard"></div><div class="dame-note">Tippe auf einen Stein und danach auf einen grünen Punkt. Beim Mehrfachschlag weiterziehen.</div></div>
@@ -872,7 +911,11 @@ body{background:var(--arena62-bg)}
 </div><div aria-live="polite" id="dameStatus" role="status">Weiß beginnt.</div><div class="dame-stats"><span id="dameCountWhite">⚪ 12</span><span id="dameCountBlack">⚫ 12</span></div>
 <button id="dameRestart" type="button">↻ Neues Spiel</button><button id="dameUndo" type="button">↶ Zug zurück</button>
 <p class="dame-note">Bei Schlagpflicht sind nur schlagende Züge erlaubt. Du kannst auch mit dem Finger tippen – Ziehen und Ablegen ist nicht erforderlich.</p><p class="dame-note">Computergegner: lokale Spiel-KI mit Alpha-Beta-Suche ohne Internet. „Profi“ ist eine tiefere Suche, aber keine Turnier-Engine.</p></div></div></div>
-<div class="arena-page" data-panel="lernen" hidden=""><button class="arena-back" data-page="schach" type="button">← Schach-Übersicht</button><h2>🎓 Schach lernen</h2><p>Deine bestehenden Lernkurse – alle Aufgaben bleiben erhalten.</p><div class="arena-optiongrid"><button class="arena-option" data-open="openCourse1"><b>♚ Schach machen</b><small>Aufgabe 1 · 12 Übungen</small></button><button class="arena-option" data-open="openCourse2"><b>🛡️ Abwehr des Schachs</b><small>Aufgabe 2 · 12 Übungen</small></button><button class="arena-option" data-open="openCourse3"><b>♟ Figuren schlagen</b><small>Aufgabe 3 · 12 Übungen</small></button><button class="arena-option" data-open="openCourse4"><b>♛ Matt in einem Zug</b><small>Aufgabe 4 · 13 Übungen</small></button><button class="arena-option" data-open="openCourse5"><b>♜ Matt mit Schwerfiguren</b><small>Aufgabe 5 · Drei Unterkurse</small></button></div></div>
+<div class="arena-page" data-panel="lernen" hidden=""><button class="arena-back" data-page="start" type="button">← Start</button><h2>🎓 Lernen & Training</h2><p>Deine bestehenden Lernkurse – alle Aufgaben bleiben erhalten.</p><div class="arena-v65-learnlinks">
+<button class="arena-option" data-page="training" type="button"><b>🎯 Schachtraining</b><small>Figuren, Taktik und Übungsaufgaben</small></button>
+<button class="arena-option" data-page="dame-training" type="button"><b>⛀ Dame-Training</b><small>27 Schlag- und Taktikaufgaben</small></button>
+</div>
+<div class="arena-optiongrid"><button class="arena-option" data-open="openCourse1"><b>♚ Schach machen</b><small>Aufgabe 1 · 12 Übungen</small></button><button class="arena-option" data-open="openCourse2"><b>🛡️ Abwehr des Schachs</b><small>Aufgabe 2 · 12 Übungen</small></button><button class="arena-option" data-open="openCourse3"><b>♟ Figuren schlagen</b><small>Aufgabe 3 · 12 Übungen</small></button><button class="arena-option" data-open="openCourse4"><b>♛ Matt in einem Zug</b><small>Aufgabe 4 · 13 Übungen</small></button><button class="arena-option" data-open="openCourse5"><b>♜ Matt mit Schwerfiguren</b><small>Aufgabe 5 · Drei Unterkurse</small></button></div></div>
 <div class="arena-page" data-panel="dame-training" hidden="">
 <button class="arena-back" data-page="dame" type="button">← Zurück zu Dame</button>
 <h2>🎯 Dame-Training</h2>
@@ -945,7 +988,15 @@ body{background:var(--arena62-bg)}
 </div>
 </div></div>
 <div class="arena-page" data-panel="analyse" hidden=""><button class="arena-back" data-page="schach" type="button">← Schach-Übersicht</button><h2>📊 Partieanalyse</h2><p>Partien speichern, nachspielen und auf Wunsch mit Stockfish untersuchen.</p><div class="arena-optiongrid"><button class="arena-option" data-open="openHistoryHome"><b>📚 Meine Partien</b><small>Partien und Analyse öffnen</small></button></div></div>
-<div class="arena-page" data-panel="freunde" hidden=""><button class="arena-back" data-page="schach" type="button">← Schach-Übersicht</button><h2>👥 Online &amp; Freunde</h2><p>Spiele über das Internet und verwalte deine Freundesliste.</p><div class="arena-optiongrid"><button class="arena-option" data-open="openLive"><b>🌐 Live-Spiel</b><small>Raum erstellen oder beitreten</small></button><button class="arena-option" data-open="openProfiles"><b>👥 Freundesliste</b><small>Freundescodes und Profile</small></button></div></div>
+<div class="arena-page" data-panel="freunde" hidden>
+  <h2>🌐 Online spielen</h2>
+  <p>Suche einen Gegner oder spiele mit Freunden.</p>
+  <div class="arena-optiongrid arena-v65-choicegrid">
+    <button class="arena-option" data-open="openLive" type="button"><b>♟ Online-Schach</b><small>Gegner finden · Spielraum · 3–30 Min. oder ohne Zeitlimit</small></button>
+    <button class="arena-option" data-dame-online="true" type="button"><b>⛀ Online-Dame</b><small>Gegner automatisch finden oder Freund einladen</small></button>
+    <button class="arena-option" data-open="openProfiles" type="button"><b>👥 Freunde & Einladungen</b><small>Freundesliste und Einladungen verwalten</small></button>
+  </div>
+</div>
 <div class="arena-page" data-panel="statistik" hidden="">
 <h2>🏆 Spielerstatistik &amp; Rangliste</h2>
 <p>Deine Ergebnisse bei Schach und Dame – gespeichert auf diesem Gerät.</p>
@@ -2563,7 +2614,7 @@ hLoad();
 </script>
 <script>
 (function(){
- function setPage(page){
+ function setPage(page){ if(page==='schach')page='spielen';
    const home=document.getElementById('courseHome');
    if(!home)return;
    home.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==page);
@@ -2572,7 +2623,12 @@ hLoad();
    window.scrollTo({top:0,behavior:'instant'});
  }
  document.querySelectorAll('#courseHome [data-page]').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page)));
- document.querySelectorAll('#courseHome [data-open]').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('#courseHome [data-dame-online]').forEach(b=>b.addEventListener('click',()=>{
+  setPage('dame');
+  const mode=document.getElementById('dameMode');
+  if(mode){mode.value='online';mode.dispatchEvent(new Event('change',{bubbles:true}));}
+}));
+  document.querySelectorAll('#courseHome [data-open]').forEach(b=>b.addEventListener('click',()=>{
    const original=document.getElementById(b.dataset.open);
    if(original)original.click();else alert('Dieser Bereich ist noch nicht verfügbar.');
  }));
