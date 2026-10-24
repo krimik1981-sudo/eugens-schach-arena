@@ -1195,36 +1195,44 @@ body{background:var(--arena62-bg)}
 </div><div aria-live="polite" id="dameStatus" role="status">Weiß beginnt.</div><div class="dame-stats"><span id="dameCountWhite">⚪ 12</span><span id="dameCountBlack">⚫ 12</span></div>
 <button id="dameRestart" type="button">↻ Neues Spiel</button><button id="dameUndo" type="button">↶ Zug zurück</button>
 <p class="dame-note">Bei Schlagpflicht sind nur schlagende Züge erlaubt. Du kannst auch mit dem Finger tippen – Ziehen und Ablegen ist nicht erforderlich.</p><p class="dame-note">Computergegner: lokale Spiel-KI mit Alpha-Beta-Suche ohne Internet. „Profi“ ist eine tiefere Suche, aber keine Turnier-Engine.</p></div></div></div>
-<div class="arena-page v86-lernen" data-panel="lernen" hidden>
-  <div class="v86-heading"><span>L E R N E N · S C H A C H & D A M E</span><h2>Wähle dein Training</h2><p>Schach und Dame getrennt – starte genau die Übungen, die du möchtest.</p></div>
-  <div class="v86-learning-grid">
-    <section class="v86-learning-card v86-chess">
-      <div class="v86-cardtitle"><span class="v86-symbol" aria-hidden="true">♞</span><div><h3>Schach-Training</h3><p>Figuren, Schachaufgaben und Taktik</p></div></div>
-      <div class="v86-course-items">
-        <button type="button" class="v86-item" data-v86-route="chess-pieces"><span>♟️ Figuren lernen</span><small>30 Übungen</small></button>
-        <button type="button" class="v86-item" data-v86-route="chess-classic"><span>🎯 Schachaufgaben</span><small>15 Aufgaben</small></button>
-        <button type="button" class="v86-item" data-v86-route="chess-tactics"><span>🧠 Taktik-Profi</span><small>12 Rätsel</small></button>
-      </div>
-      <button class="v86-primary" type="button" data-v86-route="chess-pieces">Schach lernen <span aria-hidden="true">→</span></button>
-      <details class="v86-old-courses"><summary>Weitere Schachkurse anzeigen</summary>
-        <div class="v86-course-items">
-          <button class="v86-item" type="button" data-open="openCourse1">Schach machen <small>12 Übungen</small></button>
-          <button class="v86-item" type="button" data-open="openCourse2">Abwehr des Schachs <small>12 Übungen</small></button>
-          <button class="v86-item" type="button" data-open="openCourse3">Figuren schlagen <small>12 Übungen</small></button>
-          <button class="v86-item" type="button" data-open="openCourse4">Matt in einem Zug <small>13 Übungen</small></button>
-          <button class="v86-item" type="button" data-open="openCourse5">Matt mit Schwerfiguren <small>3 Unterkurse</small></button>
-        </div>
-      </details>
-    </section>
-    <section class="v86-learning-card v86-dame">
-      <div class="v86-cardtitle"><span class="v86-symbol" aria-hidden="true">⛀</span><div><h3>Dame-Training</h3><p>Schlagen, kombinieren und vorausdenken</p></div></div>
-      <div class="v86-course-items">
-        <button type="button" class="v86-item" data-v86-route="dame-classic"><span>🎯 Schlagübungen</span><small>15 Aufgaben</small></button>
-        <button type="button" class="v86-item" data-v86-route="dame-tactics"><span>🧠 Taktik-Profi</span><small>12 Rätsel</small></button>
-      </div>
-      <button class="v86-primary" type="button" data-v86-route="dame-classic">Dame lernen <span aria-hidden="true">→</span></button>
-      <p class="v86-footnote">Russische Dame: Schlagpflicht, Mehrfachschläge und fliegende Damen.</p>
-    </section>
+<div class="arena-page v86-lernen v89-learn" data-panel="lernen" hidden>
+  <div class="v89-overview" id="v89Overview">
+    <div class="v89-title"><span class="v89-kicker">EUGENS SCHACH ARENA · LERNEN</span><h2>Lernen</h2><p>Was möchtest du heute lernen?</p></div>
+    <div class="v89-pickgrid">
+      <button type="button" class="v89-pick" data-v89-screen="chess" aria-label="Schach lernen öffnen"><span class="v89-pick-image v89-chess-art">♞</span><span class="v89-pick-text"><strong>Schach lernen</strong><small>Figuren, Schachaufgaben und Taktik</small><em>30 Figuren-Übungen · 15 Aufgaben · 12 Rätsel</em><b>Öffnen →</b></span></button>
+      <button type="button" class="v89-pick" data-v89-screen="dame" aria-label="Dame lernen öffnen"><span class="v89-pick-image v89-dame-art">⛀</span><span class="v89-pick-text"><strong>Dame lernen</strong><small>Regeln, Schlagen und Strategie</small><em>15 Schlagübungen · 12 Taktik-Rätsel</em><b>Öffnen →</b></span></button>
+    </div>
+  </div>
+  <div class="v89-detail" id="v89Chess" hidden>
+    <button class="v89-back" type="button" data-v89-screen="overview">← Alle Lernbereiche</button>
+    <div class="v89-hero v89-hero-chess"><span class="v89-hero-icon" aria-hidden="true">♔</span><div><span class="v89-kicker">SCHACH · TRAINING</span><h2>Schach lernen</h2><p>Verbessere dein Spiel mit interaktiven Übungen.</p></div></div>
+    <div class="v89-lessons">
+      <button type="button" class="v89-lesson" data-v86-route="chess-pieces"><span class="v89-lesson-icon">♔</span><span class="v89-lesson-text"><strong>Figuren lernen</strong><small>Lerne die Züge und Besonderheiten der Figuren.</small><em>30 Übungen</em></span><span class="v89-chevron">›</span></button>
+      <button type="button" class="v89-lesson" data-v86-route="chess-classic"><span class="v89-lesson-icon v89-target">♚</span><span class="v89-lesson-text"><strong>Schachaufgaben</strong><small>Löse verschiedene Schachstellungen.</small><em>15 Aufgaben</em></span><span class="v89-chevron">›</span></button>
+      <button type="button" class="v89-lesson" data-v86-route="chess-tactics"><span class="v89-lesson-icon">♛</span><span class="v89-lesson-text"><strong>Taktik-Profi</strong><small>Schwierige Stellungen für Fortgeschrittene.</small><em>12 Rätsel</em></span><span class="v89-chevron">›</span></button>
+    </div>
+    <details class="v89-more"><summary>Weitere bestehende Schachkurse</summary><div class="v89-more-grid">
+      <button type="button" data-open="openCourse1">Schach machen</button><button type="button" data-open="openCourse2">Schach abwehren</button><button type="button" data-open="openCourse3">Figuren schlagen</button><button type="button" data-open="openCourse4">Matt in einem Zug</button><button type="button" data-open="openCourse5">Matt mit Schwerfiguren</button>
+    </div></details>
+    <div class="v89-tip"><span>💡</span><div><strong>Tipp</strong><p>Regelmäßiges Üben hilft dir, bessere Züge zu finden.</p></div></div>
+  </div>
+  <div class="v89-detail" id="v89Dame" hidden>
+    <button class="v89-back" type="button" data-v89-screen="overview">← Alle Lernbereiche</button>
+    <div class="v89-hero v89-hero-dame"><span class="v89-hero-icon" aria-hidden="true">⛀</span><div><span class="v89-kicker">DAME · TRAINING</span><h2>Dame lernen</h2><p>Verbessere dein Spiel mit Aufgaben und Erklärungen.</p></div></div>
+    <div class="v89-lessons">
+      <button type="button" class="v89-lesson" id="v89RulesOpen"><span class="v89-lesson-icon">▤</span><span class="v89-lesson-text"><strong>Grundregeln</strong><small>Lerne Spielaufbau, Zugregeln und Schlagpflicht.</small><em>Regeln ansehen</em></span><span class="v89-chevron">›</span></button>
+      <button type="button" class="v89-lesson" data-v86-route="dame-classic"><span class="v89-lesson-icon">⛂</span><span class="v89-lesson-text"><strong>Schlagübungen</strong><small>Übe verschiedene Schlagkombinationen.</small><em>15 Aufgaben</em></span><span class="v89-chevron">›</span></button>
+      <button type="button" class="v89-lesson" data-v86-route="dame-tactics"><span class="v89-lesson-icon">⛃</span><span class="v89-lesson-text"><strong>Taktik-Profi</strong><small>Finde die beste Schlagfolge.</small><em>12 Rätsel</em></span><span class="v89-chevron">›</span></button>
+    </div>
+    <div class="v89-rules" id="v89Rules" hidden><div class="v89-rules-head"><h3>📖 Grundregeln – Russische Dame</h3><button type="button" id="v89RulesClose" aria-label="Regeln schließen">✕</button></div>
+      <p>Jeder Spieler beginnt mit 12 Steinen auf den dunklen Feldern. Weiß zieht zuerst.</p>
+      <p><strong>Normale Steine:</strong> ziehen ein Feld diagonal nach vorn. Schlagen dürfen sie vorwärts und rückwärts.</p>
+      <p><strong>Schlagpflicht:</strong> Ist ein Schlag möglich, musst du schlagen. Bei weiteren möglichen Schlägen mit demselben Stein geht der Zug weiter.</p>
+      <p><strong>Damen:</strong> Ein Stein wird auf der letzten gegnerischen Reihe zur Dame. Damen ziehen und schlagen diagonal über mehrere freie Felder.</p>
+      <p><strong>Ziel:</strong> Schlage alle gegnerischen Steine oder verhindere, dass dein Gegner noch ziehen kann.</p>
+      <button type="button" class="v89-rules-practice" data-v86-route="dame-classic">Schlagübungen starten →</button>
+    </div>
+    <div class="v89-tip"><span>💡</span><div><strong>Tipp</strong><p>Übe regelmäßig: Erkenne Schlagpflicht und Kombinationen schneller.</p></div></div>
   </div>
 </div>
 <div class="arena-page" data-panel="dame-training" hidden="">
@@ -4494,5 +4502,44 @@ document.addEventListener('DOMContentLoaded',()=>{
   window.addEventListener('storage',sync);
   setTimeout(sync,300);
 });
+</script>
+
+<style id="v89-learn-modern-style">
+#courseHome .v89-learn{max-width:1080px!important;margin:0 auto!important;padding:clamp(12px,3vw,24px) clamp(12px,3vw,25px) 95px!important;color:#ecf4ff;background:radial-gradient(circle at 95% 0%,#173656 0%,#07192d 48%,#071526 100%);min-height:68vh}
+#courseHome .v89-learn [hidden]{display:none!important}
+.v89-learn button{cursor:pointer;font-family:inherit}
+.v89-title{padding:10px 6px 18px}.v89-kicker{color:#eac274;font-weight:800;font-size:11px;letter-spacing:.17em}.v89-title h2{font:700 clamp(37px,7vw,56px) Georgia,serif;margin:8px 0;color:#fff1dd}.v89-title p{color:#bacce0;margin:0;font-size:clamp(15px,3vw,19px)}
+.v89-pickgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.v89-pick{display:grid;grid-template-rows:190px 1fr;text-align:left;overflow:hidden;border-radius:24px;border:1.5px solid #dda854;background:linear-gradient(145deg,#183451,#081c31 85%);color:#fff1df;padding:0;box-shadow:0 18px 40px #0005}
+.v89-pick-image{display:grid;place-items:center;font:145px/1 Georgia,serif;color:#efc274;text-shadow:0 12px 22px #0009;background:linear-gradient(90deg,#0a1b2e55,#0d253c55),repeating-conic-gradient(#152e47 0% 25%,#0a1c30 0% 50%) 50%/92px 92px}
+.v89-chess-art{background-image:linear-gradient(90deg,#0a1b2e88,#0d253c77),url('raum-schach.webp'),repeating-conic-gradient(#152e47 0% 25%,#0a1c30 0% 50%);background-position:center;background-size:cover}
+.v89-dame-art{background-image:linear-gradient(90deg,#0a1b2e88,#0d253c77),url('raum-dame.webp'),repeating-conic-gradient(#152e47 0% 25%,#0a1c30 0% 50%);background-position:center;background-size:cover}
+.v89-pick-text{padding:22px;display:flex;flex-direction:column;gap:12px}.v89-pick-text strong{font:700 clamp(24px,4vw,34px) Georgia,serif}.v89-pick-text small{color:#c5d5e7;font-size:15px;line-height:1.5}.v89-pick-text em{font-size:12px;color:#e5c994;font-style:normal}.v89-pick-text b{display:block;align-self:stretch;text-align:center;border-radius:14px;background:linear-gradient(#ffe2a2,#d5a155);padding:13px;color:#142538;font-size:17px}
+.v89-back{border:1px solid #65849d!important;border-radius:999px;background:#0e2942!important;color:#f1dbc0!important;padding:10px 17px;margin-bottom:16px;font-weight:800}
+.v89-hero{position:relative;display:flex;align-items:center;gap:20px;min-height:150px;border-radius:24px;padding:19px 21px;margin-bottom:16px;background:linear-gradient(115deg,#193a58,#0d2036);border:1px solid #bd914d;overflow:hidden}
+.v89-hero:after{content:"";position:absolute;right:-35px;top:-65px;width:215px;height:215px;border-radius:50%;background:radial-gradient(circle,#e0b36c20,transparent 65%);pointer-events:none}
+.v89-hero-icon{flex:0 0 115px;text-align:center;font:105px/1 Georgia,serif;color:#f3c771;text-shadow:0 8px 16px #0008}
+.v89-hero h2{font:700 clamp(28px,5vw,44px) Georgia,serif;margin:6px 0 8px;color:#fff1dc}.v89-hero p{margin:0;color:#bbcee3;font-size:16px;line-height:1.5}
+.v89-lessons{display:grid;gap:13px}
+.v89-lesson{min-width:0;display:grid;grid-template-columns:125px minmax(0,1fr) 40px;gap:14px;align-items:center;text-align:left;padding:10px 15px 10px 10px;border:1.5px solid #d3a355;border-radius:22px;background:linear-gradient(108deg,#132d47,#06192d);color:#fff2dc;box-shadow:0 8px 25px #0004}
+.v89-lesson-icon{width:125px;height:125px;display:grid;place-items:center;flex-shrink:0;border-radius:17px;background:linear-gradient(140deg,#563d23,#102438 70%);font:90px/1 Georgia,serif;text-shadow:0 7px 14px #0009;color:#f4c97d}
+.v89-target{position:relative}.v89-target:after{content:"";position:absolute;width:82px;height:82px;border:3px solid #ff765d;border-radius:50%;box-shadow:0 0 18px #ff765d9c}
+.v89-lesson-text{min-width:0;display:flex;flex-direction:column;gap:7px}.v89-lesson-text strong{font:700 clamp(21px,3.8vw,30px) Georgia,serif;line-height:1.2;color:#fff1df}.v89-lesson-text small{font-size:14px;line-height:1.45;color:#c5d5e5}.v89-lesson-text em{align-self:flex-start;color:#182c3d;background:linear-gradient(#ffe3a2,#d6a354);border-radius:11px;padding:6px 12px;font-size:12px;font-style:normal;font-weight:900;margin-top:3px}.v89-chevron{display:grid;place-items:center;background:linear-gradient(#ffe3a2,#d6a354);height:39px;width:39px;border-radius:50%;font-size:35px;color:#142437;padding-bottom:4px}
+.v89-tip{margin-top:22px;display:flex;gap:16px;align-items:center;border:1px solid #345779;border-radius:20px;background:#0c243b;padding:18px}.v89-tip>span{font-size:31px}.v89-tip strong{color:#f3ca81;font-size:18px}.v89-tip p{margin:4px 0;color:#c3d4e6;font-size:14px;line-height:1.5}
+.v89-more{margin-top:15px;padding:14px;border:1px solid #355a78;border-radius:16px;background:#10263e}.v89-more summary{cursor:pointer;color:#f3cf9b;font-weight:800}.v89-more-grid{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.v89-more-grid button{background:#193951;border:1px solid #557994;border-radius:10px;color:#fff;padding:10px;font-weight:700}
+.v89-rules{margin-top:20px;padding:18px;border:1px solid #d4a35e;border-radius:18px;background:#132a41}.v89-rules-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.v89-rules h3{color:#ffdfaa;margin:0;font-size:20px}.v89-rules p{color:#cbd8e8;line-height:1.55}.v89-rules-head button{background:#203e56;border:1px solid #66859a;border-radius:10px;color:#fff;padding:8px 13px}.v89-rules-practice{background:linear-gradient(#ffe3a2,#d6a354);border:none;border-radius:11px;color:#162c40;padding:12px 16px;font-weight:900}
+.v89-pick:hover,.v89-lesson:hover,.v89-pick:focus-visible,.v89-lesson:focus-visible{border-color:#fff0bc;filter:brightness(1.06)}
+@media(max-width:740px){.v89-pickgrid{grid-template-columns:1fr}.v89-pick{grid-template-columns:110px minmax(0,1fr);grid-template-rows:auto}.v89-pick-image{font-size:70px}.v89-pick-text{padding:15px;gap:8px}.v89-pick-text strong{font-size:24px}.v89-hero{min-height:123px;gap:8px;padding:14px}.v89-hero-icon{flex-basis:70px;font-size:68px}.v89-lesson{grid-template-columns:81px minmax(0,1fr) 30px;gap:11px;padding:9px}.v89-lesson-icon{width:81px;height:103px;font-size:60px}.v89-target:after{width:58px;height:58px}.v89-chevron{height:30px;width:30px;font-size:27px}.v89-lesson-text strong{font-size:22px}.v89-lesson-text small{font-size:12px}.v89-lesson-text em{font-size:11px;padding:5px 9px}}
+@media(max-width:365px){.v89-lesson{grid-template-columns:65px minmax(0,1fr) 27px}.v89-lesson-icon{width:65px;height:99px;font-size:50px}.v89-lesson-text strong{font-size:19px}.v89-lesson-text small{font-size:11px}}
+</style>
+<script id="v89-learn-modern-script">
+(function(){'use strict';
+ const root=document.querySelector('.arena-page.v89-learn');if(!root)return;
+ const panels={overview:root.querySelector('#v89Overview'),chess:root.querySelector('#v89Chess'),dame:root.querySelector('#v89Dame')};
+ function setScreen(which){if(!panels[which])return;for(const [k,p] of Object.entries(panels))p.hidden=k!==which;window.scrollTo({top:0,behavior:'instant'});}
+ root.querySelectorAll('[data-v89-screen]').forEach(button=>button.addEventListener('click',()=>setScreen(button.dataset.v89Screen)));
+ root.querySelector('#v89RulesOpen').addEventListener('click',()=>{const p=root.querySelector('#v89Rules');p.hidden=false;p.scrollIntoView({behavior:'smooth',block:'nearest'});});
+ root.querySelector('#v89RulesClose').addEventListener('click',()=>{root.querySelector('#v89Rules').hidden=true;});
+})();
 </script>
 </body></html>
