@@ -1195,11 +1195,38 @@ body{background:var(--arena62-bg)}
 </div><div aria-live="polite" id="dameStatus" role="status">Weiß beginnt.</div><div class="dame-stats"><span id="dameCountWhite">⚪ 12</span><span id="dameCountBlack">⚫ 12</span></div>
 <button id="dameRestart" type="button">↻ Neues Spiel</button><button id="dameUndo" type="button">↶ Zug zurück</button>
 <p class="dame-note">Bei Schlagpflicht sind nur schlagende Züge erlaubt. Du kannst auch mit dem Finger tippen – Ziehen und Ablegen ist nicht erforderlich.</p><p class="dame-note">Computergegner: lokale Spiel-KI mit Alpha-Beta-Suche ohne Internet. „Profi“ ist eine tiefere Suche, aber keine Turnier-Engine.</p></div></div></div>
-<div class="arena-page" data-panel="lernen" hidden=""><button class="arena-back" data-page="start" type="button">← Start</button><h2>🎓 Lernen & Training</h2><p>Deine bestehenden Lernkurse – alle Aufgaben bleiben erhalten.</p><div class="arena-v65-learnlinks">
-<button class="arena-option" data-page="training" type="button"><b>🎯 Schachtraining</b><small>Figuren, Taktik und Übungsaufgaben</small></button>
-<button class="arena-option" data-page="dame-training" type="button"><b>⛀ Dame-Training</b><small>27 Schlag- und Taktikaufgaben</small></button>
+<div class="arena-page v86-lernen" data-panel="lernen" hidden>
+  <div class="v86-heading"><span>L E R N E N · S C H A C H & D A M E</span><h2>Wähle dein Training</h2><p>Schach und Dame getrennt – starte genau die Übungen, die du möchtest.</p></div>
+  <div class="v86-learning-grid">
+    <section class="v86-learning-card v86-chess">
+      <div class="v86-cardtitle"><span class="v86-symbol" aria-hidden="true">♞</span><div><h3>Schach-Training</h3><p>Figuren, Schachaufgaben und Taktik</p></div></div>
+      <div class="v86-course-items">
+        <button type="button" class="v86-item" data-v86-route="chess-pieces"><span>♟️ Figuren lernen</span><small>30 Übungen</small></button>
+        <button type="button" class="v86-item" data-v86-route="chess-classic"><span>🎯 Schachaufgaben</span><small>15 Aufgaben</small></button>
+        <button type="button" class="v86-item" data-v86-route="chess-tactics"><span>🧠 Taktik-Profi</span><small>12 Rätsel</small></button>
+      </div>
+      <button class="v86-primary" type="button" data-v86-route="chess-pieces">Schach lernen <span aria-hidden="true">→</span></button>
+      <details class="v86-old-courses"><summary>Weitere Schachkurse anzeigen</summary>
+        <div class="v86-course-items">
+          <button class="v86-item" type="button" data-open="openCourse1">Schach machen <small>12 Übungen</small></button>
+          <button class="v86-item" type="button" data-open="openCourse2">Abwehr des Schachs <small>12 Übungen</small></button>
+          <button class="v86-item" type="button" data-open="openCourse3">Figuren schlagen <small>12 Übungen</small></button>
+          <button class="v86-item" type="button" data-open="openCourse4">Matt in einem Zug <small>13 Übungen</small></button>
+          <button class="v86-item" type="button" data-open="openCourse5">Matt mit Schwerfiguren <small>3 Unterkurse</small></button>
+        </div>
+      </details>
+    </section>
+    <section class="v86-learning-card v86-dame">
+      <div class="v86-cardtitle"><span class="v86-symbol" aria-hidden="true">⛀</span><div><h3>Dame-Training</h3><p>Schlagen, kombinieren und vorausdenken</p></div></div>
+      <div class="v86-course-items">
+        <button type="button" class="v86-item" data-v86-route="dame-classic"><span>🎯 Schlagübungen</span><small>15 Aufgaben</small></button>
+        <button type="button" class="v86-item" data-v86-route="dame-tactics"><span>🧠 Taktik-Profi</span><small>12 Rätsel</small></button>
+      </div>
+      <button class="v86-primary" type="button" data-v86-route="dame-classic">Dame lernen <span aria-hidden="true">→</span></button>
+      <p class="v86-footnote">Russische Dame: Schlagpflicht, Mehrfachschläge und fliegende Damen.</p>
+    </section>
+  </div>
 </div>
-<div class="arena-optiongrid"><button class="arena-option" data-open="openCourse1"><b>♚ Schach machen</b><small>Aufgabe 1 · 12 Übungen</small></button><button class="arena-option" data-open="openCourse2"><b>🛡️ Abwehr des Schachs</b><small>Aufgabe 2 · 12 Übungen</small></button><button class="arena-option" data-open="openCourse3"><b>♟ Figuren schlagen</b><small>Aufgabe 3 · 12 Übungen</small></button><button class="arena-option" data-open="openCourse4"><b>♛ Matt in einem Zug</b><small>Aufgabe 4 · 13 Übungen</small></button><button class="arena-option" data-open="openCourse5"><b>♜ Matt mit Schwerfiguren</b><small>Aufgabe 5 · Drei Unterkurse</small></button></div></div>
 <div class="arena-page" data-panel="dame-training" hidden="">
 <button class="arena-back" data-page="dame" type="button">← Zurück zu Dame</button>
 <h2>🎯 Dame-Training</h2>
@@ -4199,6 +4226,51 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
  document.getElementById('v85PlayDame')?.addEventListener('click',()=>{
   if(sync('v85DameLevel','v83dameLevel'))document.getElementById('v83PlayDame')?.click();
  });
+})();
+</script>
+<style id="v86-lernen-mobile-style">
+#courseHome .arena-page.v86-lernen{max-width:1040px;margin:0 auto;padding:6px 0 26px}
+#courseHome .v86-heading{text-align:center;margin:8px 0 22px}
+#courseHome .v86-heading>span{display:block;font-size:10px;font-weight:850;letter-spacing:.15em;color:#dcb575}
+#courseHome .v86-heading h2{font:700 clamp(27px,5vw,39px)/1.13 Georgia,serif;margin:7px 0;color:#fff}
+#courseHome .v86-heading p{font-size:clamp(13px,3vw,15px);color:#c7d4e0;margin:0}
+#courseHome .v86-learning-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch}
+#courseHome .v86-learning-card{min-width:0;display:flex;flex-direction:column;gap:15px;background:linear-gradient(145deg,#192f46,#0a1c2f);border:1px solid #a77d4a;border-radius:18px;padding:21px;box-shadow:0 12px 30px #0004}
+#courseHome .v86-cardtitle{display:flex;align-items:center;gap:12px;min-width:0}
+#courseHome .v86-symbol{display:grid;place-items:center;flex:0 0 74px;font:70px/1 Georgia,serif;color:#f5c980;text-shadow:0 8px 12px #0008}
+#courseHome .v86-cardtitle h3{font:700 clamp(22px,3vw,29px)/1.1 Georgia,serif;margin:0 0 5px;color:#f7ebd7}
+#courseHome .v86-cardtitle p{color:#c3d2e0;font-size:13px;margin:0}
+#courseHome .v86-course-items{display:grid;gap:8px}
+#courseHome .v86-item{min-height:53px;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;background:#122b45;border:1px solid #44627d;color:#f2f6fc;border-radius:10px;padding:10px 12px;cursor:pointer;font-size:14px;font-weight:750}
+#courseHome .v86-item small{font-size:11px;font-weight:600;color:#d1c09e;white-space:nowrap}
+#courseHome .v86-item:hover,#courseHome .v86-item:focus-visible{border-color:#ffd58a;background:#1d3b58}
+#courseHome .v86-primary{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:13px;min-height:49px;border-radius:12px;background:linear-gradient(115deg,#ffe0a1,#d7a25c);border:1px solid #ffdb9a;color:#1c2a36;font-size:16px;font-weight:850;cursor:pointer}
+#courseHome .v86-primary span{font-size:23px}
+#courseHome .v86-old-courses summary{cursor:pointer;color:#b9d9f4;font-size:13px;padding:8px 2px}
+#courseHome .v86-old-courses[open] .v86-course-items{margin-top:8px}
+#courseHome .v86-footnote{font-size:12px;color:#a9bbce;margin:1px 0 0}
+@media(max-width:780px){#courseHome .v86-learning-grid{grid-template-columns:1fr;gap:14px}#courseHome .v86-learning-card{padding:17px;gap:13px}#courseHome .v86-symbol{flex-basis:60px;font-size:58px}#courseHome .v86-cardtitle h3{font-size:25px}#courseHome .v86-item{min-height:50px}#courseHome .v86-heading{margin:6px 0 17px}}
+@media(max-width:370px){#courseHome .v86-item{font-size:12px;padding:9px}#courseHome .v86-item small{font-size:10px}#courseHome .v86-cardtitle h3{font-size:23px}}
+</style>
+<script id="v86-lernen-mobile-script">
+(function(){'use strict';
+const $=id=>document.getElementById(id);
+const page=document.querySelector('#courseHome .arena-page[data-panel="lernen"]');
+if(!page)return;
+function nav(panel){
+ const trigger=document.querySelector('#courseHome .arena-navitem[data-page="'+panel+'"]') || document.querySelector('#courseHome .arena-bottomnav [data-page="'+panel+'"]') || document.querySelector('#courseHome .arena-page:not([hidden]) [data-page="'+panel+'"]');
+ if(trigger){trigger.click();return true;}
+ return false;
+}
+function goto(route){
+ const chess=route.startsWith('chess-');
+ if(!nav(chess?'training':'dame-training')){console.warn('Trainingsbereich nicht erreichbar');return;}
+ const which=route.split('-')[1];
+ const target=chess?(which==='pieces'?'ptModePieces':which==='classic'?'ctModeClassic':'ctModeTactics'):(which==='classic'?'dtModeClassic':'dtModeTactics');
+ const button=$(target);
+ if(button)button.click();
+}
+page.querySelectorAll('[data-v86-route]').forEach(button=>button.addEventListener('click',()=>goto(button.dataset.v86Route)));
 })();
 </script>
 </body></html>
