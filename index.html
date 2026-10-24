@@ -1402,45 +1402,74 @@ body{background:var(--arena62-bg)}
 <button class="course-tile" id="openLive" type="button"><span class="course-icon">🌐</span><strong>Live gegen Freunde</strong><span class="course-desc">Kostenlos online gegen einen Freund. Spielraum erstellen und Einladung teilen.</span><span class="course-action">Live spielen →</span></button>
 </div></div></section>
 <section hidden="" id="profilesView">
-<div class="profile-shell">
-<button class="course-return" id="profileBackHome" type="button">← Alle Kurse</button>
-<h1>👥 Spielerprofile &amp; Freunde</h1>
-<p class="intro">Erstelle dein Spielerprofil und füge Freunde hinzu. Gemeinsam könnt ihr euch zu Live-Partien verabreden.</p>
-<div class="profile-grid">
-<div class="profile-panel">
-<h2>♔ Mein Spielerprofil</h2>
-<div class="profile-identity">
-<div aria-label="Profilbild" class="profile-avatar" id="profileAvatarView">♟️</div>
-<div><strong id="profileDisplayName">Schachspieler</strong><div class="profile-id" id="profileDisplayCode">Code wird erstellt …</div></div>
-</div>
-<label for="profileNameInput">Dein Spielername</label>
-<input autocomplete="nickname" id="profileNameInput" maxlength="28" placeholder="z. B. Eugen" type="text"/>
-<label for="profileAvatarSelect">Profilbild</label>
-<select id="profileAvatarSelect"><option value="♟️">♟️ Schachfigur</option><option value="👑">👑 Krone</option><option value="♞">♞ Springer</option><option value="🏆">🏆 Pokal</option><option value="😎">😎 Gesicht</option><option value="🦊">🦊 Fuchs</option><option value="🐻">🐻 Bär</option><option value="🦁">🦁 Löwe</option></select>
-<label for="profilePhotoFile">Oder eigenes Foto auswählen (bleibt auf deinem Gerät)</label>
-<input accept="image/*" id="profilePhotoFile" type="file"/>
-<div class="profile-actions">
-<button id="profileSaveButton" type="button">Profil speichern</button>
-<button class="secondary" id="profileCopyCode" type="button">Freundescode kopieren</button>
-<button class="secondary" id="profileCopyLink" type="button">Mein Profil teilen</button>
-</div>
-<div class="profile-smallstats" id="profileStats"></div>
-<p aria-live="polite" class="profile-notice" id="profileStatus" role="status"></p>
-<p class="profile-warning">Dein Profilbild, die lokalen Einstellungen und diese Freundesliste bleiben in diesem Browser gespeichert. Über „Mein Schach-Konto“ oben kannst du dich mit Spielernamen und Passwort anmelden und denselben Online-Account auf anderen Geräten verwenden.</p>
-</div>
-<div class="profile-panel">
-<h2>🤝 Meine Freundesliste</h2>
-<p class="profile-hint">Du kannst deine Freundin direkt mit ihrem Namen speichern. Ihr Freundescode oder Profil-Link ist optional und kann später ergänzt werden.</p>
-<label for="friendCodeInput">Freundescode oder Profil-Link (optional)</label>
-<input autocapitalize="characters" id="friendCodeInput" maxlength="600" placeholder="Optional: EF-ABC123 oder Profil-Link" type="text"/>
-<label for="friendNameInput">Name deiner Freundin / deines Freundes</label>
-<input id="friendNameInput" maxlength="28" placeholder="z. B. Anna" type="text"/>
-<div class="profile-actions"><button id="friendAddButton" type="button">+ Freund hinzufügen</button><button class="secondary" id="profileBackupButton" type="button">Freundesliste sichern</button><label class="arena-import-label" for="friendImportFile">📥 Freunde aus Sicherung importieren <input accept=".json,application/json" id="friendImportFile" type="file"/></label></div>
-<p aria-live="polite" class="profile-notice" id="friendStatus" role="status"></p>
-<div class="arena-friends-toolbar"><label for="friendSearch">Freunde durchsuchen</label><input autocomplete="off" id="friendSearch" placeholder="Name oder Freundescode suchen" type="search"/><div class="arena-friends-tools"><label for="friendSort">Sortieren</label><select id="friendSort"><option value="favorite">Favoriten zuerst</option><option value="name">Name A–Z</option><option value="recent">Zuletzt hinzugefügt</option></select><span aria-live="polite" id="friendCount"></span></div></div><div aria-label="Gespeicherte Freunde" id="friendList"></div>
-<p class="profile-warning">Mit „Schach einladen“ oder „Dame einladen“ öffnest du den passenden Online-Bereich. Erstelle dort einen Raum und verschicke den Einladungslink selbst. Es gibt noch keine automatische Zustellung, zentrale Freundesverwaltung oder Live-Online-Anzeige.</p>
-</div>
-</div>
+<div class="v88-shell profile-shell">
+  <button class="course-return v88-back" id="profileBackHome" type="button">← Zurück</button>
+  <div class="v88-hero">
+    <div class="v88-hero-copy">
+      <span class="v88-eyebrow">EUGENS SCHACH ARENA · PROFIL</span>
+      <h1>Mein Konto &amp; meine Freunde</h1>
+      <p>Alles an einem Ort: Serverkonto, Freundesliste, Freundescodes, Einladungen und dein persönliches Profil – im gleichen Stil wie das neue Hauptmenü.</p>
+    </div>
+    <div class="v88-hero-card" aria-label="Kurzinfo zum Profil">
+      <div class="v88-hero-avatar" id="v88SummaryAvatar">♞</div>
+      <div class="v88-hero-info">
+        <strong id="v88SummaryName">Spieler</strong>
+        <small id="v88SummaryState">Profil wird geladen …</small>
+        <span id="v88SummaryCode">Freundescode: –</span>
+      </div>
+      <div class="v88-mini-stats">
+        <div><b id="v88SummaryFriends">0</b><span>Freunde</span></div>
+        <div><b id="v88SummaryGames">0</b><span>Partien</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="v88-quicklinks">
+    <button type="button" data-page="profil"><span>♙</span><strong>Profil-Start</strong><small>Zur schönen Profil-Übersicht</small></button>
+    <button type="button" data-page="statistik"><span>🏆</span><strong>Statistik</strong><small>Deine Ergebnisse ansehen</small></button>
+    <button type="button" data-open="openHistoryHome"><span>📚</span><strong>Partien</strong><small>Gespeicherte Spiele öffnen</small></button>
+    <button type="button" data-page="freunde"><span>🌐</span><strong>Online</strong><small>Freunde zum Spiel einladen</small></button>
+  </div>
+
+  <div class="profile-grid v88-profile-grid">
+    <div class="profile-panel v88-card">
+      <h2>♔ Mein Spielerprofil</h2>
+      <p class="v88-card-lead">Name, Avatar und persönlicher Code für dieses Gerät.</p>
+      <div class="profile-identity v88-identity">
+        <div aria-label="Profilbild" class="profile-avatar" id="profileAvatarView">♟️</div>
+        <div><strong id="profileDisplayName">Schachspieler</strong><div class="profile-id" id="profileDisplayCode">Code wird erstellt …</div></div>
+      </div>
+      <label for="profileNameInput">Dein Spielername</label>
+      <input autocomplete="nickname" id="profileNameInput" maxlength="28" placeholder="z. B. Eugen" type="text"/>
+      <label for="profileAvatarSelect">Profilbild</label>
+      <select id="profileAvatarSelect"><option value="♟️">♟️ Schachfigur</option><option value="👑">👑 Krone</option><option value="♞">♞ Springer</option><option value="🏆">🏆 Pokal</option><option value="😎">😎 Gesicht</option><option value="🦊">🦊 Fuchs</option><option value="🐻">🐻 Bär</option><option value="🦁">🦁 Löwe</option></select>
+      <label for="profilePhotoFile">Oder eigenes Foto auswählen (bleibt auf deinem Gerät)</label>
+      <input accept="image/*" id="profilePhotoFile" type="file"/>
+      <div class="profile-actions v88-actions">
+        <button id="profileSaveButton" type="button">Profil speichern</button>
+        <button class="secondary" id="profileCopyCode" type="button">Freundescode kopieren</button>
+        <button class="secondary" id="profileCopyLink" type="button">Mein Profil teilen</button>
+      </div>
+      <div class="profile-smallstats v88-smallstats" id="profileStats"></div>
+      <p aria-live="polite" class="profile-notice" id="profileStatus" role="status"></p>
+      <p class="profile-warning">Dein Profilbild und lokale Einstellungen bleiben in diesem Browser gespeichert. Mit dem Serverkonto kannst du dich später auf anderen Geräten mit demselben Namen anmelden.</p>
+    </div>
+
+    <div class="profile-panel v88-card v88-card-wide">
+      <h2>☁️ Konto, Freunde &amp; Einladungen</h2>
+      <p class="v88-card-lead">Hier verwaltest du dein Serverkonto, bestätigte Freunde und Einladungen zu Schach oder Dame.</p>
+      <div class="v88-card-divider"></div>
+      <div class="v88-server-mount" id="v88ServerMount"></div>
+      <label for="friendCodeInput">Freundescode oder Profil-Link (optional)</label>
+      <input autocapitalize="characters" id="friendCodeInput" maxlength="600" placeholder="Optional: EF-ABC123 oder Profil-Link" type="text"/>
+      <label for="friendNameInput">Name deiner Freundin / deines Freundes</label>
+      <input id="friendNameInput" maxlength="28" placeholder="z. B. Anna" type="text"/>
+      <div class="profile-actions v88-actions"><button id="friendAddButton" type="button">+ Freund hinzufügen</button><button class="secondary" id="profileBackupButton" type="button">Freundesliste sichern</button><label class="arena-import-label" for="friendImportFile">📥 Freunde importieren <input accept=".json,application/json" id="friendImportFile" type="file"/></label></div>
+      <p aria-live="polite" class="profile-notice" id="friendStatus" role="status"></p>
+      <div class="arena-friends-toolbar v88-friends-toolbar"><label for="friendSearch">Freunde durchsuchen</label><input autocomplete="off" id="friendSearch" placeholder="Name oder Freundescode suchen" type="search"/><div class="arena-friends-tools"><label for="friendSort">Sortieren</label><select id="friendSort"><option value="favorite">Favoriten zuerst</option><option value="name">Name A–Z</option><option value="recent">Zuletzt hinzugefügt</option></select><span aria-live="polite" id="friendCount"></span></div></div><div aria-label="Gespeicherte Freunde" id="friendList"></div>
+      <p class="profile-warning">Tipp: Über „Schach“ oder „Dame“ in der Freundesliste kannst du direkt eine Spiel-Einladung vorbereiten. Wenn du lieber per E-Mail einlädst, nutze den Bereich „Profil“ auf der Startseite dieses Menüs.</p>
+    </div>
+  </div>
 </div>
 </section>
 <section class="heavy-menu" hidden="" id="liveMenu">
@@ -4367,5 +4396,103 @@ refresh();
 window.addEventListener('pageshow',refresh);
 document.querySelectorAll('#courseHome [data-page="profil"]').forEach(b=>b.addEventListener('click',()=>setTimeout(refresh,0)));
 })();
+</script>
+
+<style id="v88-menu-unified-style">
+#profilesView{background:radial-gradient(circle at top right,#173554 0,#08192d 42%,#061224 100%);min-height:100vh}
+#profilesView .v88-shell{max-width:1180px;margin:0 auto;padding:22px 16px 80px;color:#eef5ff}
+#profilesView .v88-back{margin:0 0 16px;background:transparent;border:1px solid #6c88a2;color:#d5e3f3;border-radius:999px;padding:10px 16px}
+#profilesView .v88-hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);gap:18px;align-items:stretch;margin-bottom:18px}
+#profilesView .v88-eyebrow{display:inline-block;margin-bottom:8px;color:#f0c56d;letter-spacing:.18em;font-size:12px;font-weight:800}
+#profilesView .v88-hero-copy,#profilesView .v88-hero-card,#profilesView .v88-card{background:linear-gradient(145deg,#142d46,#0b1e32 78%);border:1px solid rgba(213,167,91,.68);border-radius:22px;box-shadow:0 18px 54px rgba(0,0,0,.28)}
+#profilesView .v88-hero-copy{padding:24px}
+#profilesView .v88-hero-copy h1{margin:0 0 10px;font-family:Georgia,serif;font-size:clamp(30px,5vw,48px);line-height:1.03;color:#fff2dd}
+#profilesView .v88-hero-copy p{margin:0;color:#c6d5e7;line-height:1.65;font-size:16px;max-width:58ch}
+#profilesView .v88-hero-card{padding:20px;display:grid;grid-template-columns:86px 1fr;gap:16px;align-items:center}
+#profilesView .v88-hero-avatar{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;font-size:46px;background:radial-gradient(circle,#244d6a,#08192e);border:3px solid #edb85a;color:#edb85a;overflow:hidden}
+#profilesView .v88-hero-avatar img{width:100%;height:100%;object-fit:cover}
+#profilesView .v88-hero-info strong{display:block;font-size:24px;color:#fff5e7;overflow-wrap:anywhere}
+#profilesView .v88-hero-info small,#profilesView .v88-hero-info span{display:block;color:#c0d4e8;margin-top:5px;overflow-wrap:anywhere}
+#profilesView .v88-mini-stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#profilesView .v88-mini-stats div{padding:12px;border-radius:14px;background:#10273f;border:1px solid rgba(96,132,165,.6);text-align:center}
+#profilesView .v88-mini-stats b{display:block;color:#fff4de;font-size:22px}
+#profilesView .v88-mini-stats span{font-size:12px;color:#c9d8e8}
+#profilesView .v88-quicklinks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 18px}
+#profilesView .v88-quicklinks button{padding:16px 15px;border-radius:18px;border:1px solid rgba(118,145,171,.7);background:linear-gradient(135deg,#12304b,#0c2138);color:#edf4fd;text-align:left;display:flex;flex-direction:column;gap:6px;cursor:pointer}
+#profilesView .v88-quicklinks button span{font-size:22px;color:#f0c56d}
+#profilesView .v88-quicklinks button strong{font-size:18px}
+#profilesView .v88-quicklinks button small{color:#bfcee0;line-height:1.45}
+#profilesView .v88-profile-grid{grid-template-columns:minmax(320px,.95fr) minmax(0,1.25fr)!important;gap:18px;max-width:none;margin:0}
+#profilesView .profile-panel.v88-card{padding:22px;background:linear-gradient(145deg,#142d46,#0b1e32 78%);border:1px solid rgba(213,167,91,.52);border-radius:22px;color:#eef5ff;box-shadow:0 18px 54px rgba(0,0,0,.28)}
+#profilesView .v88-card h2{margin:0;color:#fff0d2;font-size:28px;font-family:Georgia,serif}
+#profilesView .v88-card .v88-card-lead{margin:6px 0 16px;color:#bed1e5;line-height:1.55}
+#profilesView .v88-card label{display:block;margin:12px 0 6px;font-weight:800;color:#eaf2fb}
+#profilesView .v88-card input,#profilesView .v88-card select,#profilesView .v88-card textarea{width:100%;min-width:0;padding:13px 14px;border-radius:13px;color:#fff;background:#0f2338;border:1px solid #6e8aa4;font:inherit;box-sizing:border-box}
+#profilesView .v88-card input::placeholder{color:#97adc4}
+#profilesView .v88-actions{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}
+#profilesView .v88-actions button,#profilesView .v88-actions .arena-import-label,#profilesView #arena71-panel button,#profilesView #arena77-add button,#profilesView #arena77-friends button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:12px;padding:11px 14px;font-weight:800;border:1px solid #efc56f;background:linear-gradient(#ffe29c,#dca448);color:#0b1c2e;cursor:pointer}
+#profilesView .v88-actions button.secondary{background:#142a43;color:#f5e8cd;border-color:#cba55f}
+#profilesView .arena-import-label{gap:8px;cursor:pointer}
+#profilesView .arena-import-label input{display:none}
+#profilesView .profile-notice{min-height:1.2em;color:#ffd78c}
+#profilesView .profile-warning{font-size:13px;line-height:1.6;color:#aebfd4;background:#10253a;border:1px solid rgba(92,124,156,.55);padding:12px 14px;border-radius:14px}
+#profilesView .v88-smallstats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+#profilesView .v88-smallstats span{display:inline-flex;padding:8px 12px;border-radius:999px;background:#12304b;border:1px solid rgba(92,124,156,.55);color:#d7e5f4;font-size:13px}
+#profilesView .v88-identity{padding:14px 0 4px}
+#profilesView .v88-card-divider{height:1px;background:linear-gradient(90deg,rgba(240,197,109,.65),rgba(240,197,109,0));margin:10px 0 14px}
+#profilesView #arena71-panel{margin:0 0 16px;padding:18px;border-radius:18px;background:#10273f;border:1px solid rgba(108,136,162,.75);color:#eef5ff;box-shadow:none}
+#profilesView #arena71-panel h3,#profilesView #arena71-panel h4{margin:0 0 12px;color:#fff0d2}
+#profilesView #arena71-auth{display:grid;gap:10px}
+#profilesView #arena71-auth label{display:grid;gap:6px}
+#profilesView #arena71-auth input,#profilesView #arena77-add input{background:#0d2033;border:1px solid #6483a0;border-radius:12px;color:#fff;padding:12px}
+#profilesView .arena71-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+#profilesView #arena71-logout{margin-top:8px}
+#profilesView .arena71-status{color:#ffd78c}
+#profilesView #arena77-friends,#profilesView #friendList{display:grid;gap:10px}
+#profilesView .arena77-friend,.friend-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:14px;border-radius:14px;background:#0d2136;border:1px solid rgba(98,129,158,.7)}
+#profilesView .arena77-friend strong,#profilesView .friend-main strong{font-size:17px;color:#fff2dd}
+#profilesView .arena77-friend small,#profilesView .friend-meta{display:block;color:#bdd0e4;word-break:break-all;margin-top:3px}
+#profilesView #arena77-add{display:grid;gap:8px;margin:16px 0 14px;padding:14px;border:1px solid rgba(98,129,158,.65);border-radius:16px;background:#0d2136}
+#profilesView .v88-friends-toolbar{display:grid;gap:10px;padding:14px;border-radius:16px;background:#0d2136;border:1px solid rgba(98,129,158,.65);margin:15px 0}
+#profilesView .arena-friends-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+#profilesView .friend-actions{display:flex;flex-wrap:wrap;gap:8px}
+#profilesView .friend-row button{cursor:pointer;border-radius:10px;padding:10px 12px;border:1px solid #caa45b;background:#163451;color:#f3e8cf}
+#profilesView #friendCount{color:#ffd78c;font-weight:700}
+@media(max-width:980px){#profilesView .v88-hero{grid-template-columns:1fr}#profilesView .v88-quicklinks{grid-template-columns:repeat(2,minmax(0,1fr))}#profilesView .v88-profile-grid{grid-template-columns:1fr!important}}
+@media(max-width:640px){#profilesView .v88-shell{padding:14px 12px 88px}#profilesView .v88-hero-copy{padding:18px}#profilesView .v88-hero-copy h1{font-size:34px}#profilesView .v88-hero-card{grid-template-columns:64px 1fr;padding:16px}#profilesView .v88-hero-avatar{width:62px;height:62px;font-size:34px}#profilesView .v88-quicklinks{grid-template-columns:1fr}#profilesView .v88-actions button,#profilesView .v88-actions .arena-import-label,#profilesView #arena71-panel button,#profilesView #arena77-add button,#profilesView #arena77-friends button{width:100%}.friend-actions{width:100%}.friend-actions button{flex:1 1 100%}}
+</style>
+<script id="v88-menu-unified-script">
+document.addEventListener('DOMContentLoaded',()=>{
+  function sync(){
+    try{
+      const profile = JSON.parse(localStorage.getItem('eugens_arena_profile_v2')||'{}')||{};
+      const friends = JSON.parse(localStorage.getItem('eugens_arena_friends_v3')||'[]')||[];
+      const saved = JSON.parse(localStorage.getItem('eugens_arena_saved_games_v1')||'[]')||[];
+      const avatarWrap = document.getElementById('v88SummaryAvatar');
+      const nameEl = document.getElementById('v88SummaryName');
+      const stateEl = document.getElementById('v88SummaryState');
+      const codeEl = document.getElementById('v88SummaryCode');
+      const fEl = document.getElementById('v88SummaryFriends');
+      const gEl = document.getElementById('v88SummaryGames');
+      if(nameEl)nameEl.textContent = profile.name || 'Schachspieler';
+      if(stateEl)stateEl.textContent = friends.length ? 'Profil aktiv · Freunde bereit' : 'Profil aktiv · noch keine Freunde';
+      if(codeEl)codeEl.textContent = 'Freundescode: ' + (profile.code || '–');
+      if(fEl)fEl.textContent = String(friends.length||0);
+      if(gEl)gEl.textContent = String(saved.length||0);
+      if(avatarWrap){
+        avatarWrap.innerHTML='';
+        if(profile.photo && /^data:image\//.test(profile.photo)){
+          const img=document.createElement('img');img.src=profile.photo;img.alt='Profilbild';avatarWrap.appendChild(img);
+        }else{avatarWrap.textContent = profile.avatar || '♞';}
+      }
+      const mount = document.getElementById('v88ServerMount');
+      const injected = document.getElementById('arena71-panel');
+      if(mount && injected && injected.parentNode !== mount){mount.prepend(injected)}
+    }catch(e){}
+  }
+  sync();
+  window.addEventListener('storage',sync);
+  setTimeout(sync,300);
+});
 </script>
 </body></html>
