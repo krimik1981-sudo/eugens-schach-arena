@@ -3933,4 +3933,140 @@ async function check(){
 window.addEventListener('pageshow',check);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});
 setInterval(check,5000);setTimeout(check,1200);
 })();
-</script></body></html>
+</script>
+<style id="v81-board-chat-layout-style">
+/* v81: Beim Online-Spiel nur Brett + Chat. Chat unter dem Brett, Emojis direkt auf dem Brett. */
+body.v81-focus-live-chess #liveGame .rook-game-layout{grid-template-columns:1fr;gap:12px}
+body.v81-focus-live-chess #liveGame .rook-panel{display:none!important}
+body.v81-focus-live-chess #liveGame h1,
+body.v81-focus-live-chess #liveGame .intro{display:none!important}
+body.v81-focus-live-chess #liveGame #liveBoardFrame{max-width:min(96vw,760px);margin:0 auto;position:relative}
+body.v81-focus-live-chess #liveGame #arenaChat{display:block!important;max-width:min(96vw,760px);margin:12px auto 0}
+body.v81-focus-live-chess #liveGame #arenaChatToggle{display:none!important}
+body.v81-focus-live-chess #liveGame #arenaChatBody{display:flex!important;flex-direction:column;gap:10px;padding:10px}
+body.v81-focus-live-chess #liveGame #arenaChatBody[hidden]{display:flex!important}
+body.v81-focus-live-chess #liveGame .arena-chat-messages{height:170px}
+body.v81-focus-live-chess #arenaEmojiToast{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;z-index:40!important;max-width:min(78vw,320px)!important}
+
+body.v81-focus-live-dame .arena-page[data-panel="dame"] .dame-layout{grid-template-columns:1fr;gap:12px}
+body.v81-focus-live-dame .arena-page[data-panel="dame"] .dame-panel{display:none!important}
+body.v81-focus-live-dame .arena-page[data-panel="dame"] .dame-board-area{max-width:min(96vw,760px);margin:0 auto;position:relative}
+body.v81-focus-live-dame .arena-page[data-panel="dame"] .dame-chat{display:block!important;max-width:min(96vw,760px);margin:12px auto 0;padding:0;border:1px solid #48627d;background:#13283d;border-radius:13px;overflow:hidden}
+body.v81-focus-live-dame .arena-page[data-panel="dame"] #dameChatToggle{display:none!important}
+body.v81-focus-live-dame .arena-page[data-panel="dame"] #dameChatBody{display:flex!important;flex-direction:column;gap:10px;padding:10px}
+body.v81-focus-live-dame .arena-page[data-panel="dame"] #dameChatBody[hidden]{display:flex!important}
+body.v81-focus-live-dame .arena-page[data-panel="dame"] #dameChatMessages{min-height:170px;max-height:170px;overflow-y:auto}
+
+#dameEmojiToast[hidden]{display:none!important}
+#dameEmojiToast{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:40;background:#102739ed;color:white;border:2px solid #ecc16c;box-shadow:0 12px 34px #0008;border-radius:22px;padding:14px 25px;text-align:center;max-width:min(78vw,320px);pointer-events:none;font-size:21px}
+#dameEmojiToast .emoji{display:block;font-size:56px;line-height:1.3}
+
+@media(max-width:700px){
+ body.v81-focus-live-chess #liveGame #arenaChat,
+ body.v81-focus-live-dame .arena-page[data-panel="dame"] .dame-chat{margin-top:10px}
+ body.v81-focus-live-chess #liveGame .arena-chat-messages,
+ body.v81-focus-live-dame .arena-page[data-panel="dame"] #dameChatMessages{height:200px;max-height:200px}
+}
+</style>
+
+<script id="v81-board-chat-layout-script">
+(function(){
+  const $=id=>document.getElementById(id);
+  const liveGame=$('liveGame');
+  const liveBoardFrame=$('liveBoardFrame');
+  const arenaChat=$('arenaChat');
+  const arenaChatBody=$('arenaChatBody');
+  const arenaEmojiToast=$('arenaEmojiToast');
+  const damePage=document.querySelector('.arena-page[data-panel="dame"]');
+  const dameBoardArea=document.querySelector('.arena-page[data-panel="dame"] .dame-board-area');
+  const dameChat=document.querySelector('.arena-page[data-panel="dame"] .dame-chat');
+  const dameChatBody=$('dameChatBody');
+  const dameMode=$('dameMode');
+  const dameOnlineBox=$('dameOnlineBox');
+  if(!liveGame||!liveBoardFrame||!arenaChat||!damePage||!dameBoardArea||!dameChat||!dameMode||!dameOnlineBox)return;
+
+  function ensureLayout(){
+    try{
+      if(arenaChat.parentElement!==liveGame){
+        liveGame.appendChild(arenaChat);
+      }
+      if(arenaEmojiToast&&arenaEmojiToast.parentElement!==liveBoardFrame){
+        liveBoardFrame.appendChild(arenaEmojiToast);
+      }
+      if(dameChat.parentElement!==damePage){
+        damePage.appendChild(dameChat);
+      }
+      let dameEmojiToast=$('dameEmojiToast');
+      if(!dameEmojiToast){
+        dameEmojiToast=document.createElement('div');
+        dameEmojiToast.id='dameEmojiToast';
+        dameEmojiToast.hidden=true;
+        dameEmojiToast.setAttribute('aria-live','polite');
+        dameBoardArea.appendChild(dameEmojiToast);
+      } else if(dameEmojiToast.parentElement!==dameBoardArea){
+        dameBoardArea.appendChild(dameEmojiToast);
+      }
+    }catch(e){console.warn('v81 layout setup failed',e)}
+  }
+
+  let dameToastTimer=0;
+  const dameEmojis=new Set(['😂','👏','👍','🎉','😎','❤️','😮','🤝']);
+  function showDameEmoji(symbol,from){
+    const toast=$('dameEmojiToast');
+    if(!toast)return;
+    toast.innerHTML='';
+    const face=document.createElement('span');face.className='emoji';face.textContent=symbol;
+    const label=document.createElement('span');label.textContent=from;
+    toast.append(face,label);toast.hidden=false;
+    clearTimeout(dameToastTimer);dameToastTimer=setTimeout(()=>toast.hidden=true,2600);
+  }
+
+  function updateClasses(){
+    ensureLayout();
+    const chessActive=!liveGame.hidden;
+    document.body.classList.toggle('v81-focus-live-chess', chessActive);
+    if(chessActive && arenaChatBody){
+      arenaChatBody.hidden=false;
+      $('arenaChatUnread') && ($('arenaChatUnread').hidden=true);
+      $('arenaChatToggle') && $('arenaChatToggle').setAttribute('aria-expanded','true');
+    }
+    const dameActive=!damePage.hidden && dameMode.value==='online' && !dameOnlineBox.hidden;
+    document.body.classList.toggle('v81-focus-live-dame', dameActive);
+    if(dameActive && dameChatBody){
+      dameChatBody.hidden=false;
+      $('dameChatUnread') && ($('dameChatUnread').hidden=true);
+      $('dameChatToggle') && $('dameChatToggle').setAttribute('aria-expanded','true');
+    }
+  }
+
+  const watchDameChat=()=>{
+    const panel=$('dameChatMessages');
+    if(!panel||panel.dataset.v81Observed)return;
+    panel.dataset.v81Observed='1';
+    new MutationObserver(muts=>{
+      for(const mut of muts){
+        for(const node of mut.addedNodes){
+          if(!(node instanceof HTMLElement))continue;
+          const txt=(node.textContent||'').trim();
+          const m=txt.match(/^(Du|Gegner):\s*(.+)$/);
+          if(!m)continue;
+          const who=m[1],msg=m[2].trim();
+          if(dameEmojis.has(msg))showDameEmoji(msg,who);
+        }
+      }
+    }).observe(panel,{childList:true});
+  };
+
+  updateClasses();
+  watchDameChat();
+  new MutationObserver(()=>{updateClasses();watchDameChat();}).observe(document.body,{subtree:true,attributes:true,attributeFilter:['hidden','class']});
+  dameMode.addEventListener('change',()=>setTimeout(updateClasses,0));
+  document.addEventListener('click',e=>{
+    const t=e.target;
+    if(!(t instanceof Element))return;
+    if(t.closest('#damePublicPlay,#dameCreate,#dameJoin,#liveCreate,#liveJoin,#livePublicTwo,[data-page],[data-open],#liveBackMenu'))setTimeout(updateClasses,50);
+  },true);
+})();
+</script>
+
+</body></html>
