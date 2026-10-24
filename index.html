@@ -980,7 +980,25 @@ body{background:var(--arena62-bg)}
 .dame-panel:has(#dameMode option:checked:not([value="ai"])) label[for="dameLevel"],
 .dame-panel:has(#dameMode option:checked:not([value="ai"])) #dameLevel,
 .dame-panel:has(#dameMode option:checked:not([value="ai"])) #dameComputerColorBox {display:none!important}
-</style></head><script>
+</style>
+<style id="v79FloatingChatStyles">
+/* v79: Mobile Chat als Overlay statt unterhalb der Spielbretter. */
+#v79ChatFab{display:none;position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:10040;min-width:64px;height:58px;align-items:center;justify-content:center;gap:6px;border:2px solid #91cbff;border-radius:30px;background:#146cc1;color:white;box-shadow:0 7px 25px #0009;font:800 16px system-ui,sans-serif;cursor:pointer;padding:0 14px}
+#v79ChatBadge{display:none;border-radius:12px;background:#df3434;color:white;min-width:19px;height:19px;font-size:12px;line-height:19px;text-align:center;padding:0 4px}
+#v79ChatBadge:not([hidden]){display:inline-block}
+@media(max-width:760px){
+ body:has(#liveGame:not([hidden])) #v79ChatFab,body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameOnlineBox:not([hidden])) #v79ChatFab{display:flex}
+ body.v79-chat-chess #arenaChat,body.v79-chat-dame .arena-page[data-panel="dame"] .dame-chat{position:fixed!important;left:8px!important;right:8px!important;top:max(8px,env(safe-area-inset-top))!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;z-index:10041!important;background:#122a43!important;border:2px solid #6db7ef!important;border-radius:16px!important;padding:12px!important;box-shadow:0 0 0 100vmax #030b18bc,0 15px 45px #000b!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+ body.v79-chat-chess #arenaChatBody,body.v79-chat-dame #dameChatBody{display:flex!important;flex-direction:column!important;flex:1;min-height:0;overflow:hidden}
+ body.v79-chat-chess #arenaChatMessages,body.v79-chat-dame #dameChatMessages{min-height:80px!important;max-height:none!important;flex:1;overflow-y:auto!important;overscroll-behavior:contain;font-size:15px}
+ body.v79-chat-chess #arenaChatToggle,body.v79-chat-dame #dameChatToggle{flex-shrink:0;min-height:44px;text-align:left;padding-right:22px!important}
+ body.v79-chat-chess #arenaChatForm,body.v79-chat-dame #dameChatForm{flex-shrink:0}
+ body.v79-chat-chess #arenaChatInput,body.v79-chat-dame #dameChatInput{font-size:16px!important}
+ body.v79-chat-chess #v79ChatFab,body.v79-chat-dame #v79ChatFab{display:none!important}
+ body.v79-chat-chess #arenaChatBody[hidden],body.v79-chat-dame #dameChatBody[hidden]{display:none!important}
+}
+</style>
+</head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
  'use strict';
@@ -3776,4 +3794,63 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
  api?.mount('chess',document.querySelector('#liveGame .rook-panel'));
  api?.mount('dame',document.getElementById('dameOnlineBox'));
 })();
-</script></body></html>
+</script>
+<script id="v79FloatingChatScript">
+(function(){
+ 'use strict';
+ const fab=document.createElement('button');fab.id='v79ChatFab';fab.type='button';fab.setAttribute('aria-label','Spieler-Chat öffnen');fab.setAttribute('aria-expanded','false');
+ fab.innerHTML='<span aria-hidden="true">💬</span> Chat <span id="v79ChatBadge" hidden></span>';
+ document.body.appendChild(fab);
+ const badge=document.getElementById('v79ChatBadge');
+ const definitions={chess:{outer:'liveGame',toggle:'arenaChatToggle',body:'arenaChatBody',log:'arenaChatMessages'},dame:{outer:'dameOnlineBox',toggle:'dameChatToggle',body:'dameChatBody',log:'dameChatMessages'}};
+ const unread={chess:0,dame:0};
+ let current=null;
+ function isMobile(){return window.matchMedia('(max-width:760px)').matches}
+ function active(){
+  if(!isMobile())return null;
+  const chess=document.getElementById('liveGame');if(chess&&!chess.hidden)return 'chess';
+  const dame=document.getElementById('dameOnlineBox');const page=document.querySelector('.arena-page[data-panel="dame"]');
+  if(dame&&!dame.hidden&&page&&!page.hidden)return 'dame';
+  return null;
+ }
+ function paint(){
+  const kind=active();
+  if(current&&current!==kind)close();
+  fab.setAttribute('aria-expanded',String(!!current));
+  const n=kind?unread[kind]:0;
+  badge.hidden=n===0;badge.textContent=n>99?'99+':String(n);
+  document.body.classList.toggle('v79-chat-chess',current==='chess');
+  document.body.classList.toggle('v79-chat-dame',current==='dame');
+ }
+ function close(){
+  if(current){const d=definitions[current];const body=document.getElementById(d.body);const toggle=document.getElementById(d.toggle);
+   if(body&&!body.hidden&&toggle)toggle.click();}
+  current=null;paint();
+ }
+ function open(kind){
+  const d=definitions[kind];const body=document.getElementById(d.body);const toggle=document.getElementById(d.toggle);
+  if(!body||!toggle)return;
+  if(body.hidden)toggle.click();
+  current=kind;unread[kind]=0;
+  paint();
+  const log=document.getElementById(d.log);if(log)log.scrollTop=log.scrollHeight;
+  const input=document.getElementById(kind==='chess'?'arenaChatInput':'dameChatInput');if(input)input.focus({preventScroll:true});
+ }
+ fab.addEventListener('click',()=>{const kind=active();if(kind){current===kind?close():open(kind);}});
+ for(const [kind,d] of Object.entries(definitions)){
+  const toggle=document.getElementById(d.toggle),body=document.getElementById(d.body),log=document.getElementById(d.log);
+  if(toggle)toggle.addEventListener('click',()=>{if(current===kind&&body&&body.hidden){current=null;paint();}else if(current===kind&&body&&!body.hidden){unread[kind]=0;paint();}},false);
+  if(log){new MutationObserver(records=>{
+   let added=0;
+   for(const r of records)for(const node of r.addedNodes){if(node.nodeType===1&&!node.classList.contains('mine'))added++;}
+   if(added && (active()===kind) && current!==kind){unread[kind]+=added;paint();}
+  }).observe(log,{childList:true});}
+ }
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&current)close();});
+ window.addEventListener('resize',paint);
+ const statusObs=new MutationObserver(paint);
+ for(const el of [document.getElementById('liveGame'),document.getElementById('dameOnlineBox'),document.querySelector('.arena-page[data-panel="dame"]')]){if(el)statusObs.observe(el,{attributes:true,attributeFilter:['hidden']});}
+ paint();
+})();
+</script>
+</body></html>
