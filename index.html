@@ -998,6 +998,36 @@ body{background:var(--arena62-bg)}
  body.v79-chat-chess #arenaChatBody[hidden],body.v79-chat-dame #dameChatBody[hidden]{display:none!important}
 }
 </style>
+<script id="arena-v100-back-fix">
+(function(){
+  function back(e){
+    if(e){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation(); }
+    var game=document.getElementById('eugenGame');
+    var home=document.getElementById('courseHome');
+    if(!game||!home)return false;
+    // Navigate before cleanup. No engine or puzzle cleanup function can interrupt this.
+    game.hidden=true;
+    var oldMenu=document.getElementById('eugenMenu');if(oldMenu)oldMenu.hidden=true;
+    var heavy=document.getElementById('heavyMenu');if(heavy)heavy.hidden=true;
+    var training=document.getElementById('trainingView');if(training)training.hidden=true;
+    var rook=document.getElementById('rookGame');if(rook)rook.hidden=true;
+    home.hidden=false;
+    // Call the app's own page handler first.
+    var nav=home.querySelector('.arena-bottomnav [data-page="spielen"]')||home.querySelector('.arena-navitem[data-page="spielen"]');
+    if(nav)try{nav.click()}catch(err){console.warn('Menu:',err)}
+    // Keep a reliable fallback even if the normal menu handler is broken.
+    home.querySelectorAll('.arena-page[data-panel]').forEach(function(p){p.hidden=p.dataset.panel!=='spielen'});
+    home.querySelectorAll('.arena-navitem').forEach(function(p){p.classList.toggle('active',p.dataset.page==='spielen')});
+    try{window.scrollTo(0,0)}catch(_e){}
+    return false;
+  }
+  window.arenaReturnFromChess=back;
+  document.addEventListener('click',function(e){
+    var button=e.target && e.target.closest && e.target.closest('#backEugenLevels');
+    if(button)back(e);
+  },true);
+})();
+</script>
 </head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
@@ -1584,7 +1614,7 @@ body{background:var(--arena62-bg)}
 </div>
 </div>
 <section class="rook-game" hidden="" id="eugenGame">
-<button class="course-return" id="backEugenLevels" type="button">← Spielen</button>
+<button class="course-return" id="backEugenLevels" type="button" onclick="return window.arenaReturnFromChess(event)">← Zurück</button>
 <h1 id="eugenTitle">♟️ Spiel gegen Eugen</h1>
 <p class="intro" id="v93EugenIntro">Du spielst mit Weiß. Eugen spielt Schwarz. Tippe auf eine Figur und dann auf ihr Zielfeld.</p>
 <div class="rook-game-layout">
