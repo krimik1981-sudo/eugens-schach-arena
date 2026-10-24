@@ -3647,28 +3647,40 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
   .premium-welcome-text small{font-size:11px!important;}
 }
 </style>
-<script id="v69-account-greeting">
-/* v6.9 - use the authenticated account nickname, not the independent local profile. */
+<script id="v73-server-account-greeting">
+/* Use the authenticated Supabase/Render account nickname for the home welcome.
+   Legacy account display is supported only when no server account is active. */
 (function(){'use strict';
   const byId=id=>document.getElementById(id);
+  function authenticatedName(){
+    const serverWho=byId('arena71-who');
+    const serverText=(serverWho?.textContent||'').trim();
+    const serverMatch=serverText.match(/^Angemeldet als\s+(.+?)\s+·\s+EF-[A-Z0-9]{6}\s*$/i);
+    if(serverMatch)return serverMatch[1].trim().slice(0,28);
+    const legacyLogged=byId('chessLoggedIn');
+    const legacyWho=byId('chessWho');
+    if(legacyLogged && !legacyLogged.hidden && legacyWho){
+      const match=(legacyWho.textContent||'').match(/Angemeldet:\s*(.+)$/);
+      if(match)return match[1].trim().slice(0,28);
+    }
+    return '';
+  }
   function updateGreeting(){
     const target=byId('premiumUserName');
     if(!target)return;
-    const logged=byId('chessLoggedIn');
-    const who=byId('chessWho');
-    const signedIn=!!(logged&&!logged.hidden&&who);
-    const text=signedIn?who.textContent||'':'';
-    const match=text.match(/Angemeldet:\s*(.+)$/);
-    const nick=match?match[1].trim().slice(0,24):'';
+    const nick=authenticatedName();
     target.textContent=nick||'Gast';
-    const strong=target.parentElement;
-    if(strong)strong.setAttribute('aria-label','Hallo, '+(nick||'Gast')+'!');
+    target.parentElement?.setAttribute('aria-label','Hallo, '+(nick||'Gast')+'!');
   }
   function init(){
     updateGreeting();
-    const who=byId('chessWho'),logged=byId('chessLoggedIn');
-    if(who)new MutationObserver(updateGreeting).observe(who,{childList:true,characterData:true,subtree:true});
+    for(const id of ['arena71-who','chessWho']){
+      const node=byId(id);
+      if(node)new MutationObserver(updateGreeting).observe(node,{childList:true,characterData:true,subtree:true});
+    }
+    const logged=byId('chessLoggedIn');
     if(logged)new MutationObserver(updateGreeting).observe(logged,{attributes:true,attributeFilter:['hidden']});
+    document.addEventListener('arena70-friends-updated',updateGreeting);
     window.addEventListener('pageshow',updateGreeting);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
