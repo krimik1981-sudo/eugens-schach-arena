@@ -859,7 +859,176 @@ body{background:var(--arena62-bg)}
 .v68-room-status{color:#bacbe0;font-size:12px;line-height:1.35;padding-top:2px}
 @media(max-width:550px){.v68-room-grid{grid-template-columns:1fr;gap:12px}.v68-room-choice{flex-direction:row;min-height:123px}.v68-room-choice img{width:40%;height:130px;flex-shrink:0}.v68-room-choice-text{justify-content:center;padding:12px}.v68-entry{padding:10px}.v68-entry-panel{padding:16px 13px}.v68-entry-art{height:clamp(170px,49vw,245px)}}
 @media(prefers-reduced-motion:no-preference){.v68-room-choice,.v68-enter{transition:transform .18s ease,box-shadow .18s ease}.v68-room-choice:active,.v68-enter:active{transform:scale(.987)}}
-</style></head><body>
+</style><style>
+/* v70: Freunde direkt aus verbundenen Live-Partien */
+.arena70-player{padding:12px;background:#142d46;border:1px solid #bb9862;border-radius:12px;margin:10px 0;color:#f6e4c8}
+.arena70-player button{cursor:pointer;background:#25496c;color:white;border:1px solid #bd965a;border-radius:9px;padding:9px 12px;font-weight:700;max-width:100%;overflow-wrap:anywhere}
+.arena70-player button:disabled{opacity:.6;cursor:default}
+.arena70-menu{margin-top:9px;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.arena70-menu[hidden],.arena70-incoming[hidden]{display:none!important}
+.arena70-incoming{border:2px solid #d6ab60;background:#193653;border-radius:12px;padding:12px;margin-top:10px;line-height:1.5}
+.arena70-incoming button{margin:5px 7px 0 0}
+.arena70-message{font-size:13px;line-height:1.5;color:#f7dca6;margin-top:7px}
+</style><style>
+#arena71-panel{margin:18px 0;padding:18px;border-radius:13px;background:#113653;border:1px solid #5284ac;color:#eaf4ff}#arena71-panel h3{margin:0 0 14px}#arena71-auth{display:grid;gap:12px}#arena71-auth label{display:grid;gap:6px}#arena71-auth input{width:100%;box-sizing:border-box;padding:10px;background:#0b243d;border:1px solid #6e9aba;color:#fff;border-radius:7px}.arena71-buttons{display:flex;gap:8px;flex-wrap:wrap}#arena71-incoming{display:grid;gap:8px}.arena71-request{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px;border:1px solid #557d9a;border-radius:8px}.arena71-status{color:#ffdfaa}.arena71-help{font-size:13px;line-height:1.5;color:#c2d8ec}
+</style><script>(function(){
+ 'use strict';
+ const TOKEN='arena71_token',PROFILE='eugens_arena_profil_v1',FRIENDS='eugens_arena_freunde_v1';
+ const token=()=>localStorage.getItem(TOKEN)||'';
+ const logged=()=>!!token();
+ let poll=null,pending={},latest=null;
+ const $=id=>document.getElementById(id);
+ async function api(action,data={}){
+  let res;
+  try{res=await fetch('/api/friends/'+action,{method:'POST',headers:{'Content-Type':'application/json',...(token()?{Authorization:'Bearer '+token()}:{})},body:JSON.stringify(data)})}
+  catch(_){throw Error('Server nicht erreichbar. Bitte Internet und Hosting prüfen.')}
+  let j;try{j=await res.json()}catch(_){throw Error('Server nicht verfügbar. Bitte Server starten.')}
+  if(!res.ok)throw Error(j.error||'Anfrage fehlgeschlagen.');return j;
+ }
+ function ownProfile(p){if(!p)return;let old={};try{old=JSON.parse(localStorage.getItem(PROFILE))||{}}catch(_){};
+  localStorage.setItem(PROFILE,JSON.stringify({...old,code:p.code,name:p.name,avatar:p.avatar||'♟️'}));}
+ function apply(j){if(!j?.profile)return;latest=j;ownProfile(j.profile);
+  // Only server-confirmed friendships are synced. Unsigned LOCAL contacts are left local.
+  const contacts=(j.friends||[]).map(f=>({code:f.code,name:f.name,avatar:f.avatar||'♟️',favorite:false,addedAt:Date.now()}));
+  localStorage.setItem(FRIENDS,JSON.stringify(contacts));
+  document.dispatchEvent(new CustomEvent('arena70-friends-updated'));
+  render();
+ }
+ function msg(s){if($('arena71-status'))$('arena71-status').textContent=s||''}
+ async function refresh(){if(!logged())return;try{apply(await api('list'));msg('✓ Server verbunden · Freunde synchronisiert.')}catch(e){msg('⚠ '+e.message)}}
+ async function request(code){if(!logged())throw Error('Bitte erst unter Mein Profil mit deinem Serverkonto anmelden.');const j=await api('request',{code});apply(j);msg(j.message);return j}
+ async function respond(id,accept){const j=await api('respond',{id,accept});apply(j);msg(j.message);return j}
+ async function respondByCode(code,accept){await refresh();const r=(latest?.incoming||[]).find(x=>x.from.code===code);if(!r)throw Error('Keine Server-Anfrage von diesem Spieler vorhanden.');return respond(r.id,accept)}
+ async function remove(code){const j=await api('remove',{code});apply(j);msg(j.message)}
+ function render(){const out=$('arena71-incoming'),who=$('arena71-who'),auth=$('arena71-auth');if(!out)return;
+  out.replaceChildren();who.textContent=logged()?'Angemeldet als '+(latest?.profile?.name||'Spieler')+' · '+(latest?.profile?.code||''):'Noch nicht am Server angemeldet';
+  auth.hidden=logged();$('arena71-logout').hidden=!logged();
+  if(!logged()){out.textContent='Melde dich an, um Freundschaften auf allen Geräten zu speichern.';return}
+  const incoming=latest?.incoming||[];
+  if(!incoming.length)out.textContent='Keine offenen Freundschaftsanfragen.';
+  incoming.forEach(r=>{
+   const row=document.createElement('div');row.className='arena71-request';const name=document.createElement('span');name.textContent=r.from.name+' ('+r.from.code+')';row.append(name);
+   for(const [label,value] of [['✓ Annehmen',true],['✕ Ablehnen',false]]){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=async()=>{b.disabled=true;try{await respond(r.id,value)}catch(e){msg(e.message)}finally{b.disabled=false}};row.append(b)}out.append(row);
+  });
+  if(latest?.outgoing?.length){const p=document.createElement('p');p.textContent='Gesendete Anfragen: '+latest.outgoing.map(r=>r.to.name).join(', ');out.appendChild(p)}
+ }
+ function init(){
+  const home=$('friendList');if(!home)return;
+  const wrapper=document.createElement('section');wrapper.id='arena71-panel';wrapper.innerHTML=`<h3>☁️ Serverkonto & Freunde auf allen Geräten</h3>
+  <p id="arena71-who"></p><div id="arena71-auth"><label>Spielername <input id="arena71-name" autocomplete="username" maxlength="28" placeholder="z. B. EugenRicker"></label>
+  <label>Passwort <input id="arena71-pass" type="password" autocomplete="current-password" minlength="8" placeholder="Mindestens 8 Zeichen"></label>
+  <div class="arena71-buttons"><button id="arena71-register" type="button">Konto erstellen</button><button id="arena71-login" type="button">Anmelden</button></div></div>
+  <button type="button" id="arena71-logout" hidden>Abmelden</button><p class="arena71-status" id="arena71-status" role="status"></p>
+  <h4>Freundschaftsanfragen</h4><div id="arena71-incoming"></div>
+  <p class="arena71-help">Nur bestätigte Server-Freunde werden auf allen Geräten angezeigt. Gib einen Freundescode oben in „Freund hinzufügen“ ein, um eine Anfrage zu senden. Serverkonto erfordert den mitgelieferten Node.js-Server und einen dauerhaft gespeicherten Datenordner.</p>`;
+  home.parentNode.insertBefore(wrapper,home);
+  $('arena71-register').onclick=async()=>{const name=$('arena71-name').value.trim(),password=$('arena71-pass').value;try{const j=await api('register',{name,password});localStorage.setItem(TOKEN,j.token);ownProfile(j.profile);location.reload()}catch(e){msg(e.message)}};
+  $('arena71-login').onclick=async()=>{const name=$('arena71-name').value.trim(),password=$('arena71-pass').value;try{const j=await api('login',{name,password});localStorage.setItem(TOKEN,j.token);ownProfile(j.profile);location.reload()}catch(e){msg(e.message)}};
+  $('arena71-logout').onclick=()=>{localStorage.removeItem(TOKEN);location.reload()};
+  // Redirect the legacy add action to the server. Local non-account contacts remain available while logged out.
+  $('friendAddButton')?.addEventListener('click',async e=>{
+   if(!logged())return;
+   e.stopImmediatePropagation();e.preventDefault();
+   let code=$('friendCodeInput')?.value.trim().toUpperCase()||'';
+   if(code.includes('FRIEND=')){try{const u=new URL(code,location.href);code=new URLSearchParams(u.hash.replace(/^#/,'')).get('friend')||''}catch(_){}}
+   if(!/^EF-[A-Z0-9]{6}$/.test(code)){msg('Bitte einen gültigen Freundescode EF-XXXXXX eingeben.');return}
+   try{await request(code);$('friendCodeInput').value=''}catch(err){msg(err.message)}
+  },true);
+  home.addEventListener('click',async e=>{
+   if(!logged())return;
+   const b=e.target.closest('button');if(!b||b.textContent.trim()!=='Entfernen')return;
+   const row=b.closest('.friend-row');const code=row?.querySelector('.friend-info small')?.textContent?.trim();if(!/^EF-[A-Z0-9]{6}$/.test(code||''))return;
+   e.stopImmediatePropagation();e.preventDefault();if(!confirm('Freund auch auf dem Server entfernen?'))return;
+   try{await remove(code)}catch(err){msg(err.message)}
+  },true);
+  if(logged()){
+   // Profile name and friend code belong to server account; avoid mismatched local edits.
+   if($('profileSaveButton'))$('profileSaveButton').hidden=true;
+   if($('profileNameInput'))$('profileNameInput').readOnly=true;
+   refresh();poll=setInterval(()=>{if(!document.hidden)refresh()},12000);
+  }
+  render();
+ }
+ window.ArenaFriendsV71={logged,request,respondByCode,refresh};
+ document.addEventListener('DOMContentLoaded',init);
+})();
+</script></head><script>
+/* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
+(function(){
+ 'use strict';
+ const PROFILE='eugens_arena_profil_v1',FRIENDS='eugens_arena_freunde_v1';
+ const peers={chess:null,dame:null};
+ const $=id=>document.getElementById(id);
+ const read=(key,otherwise)=>{try{return JSON.parse(localStorage.getItem(key))??otherwise}catch(_){return otherwise}};
+ const clean=s=>String(s||'').trim().replace(/[<>\r\n]/g,'').slice(0,28);
+ const isCode=c=>/^EF-[A-Z0-9]{6}$/.test(String(c||''));
+ function identity(){const p=read(PROFILE,{});return {code:isCode(p.code)?p.code:'',name:clean(p.name)||'Schachspieler',avatar:typeof p.avatar==='string'&&p.avatar.length<12?p.avatar:'♟️'}}
+ function store(other){const self=identity();if(!isCode(other?.code)||other.code===self.code)return false;
+  const current=read(FRIENDS,[]);if(!Array.isArray(current))return false;
+  if(current.some(f=>f.code===other.code))return true;
+  if(current.length>=100)return false;
+  const next=[...current,{code:other.code,name:clean(other.name)||'Freund',avatar:'♟️',favorite:false,addedAt:Date.now()}];
+  try{localStorage.setItem(FRIENDS,JSON.stringify(next));document.dispatchEvent(new CustomEvent('arena70-friends-updated'));return true}catch(_){return false}
+ }
+ function view(game){return $('arena70-'+game)}
+ function say(game,msg){const el=view(game)?.querySelector('.arena70-message');if(el)el.textContent=msg}
+ function send(game,msg){const p=peers[game];if(p?.connected?.())try{p.send(msg);return true}catch(_){}return false}
+ function paint(game){const p=peers[game],el=view(game);if(!el)return;
+  const ready=!!p?.connected?.(),op=p?.remote;
+  const label=el.querySelector('.arena70-opponent'),menu=el.querySelector('.arena70-menu'),add=el.querySelector('.arena70-add');
+  label.disabled=!ready||!op;label.textContent=ready?(op?'👤 '+op.name+' ▾':'👤 Gegner wird erkannt …'):'👤 Gegner nicht verbunden';
+  if(!ready||!op)menu.hidden=true;
+  const mine=read(FRIENDS,[]);const already=Array.isArray(mine)&&mine.some(f=>f.code===op?.code);
+  add.disabled=!ready||!op||already||p?.outgoing;
+  add.textContent=already?'✓ Bereits befreundet':p?.outgoing?'✓ Anfrage gesendet':'Als Freund hinzufügen';
+  if(p?.incoming&&p.remote){const inc=el.querySelector('.arena70-incoming');inc.hidden=false;inc.querySelector('strong').textContent=p.remote.name+' möchte dich als Freund hinzufügen.';}else el.querySelector('.arena70-incoming').hidden=true;
+ }
+ function mount(game,parent){if(!parent||view(game))return;
+  const box=document.createElement('section');box.className='arena70-player';box.id='arena70-'+game;
+  box.innerHTML='<div style="font-weight:700;margin-bottom:7px">Mitspieler</div><button class="arena70-opponent" type="button" disabled>👤 Gegner nicht verbunden</button><div class="arena70-menu" hidden><button type="button" class="arena70-add">Als Freund hinzufügen</button><button type="button" class="arena70-close">Schließen</button></div><div class="arena70-incoming" hidden><strong></strong><div><button type="button" class="arena70-accept">✓ Annehmen</button><button type="button" class="arena70-reject">✕ Ablehnen</button></div></div><div class="arena70-message" role="status" aria-live="polite"></div>';
+  parent.insertAdjacentElement('afterbegin',box);
+  box.querySelector('.arena70-opponent').addEventListener('click',()=>{box.querySelector('.arena70-menu').hidden=!box.querySelector('.arena70-menu').hidden});
+  box.querySelector('.arena70-close').addEventListener('click',()=>box.querySelector('.arena70-menu').hidden=true);
+  box.querySelector('.arena70-add').addEventListener('click',()=>{const p=peers[game];if(!p?.remote||p.outgoing)return;
+   if(!identity().code){say(game,'Bitte erst ein Spielerprofil erstellen.');return;}
+   if(window.ArenaFriendsV71?.logged()){window.ArenaFriendsV71.request(p.remote.code).then(()=>{p.outgoing=true;send(game,{type:'arena70-friend-request',identity:identity()});say(game,'Server-Anfrage verschickt. Der Gegner kann sie annehmen.');paint(game)}).catch(e=>say(game,e.message));return;}
+   if(send(game,{type:'arena70-friend-request',identity:identity()})){p.outgoing=true;say(game,'Freundschaftsanfrage verschickt. Warte auf die Antwort.');paint(game)}else say(game,'Verbindung unterbrochen.');
+  });
+  box.querySelector('.arena70-accept').addEventListener('click',()=>{const p=peers[game];if(!p?.incoming||!p.remote)return;
+   if(window.ArenaFriendsV71?.logged()){window.ArenaFriendsV71.respondByCode(p.remote.code,true).then(()=>{send(game,{type:'arena70-friend-accepted',identity:identity()});say(game,'✅ Freundschaft auf dem Server bestätigt.');p.incoming=false;paint(game)}).catch(e=>say(game,e.message));return;}
+   if(store(p.remote)){send(game,{type:'arena70-friend-accepted',identity:identity()});say(game,'✅ Freundschaft bestätigt. In „Meine Freunde“ gespeichert.')}else{send(game,{type:'arena70-friend-rejected'});say(game,'Speichern fehlgeschlagen. Bitte Browserspeicher prüfen.')}
+   p.incoming=false;paint(game);
+  });
+  box.querySelector('.arena70-reject').addEventListener('click',()=>{const p=peers[game];if(!p)return;p.incoming=false;send(game,{type:'arena70-friend-rejected'});say(game,'Anfrage abgelehnt.');paint(game)});
+  paint(game);
+ }
+ function attach(game,sendFn,connectedFn){peers[game]={send:sendFn,connected:connectedFn,remote:null,incoming:false,outgoing:false};paint(game);
+  send(game,{type:'arena70-player-hello',identity:identity()});
+ }
+ function receive(game,msg){if(!msg||typeof msg!=='object'||!String(msg.type||'').startsWith('arena70-'))return false;
+  const p=peers[game];if(!p?.connected?.())return true;
+  if(msg.type==='arena70-player-hello'){
+   const x=msg.identity;if(!isCode(x?.code)||x.code===identity().code){say(game,'Spielerprofil des Gegners nicht eindeutig.');return true}
+   p.remote={code:x.code,name:clean(x.name)||'Schachspieler'};p.incoming=false;p.outgoing=false;paint(game);return true;
+  }
+  if(!p.remote)return true;
+  if(msg.type==='arena70-friend-request'){
+   if(msg.identity?.code!==p.remote.code)return true;
+   const mine=read(FRIENDS,[]);if(Array.isArray(mine)&&mine.some(f=>f.code===p.remote.code)){
+    send(game,{type:'arena70-friend-accepted',identity:identity()});say(game,'Ihr seid bereits Freunde.');
+   }else{p.incoming=true;say(game,'Neue Freundschaftsanfrage erhalten.')}paint(game);
+  }else if(msg.type==='arena70-friend-accepted'){
+   if(p.outgoing&&msg.identity?.code===p.remote.code){if(window.ArenaFriendsV71?.logged()){window.ArenaFriendsV71.refresh();say(game,'✅ Anfrage angenommen. Serverliste wird geladen.')}else if(store(p.remote))say(game,'✅ Anfrage angenommen! Ihr seid jetzt Freunde.');else say(game,'Freund bestätigt, aber Speichern fehlgeschlagen.');p.outgoing=false;paint(game)}
+  }else if(msg.type==='arena70-friend-rejected'){
+   p.outgoing=false;say(game,'Der Gegner hat die Anfrage abgelehnt.');paint(game);
+  }
+  return true;
+ }
+ function detached(game){peers[game]=null;paint(game)}
+ window.ArenaFriendV70={mount,attach,receive,detached};
+ document.addEventListener('arena70-friends-updated',()=>{paint('chess');paint('dame')});
+})();
+</script><body>
 <header>♟ <span class="brand-eugen">Eugens</span> <span class="brand-schach">Schach</span> <span class="brand-arena">Arena</span> <span aria-hidden="true" class="flag-divider"></span></header>
 <section class="course-home" id="courseHome">
 <div class="arena-shell">
@@ -2149,7 +2318,7 @@ rebuild();
   const existing=document.querySelector('script[data-peerjs]');if(existing){if(typeof window.Peer==='function')ok();else{existing.addEventListener('load',ok,{once:true});existing.addEventListener('error',()=>no(Error('PeerJS konnte nicht geladen werden.')),{once:true})}return}
   const script=document.createElement('script');script.src='https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';script.dataset.peerjs='true';script.onload=ok;script.onerror=()=>no(Error('PeerJS nicht verfügbar – Internet prüfen.'));document.head.appendChild(script)
  })}
- function closeSession(){resetChat();if(publicRoomInfo){const prev=publicRoomInfo;publicRoomInfo=null;fetch('/api/match/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,room:prev.room})}).catch(()=>{});}token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
+ function closeSession(){window.ArenaFriendV70?.detached('chess');resetChat();if(publicRoomInfo){const prev=publicRoomInfo;publicRoomInfo=null;fetch('/api/match/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,room:prev.room})}).catch(()=>{});}token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
  function id(){let a=new Uint8Array(7);crypto.getRandomValues(a);return 'EUGEN-'+Array.from(a,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase()}
  const valid=s=>/^EUGEN-[0-9A-F]{14}$/.test(String(s||'').trim().toUpperCase());
  function peerReady(name,myToken){return new Promise(async(ok,no)=>{
@@ -2202,6 +2371,7 @@ rebuild();
   apply(m);clockAt=Date.now();sync();return true
  }
  function data(msg){if(!msg||typeof msg!=='object')return;
+  if(window.ArenaFriendV70?.receive('chess',msg))return;
   if(msg.type==='arena-chat-v1'){receiveChat(msg);return;}
   if(host()){
    if(msg.type==='join'){sync();return}
@@ -2215,9 +2385,9 @@ rebuild();
  }
  function connect(c){
   if(conn&&conn!==c&&conn.open){c.close();return}conn=c;const thisConn=c;
-  c.on('open',()=>{if(conn!==thisConn)return;connected=true;clockAt=Date.now();chatInfo('Verbunden – Nachrichten und Emojis sind bereit.');if(host()){clockRunning=!outcome;setStatus('Freund verbunden. Weiß beginnt!');sync()}else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'})}render()});
+  c.on('open',()=>{if(conn!==thisConn)return;connected=true;clockAt=Date.now();chatInfo('Verbunden – Nachrichten und Emojis sind bereit.');window.ArenaFriendV70?.attach('chess',d=>c.send(d),()=>connected&&c.open);if(host()){clockRunning=!outcome;setStatus('Freund verbunden. Weiß beginnt!');sync()}else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'})}render()});
   c.on('data',data);
-  c.on('close',()=>{if(conn!==thisConn)return;if(host())tick();conn=null;connected=false;chatInfo('Verbindung getrennt.');if(host())clockRunning=false;setStatus('Verbindung unterbrochen. Die Uhr wurde angehalten. Für eine neue Partie einen neuen Raum erstellen.');render()});
+  c.on('close',()=>{if(conn!==thisConn)return;if(host())tick();conn=null;connected=false;window.ArenaFriendV70?.detached('chess');chatInfo('Verbindung getrennt.');if(host())clockRunning=false;setStatus('Verbindung unterbrochen. Die Uhr wurde angehalten. Für eine neue Partie einen neuen Raum erstellen.');render()});
   c.on('error',e=>{if(conn===thisConn)setStatus('Verbindungsfehler: '+String(e?.message||e))});
  }
  async function create(publicRoom=null){closeSession();let myToken=token;side='w';room='HOST';show('liveGame');timeControl=Number($l('liveTimeSelect').value)*60000;baseReset(timeControl);setStatus('Raum wird erstellt …');
@@ -2640,6 +2810,7 @@ hLoad();
    $p('friendSearch').value='';
    drawFriends();status('friendStatus','✅ '+displayName+' wurde gespeichert.'+(raw?'':' Du kannst sie jetzt zum Spielen einladen, indem du einen Spiel-Link über WhatsApp verschickst.'));
  };
+ document.addEventListener('arena70-friends-updated',()=>{friends=read(FRIENDS_KEY,[]);drawFriends();});
  $p('friendSearch').addEventListener('input',drawFriends);
  $p('friendSort').addEventListener('change',drawFriends);
  $p('friendImportFile').addEventListener('change',async event=>{
@@ -2867,6 +3038,7 @@ function discardNetwork(skipLeave=false){clearDamePending();if(publicDameRoom){c
 function broadcast(){if(modeEl.value!=='online'||!onlineHost||!onlineConnected||!onlineConn?.open)return;onlineConn.send({type:'dame-state',seq:onlineSequence,hostSide:onlineHostSide,board:[...board],turn,forced,gameOver,matchId:dameMatchId,message:statusEl.textContent});}
 function onlineSyncReceived(data){if(onlineHost||!data||data.type!=='dame-state'||!Array.isArray(data.board)||data.board.length!==64)return;if(!data.board.every(p=>p===null||['w','W','b','B'].includes(p)))return;if(data.turn!=='w'&&data.turn!=='b')return;if(!Number.isSafeInteger(data.seq)||data.seq<onlineSequence)return;if(!['w','b'].includes(data.hostSide))return;onlineHostSide=data.hostSide;onlineSide=other(onlineHostSide);netStatus('✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß (du beginnst).':'Schwarz (Gastgeber beginnt).'));if(data.forced!==null&&(!Number.isInteger(data.forced)||data.forced<0||data.forced>63))return;const previousEnded=gameOver,previousMatch=dameMatchId;if(damePendingMove&&(data.seq>damePendingMove.seq||data.turn!==onlineSide||data.board[damePendingMove.from]===null))clearDamePending();onlineSequence=data.seq;dameMatchId=typeof data.matchId==='string'&&data.matchId.length<100?data.matchId:dameMatchId;board=data.board.slice();turn=data.turn;forced=data.forced;gameOver=!!data.gameOver;selected=null;history=[];busy=false;render();status(data.message||'Stellung synchronisiert.');if(gameOver&&(!previousEnded||previousMatch!==dameMatchId))reportDameWin(other(turn));}
 function onlineHandleData(data){if(!data||typeof data!=='object')return;
+ if(window.ArenaFriendV70?.receive('dame',data))return;
  if(data.type==='dame-chat-v1'){
   if(!onlineConnected)return;const v=data.value;
   if(typeof v==='string'&&((data.kind==='emoji'&&dameChatEmojis.includes(v))||(data.kind==='text'&&v.length<=200&&v.trim())))dameChatLine('Gegner',v,false);
@@ -2883,9 +3055,9 @@ function onlineHandleData(data){if(!data||typeof data!=='object')return;
  else if(data.type==='dame-hello'&&onlineHost)broadcast();
 }
 function attachConnection(c){if(onlineConn&&onlineConn!==c&&onlineConnected){try{c.close()}catch(e){}return;}onlineConn=c;const gen=onlineGeneration;
- c.on('open',()=>{if(gen!==onlineGeneration)return;clearDamePending();onlineConnected=true;dameChatInfo('Du kannst jetzt schreiben und Emojis senden.');if(publicDameRoom)document.getElementById('damePublicInfo').textContent='✅ Gegner verbunden!';document.getElementById('dameDisconnect').hidden=false;netStatus(onlineHost?'✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.')+' Dein Freund ist beigetreten.':'✅ Verbindung hergestellt. Warte auf die Farbzuweisung …');if(onlineHost)broadcast();else c.send({type:'dame-hello'});render();});
+ c.on('open',()=>{if(gen!==onlineGeneration)return;clearDamePending();onlineConnected=true;window.ArenaFriendV70?.attach('dame',d=>c.send(d),()=>onlineConnected&&c.open);dameChatInfo('Du kannst jetzt schreiben und Emojis senden.');if(publicDameRoom)document.getElementById('damePublicInfo').textContent='✅ Gegner verbunden!';document.getElementById('dameDisconnect').hidden=false;netStatus(onlineHost?'✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.')+' Dein Freund ist beigetreten.':'✅ Verbindung hergestellt. Warte auf die Farbzuweisung …');if(onlineHost)broadcast();else c.send({type:'dame-hello'});render();});
  c.on('data',data=>{if(gen===onlineGeneration)onlineHandleData(data)});
- const lost=()=>{if(gen!==onlineGeneration)return;clearDamePending();onlineConnected=false;netStatus('⚠️ Verbindung unterbrochen. Bitte einen neuen Raum erstellen.');render()};
+ const lost=()=>{if(gen!==onlineGeneration)return;clearDamePending();onlineConnected=false;window.ArenaFriendV70?.detached('dame');netStatus('⚠️ Verbindung unterbrochen. Bitte einen neuen Raum erstellen.');render()};
  c.on('close',lost);c.on('error',e=>{if(gen===onlineGeneration)netStatus('Verbindungsfehler: '+(e?.message||'Unbekannt'))});
 }
 // PeerJS data channels can delay a packet on mobile Safari.
@@ -3533,5 +3705,11 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
     const start=$('damePublicPlay');
     if(start){start.click();}else{const status=$('dameOnlineStatus');if(status)status.textContent='Dame-Raum nicht verfügbar.';}
   });
+})();
+</script><script>
+(function(){
+ const api=window.ArenaFriendV70;
+ api?.mount('chess',document.querySelector('#liveGame .rook-panel'));
+ api?.mount('dame',document.getElementById('dameOnlineBox'));
 })();
 </script></body></html>
