@@ -1145,13 +1145,29 @@ body{background:var(--arena62-bg)}
 </div>
 <div class="arena-homebottom"><div class="arena-block"><h3>⚡ Schnell spielen</h3><p>Wähle eine Schwierigkeit und spiele gegen Eugen.</p><button class="arena-action" data-open="openEugen">♟ Gegen Eugen spielen →</button></div><div class="arena-block"><h3>🌐 Gegen Freunde</h3><p>Erstelle einen Raum und lade einen Freund ein.</p><button class="arena-action" data-open="openLive">Live-Spiel starten →</button></div><div class="arena-block"><h3>📚 Meine Partien</h3><p>Gespeicherte Partien ansehen und analysieren.</p><button class="arena-action" data-open="openHistoryHome">Partiearchiv öffnen →</button></div></div>
 </div>
-<div class="arena-page" data-panel="spielen" hidden>
-  <h2>♟ Spielen</h2>
-  <p>Wähle ein Spiel gegen den Computer oder am selben Gerät. Online findest du im Reiter „Online“.</p>
-  <div class="arena-optiongrid arena-v65-choicegrid">
-    <button class="arena-option" data-open="openEugen" type="button"><b>♟ Schach gegen Computer</b><small>Anfänger · Fortgeschritten · Profi</small></button>
-    <button class="arena-option" data-page="dame" type="button"><b>⛀ Dame spielen</b><small>Gegen Computer oder zu zweit am Gerät</small></button>
+<div class="arena-page v85-spielen" data-panel="spielen" hidden>
+  <div class="v85-title"><span>S P I E L E N  ·  G E G E N  C O M P U T E R</span><h2>Wähle dein Spiel</h2><p>Schach oder Dame – wähle die Stärke und starte sofort.</p></div>
+  <div class="v85-playgrid">
+    <article class="v85-playcard" data-kind="chess">
+      <div class="v85-cardhead"><span class="v85-pictogram" aria-hidden="true">♞</span><div><h3>Schach spielen</h3><p>Nur gegen Computer</p></div></div>
+      <fieldset class="v85-difficulty"><legend>Schwierigkeit</legend>
+        <label><input type="radio" name="v85ChessLevel" value="beginner" checked><span>Anfänger</span></label>
+        <label><input type="radio" name="v85ChessLevel" value="intermediate"><span>Fortgeschritten</span></label>
+        <label><input type="radio" name="v85ChessLevel" value="expert"><span>Profi</span></label>
+      </fieldset>
+      <button type="button" class="v85-playbutton" id="v85PlayChess">Jetzt spielen <span>→</span></button>
+    </article>
+    <article class="v85-playcard" data-kind="dame">
+      <div class="v85-cardhead"><span class="v85-pictogram" aria-hidden="true">⛀</span><div><h3>Dame spielen</h3><p>Nur gegen Computer</p></div></div>
+      <fieldset class="v85-difficulty"><legend>Schwierigkeit</legend>
+        <label><input type="radio" name="v85DameLevel" value="easy" checked><span>Anfänger</span></label>
+        <label><input type="radio" name="v85DameLevel" value="medium"><span>Fortgeschritten</span></label>
+        <label><input type="radio" name="v85DameLevel" value="hard"><span>Profi</span></label>
+      </fieldset>
+      <button type="button" class="v85-playbutton" id="v85PlayDame">Jetzt spielen <span>→</span></button>
+    </article>
   </div>
+  <p class="v85-extra">Gegen andere Menschen spielst du im Bereich <strong>Online</strong>.</p>
 </div>
 <div class="arena-page" data-panel="dame" hidden=""><button class="arena-back" data-page="start" type="button">← Spiele auswählen</button><h2>🔴 Dame</h2><p>Schlagpflicht · Mehrfachschläge · fliegende Damen · Umwandlung während eines Schlagzugs.</p>
 <!-- Dame-Training ist ausschließlich über Lernen zugänglich. -->
@@ -4132,6 +4148,57 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
  const timer=setInterval(()=>{if(!document.hidden)sync()},900);
  window.addEventListener('pageshow',sync);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
+})();
+</script>
+
+<style id="v85-mobile-spielen-style">
+#courseHome .arena-page.v85-spielen{max-width:1020px;margin:0 auto;padding:6px 0 16px}
+#courseHome .v85-spielen .v85-title{text-align:center;margin:10px 0 24px}
+#courseHome .v85-title>span{display:block;color:#dcb575;font-size:10px;font-weight:800;letter-spacing:.14em}
+#courseHome .v85-title h2{font:700 clamp(27px,5vw,38px)/1.15 Georgia,serif;color:#fff;margin:8px 0}
+#courseHome .v85-title p{color:#bac9d8;font-size:clamp(13px,3vw,15px);margin:0}
+#courseHome .v85-playgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+#courseHome .v85-playcard{min-width:0;display:flex;flex-direction:column;gap:17px;background:linear-gradient(135deg,#172c43,#0b1d30);border:1px solid #ab8149;border-radius:19px;padding:23px;box-shadow:0 12px 32px #0004}
+#courseHome .v85-cardhead{display:flex;align-items:center;gap:17px}
+#courseHome .v85-pictogram{flex:0 0 87px;width:87px;height:90px;display:grid;place-items:center;font:75px/1 Georgia,serif;color:#f0c582;text-shadow:0 6px 15px #0009}
+#courseHome .v85-cardhead h3{color:#fff;font:700 clamp(22px,3vw,29px)/1.2 Georgia,serif;margin:0 0 6px}
+#courseHome .v85-cardhead p{color:#d4dfe9;margin:0;font-size:14px}
+#courseHome .v85-difficulty{margin:0;border:1px solid #516882;padding:0;min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:hidden;border-radius:11px}
+#courseHome .v85-difficulty legend{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#courseHome .v85-difficulty label{display:flex;min-width:0;cursor:pointer}
+#courseHome .v85-difficulty input{position:absolute;opacity:0;width:1px;height:1px}
+#courseHome .v85-difficulty span{width:100%;display:grid;place-items:center;min-height:51px;padding:8px 3px;text-align:center;color:#d7e1ec;font-size:clamp(10px,1.3vw,13px);border-right:1px solid #516882}
+#courseHome .v85-difficulty label:last-child span{border:0}
+#courseHome .v85-difficulty input:checked+span{color:#152432;background:linear-gradient(#ffe0a2,#dba65b);font-weight:850}
+#courseHome .v85-difficulty input:focus-visible+span{outline:3px solid #77beff;outline-offset:-3px}
+#courseHome .v85-playbutton{min-height:51px;display:flex;justify-content:center;align-items:center;gap:18px;background:linear-gradient(125deg,#ffdfa1,#d5a05b);color:#18293b;border:1px solid #f6d08a;border-radius:11px;font-weight:850;font-size:17px;cursor:pointer}
+#courseHome .v85-playbutton span{font-size:23px}
+#courseHome .v85-extra{margin:17px 0;color:#9eb3c8;text-align:center;font-size:13px}
+@media(max-width:700px){
+#courseHome .v85-playgrid{grid-template-columns:1fr;gap:15px}
+#courseHome .v85-spielen .v85-title{margin:8px 0 18px}
+#courseHome .v85-playcard{padding:16px;gap:14px;border-radius:16px}
+#courseHome .v85-cardhead{gap:13px}
+#courseHome .v85-pictogram{flex-basis:65px;width:65px;height:68px;font-size:57px}
+#courseHome .v85-cardhead h3{font-size:25px}
+#courseHome .v85-difficulty span{font-size:clamp(11px,3.1vw,13px);min-height:47px}
+}
+</style>
+
+<script id="v85-mobile-spielen-script">
+(function(){'use strict';
+ const selected=name=>document.querySelector('input[name="'+name+'"]:checked')?.value;
+ function sync(name,oldName){
+  const val=selected(name);const old=document.querySelector('input[name="'+oldName+'"][value="'+val+'"]');
+  if(old){old.checked=true;old.dispatchEvent(new Event('change',{bubbles:true}));return true}
+  return false;
+ }
+ document.getElementById('v85PlayChess')?.addEventListener('click',()=>{
+  if(sync('v85ChessLevel','v83chessLevel'))document.getElementById('v83PlayChess')?.click();
+ });
+ document.getElementById('v85PlayDame')?.addEventListener('click',()=>{
+  if(sync('v85DameLevel','v83dameLevel'))document.getElementById('v83PlayDame')?.click();
+ });
 })();
 </script>
 </body></html>
