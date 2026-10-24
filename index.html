@@ -903,7 +903,7 @@ body{background:var(--arena62-bg)}
  function render(){const out=$('arena71-incoming'),who=$('arena71-who'),auth=$('arena71-auth');if(!out)return;
   out.replaceChildren();who.textContent=logged()?'Angemeldet als '+(latest?.profile?.name||'Spieler')+' · '+(latest?.profile?.code||''):'Noch nicht am Server angemeldet';
   auth.hidden=logged();$('arena71-logout').hidden=!logged();
-  if(!logged()){out.textContent='Melde dich an, um Freundschaften auf allen Geräten zu speichern.';return}
+  if($('arena77-count'))$('arena77-count').textContent=logged()?'('+(latest?.friends?.length||0)+')':'';if($('arena77-friends')&&!logged())$('arena77-friends').textContent='Bitte melde dich an, um deine Freunde zu sehen.';if(!logged()){out.textContent='Melde dich an, um Freundschaften auf allen Geräten zu speichern.';return}
   const incoming=latest?.incoming||[];
   if(!incoming.length)out.textContent='Keine offenen Freundschaftsanfragen.';
   incoming.forEach(r=>{
@@ -911,20 +911,33 @@ body{background:var(--arena62-bg)}
    for(const [label,value] of [['✓ Annehmen',true],['✕ Ablehnen',false]]){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=async()=>{b.disabled=true;try{await respond(r.id,value)}catch(e){msg(e.message)}finally{b.disabled=false}};row.append(b)}out.append(row);
   });
   if(latest?.outgoing?.length){const p=document.createElement('p');p.textContent='Gesendete Anfragen: '+latest.outgoing.map(r=>r.to.name).join(', ');out.appendChild(p)}
+  const serverList=$('arena77-friends');if(serverList){serverList.replaceChildren();const fs=latest?.friends||[];
+    if(!fs.length){const p=document.createElement('p');p.textContent='Noch keine bestätigten Freunde. Sende unten eine Freundschaftsanfrage.';serverList.append(p)}
+    fs.forEach(f=>{const r=document.createElement('div');r.className='arena77-friend';const name=document.createElement('div');const bold=document.createElement('strong');bold.textContent='♟ '+f.name;const code=document.createElement('small');code.textContent=f.code;name.append(bold,code);const b=document.createElement('button');b.type='button';b.textContent='Entfernen';b.onclick=async()=>{if(!confirm(f.name+' wirklich aus der Freundesliste entfernen?'))return;b.disabled=true;try{await remove(f.code)}catch(e){msg(e.message)}finally{b.disabled=false}};r.append(name,b);serverList.append(r)})
+  }
  }
  function init(){
   const home=$('friendList');if(!home)return;
-  const wrapper=document.createElement('section');wrapper.id='arena71-panel';wrapper.innerHTML=`<h3>☁️ Serverkonto & Freunde auf allen Geräten</h3>
+  const wrapper=document.createElement('section');wrapper.id='arena71-panel';wrapper.innerHTML=`<h3>☁️ Mein Konto & meine Freunde</h3>
   <p id="arena71-who"></p><div id="arena71-auth"><label>Spielername <input id="arena71-name" autocomplete="username" maxlength="28" placeholder="z. B. EugenRicker"></label>
   <label>Passwort <input id="arena71-pass" type="password" autocomplete="current-password" minlength="8" placeholder="Mindestens 8 Zeichen"></label>
   <div class="arena71-buttons"><button id="arena71-register" type="button">Konto erstellen</button><button id="arena71-login" type="button">Anmelden</button></div></div>
   <button type="button" id="arena71-logout" hidden>Abmelden</button><p class="arena71-status" id="arena71-status" role="status"></p>
-  <h4>Freundschaftsanfragen</h4><div id="arena71-incoming"></div>
-  <p class="arena71-help">Nur bestätigte Server-Freunde werden auf allen Geräten angezeigt. Gib einen Freundescode oben in „Freund hinzufügen“ ein, um eine Anfrage zu senden. Serverkonto erfordert den mitgelieferten Node.js-Server und einen dauerhaft gespeicherten Datenordner.</p>`;
+  <h4>🤝 Meine Freunde <span id="arena77-count"></span></h4><div id="arena77-friends" aria-live="polite"></div>
+  <div id="arena77-add"><label for="arena77-code">Freundschaftsanfrage senden · Freundescode</label><input id="arena77-code" placeholder="EF-... (Code des anderen Spielers)" autocomplete="off" autocapitalize="characters"><button id="arena77-send" type="button">+ Als Freund hinzufügen</button></div>
+  <h4>📩 Freundschaftsanfragen</h4><div id="arena71-incoming"></div>
+  <p class="arena71-help">Hier siehst du ausschließlich bestätigte Server-Freunde. Die Liste ist für Schach und Dame gemeinsam und wird auf deinen Geräten synchronisiert. Teile deinen eigenen Freundescode aus der Anmeldung mit anderen Spielern.</p>`;
   home.parentNode.insertBefore(wrapper,home);
   $('arena71-register').onclick=async()=>{const name=$('arena71-name').value.trim(),password=$('arena71-pass').value;try{const j=await api('register',{name,password});localStorage.setItem(TOKEN,j.token);ownProfile(j.profile);location.reload()}catch(e){msg(e.message)}};
   $('arena71-login').onclick=async()=>{const name=$('arena71-name').value.trim(),password=$('arena71-pass').value;try{const j=await api('login',{name,password});localStorage.setItem(TOKEN,j.token);ownProfile(j.profile);location.reload()}catch(e){msg(e.message)}};
   $('arena71-logout').onclick=()=>{localStorage.removeItem(TOKEN);location.reload()};
+  $('arena77-send').onclick=async()=>{const field=$('arena77-code');let code=field.value.trim().toUpperCase();
+   if(!logged()){msg('Bitte zuerst im Serverkonto anmelden.');return}
+   if(/^HTTPS?:/i.test(code)){try{const u=new URL(code);code=(new URLSearchParams(u.hash.replace(/^#/,''))).get('friend')?.toUpperCase()||''}catch(_){}}
+   if(!/^EF-[A-F0-9]{18}$/.test(code)){msg('Bitte den vollständigen Server-Freundescode eingeben (EF- und 18 Zeichen).');return}
+   try{await request(code);field.value=''}catch(e){msg(e.message)}
+  };
+
   // Redirect the legacy add action to the server. Local non-account contacts remain available while logged out.
   $('friendAddButton')?.addEventListener('click',async e=>{
    if(!logged())return;
@@ -952,7 +965,18 @@ body{background:var(--arena62-bg)}
  window.ArenaFriendsV71={logged,request,respondByCode,refresh};
  document.addEventListener('DOMContentLoaded',init);
 })();
-</script></head><script>
+</script><style id="arena77-unified-style">
+#profilesView .profile-grid{grid-template-columns:minmax(0,1fr)!important;max-width:800px;margin:auto}
+#profilesView .profile-grid>.profile-panel:first-child{display:none!important}
+#profilesView .profile-grid>.profile-panel:nth-child(2)>:not(#arena71-panel){display:none!important}
+#profilesView #arena71-panel{margin:0;padding:22px;background:#132f4b;border-color:#537895}
+#arena77-friends{display:grid;gap:10px;margin:12px 0 18px}
+.arena77-friend{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#0c253d;border:1px solid #42698a;padding:12px;border-radius:10px}
+.arena77-friend strong{display:block}.arena77-friend small{display:block;color:#b6d4e8;word-break:break-all;margin-top:4px}
+#arena77-add{display:grid;gap:8px;margin:18px 0;padding:13px;border:1px solid #42698a;border-radius:10px}
+#arena77-add input{padding:11px;border:1px solid #618bb1;border-radius:8px;background:#09223a;color:#fff;width:100%;font:inherit}
+#arena77-add button,.arena77-friend button{background:#297bc1;color:#fff;border:0;border-radius:8px;padding:10px 13px;font-weight:700;cursor:pointer}
+</style></head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
  'use strict';
