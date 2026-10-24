@@ -1,8 +1,1 @@
-{
-  "name":"eugens-schach-arena-v71",
-  "version":"7.1.0",
-  "private":true,
-  "description":"Eugens Schach Arena with persistent server accounts and friend requests",
-  "scripts":{"start":"node server.js"},
-  "engines":{"node":">=18"}
-}
+{"name":"eugens-schach-arena","version":"7.5.0","private":true,"scripts":{"start":"node server.js"},"engines":{"node":">=18"}}
