@@ -1554,10 +1554,10 @@ body{background:var(--arena62-bg)}
 <h2 id="historyGameTitle">Partie ansehen</h2>
 <div class="history-layout">
 <div class="v96-board-area">
-<div class="v96-eval-wrap" aria-label="Stockfish Stellungsbewertung">
- <div class="v96-eval-label v96-black-label" id="v96BlackLabel">Schwarz</div>
+<div class="v96-eval-wrap" aria-label="Stockfish Stellungsbewertung" title="Stockfish-Bewertung der aktuellen Stellung">
+ <div class="v96-eval-label v96-black-label" id="v96BlackLabel">⚫</div>
  <div id="v96EvalBar" class="v96-eval-track" role="meter" aria-label="Stellungsvorteil Weiß" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><div id="v96EvalWhite" class="v96-eval-white"></div><div class="v96-eval-center"></div></div>
- <div class="v96-eval-label v96-white-label" id="v96WhiteLabel">Weiß</div>
+ <div class="v96-eval-label v96-white-label" id="v96WhiteLabel">⚪</div>
 </div>
 <div class="wood history-board"><div aria-label="Gespeicherte Schachstellung" class="board" id="historyBoard" role="img"></div></div>
 </div>
@@ -2812,7 +2812,7 @@ async function hAnalyze(){
  const run=hCancel,game=hReview,total=game.moves.length;
  if(!total){H('historyProgress').textContent='Diese Partie enthält noch keine Züge.';return}
  hAnalysis=hV91Load(game);
- let done=hAnalysis.filter(Boolean).length;
+ let done=hAnalysis.filter(a=>a&&!a.skipped).length;
  const progress=H('historyProgress'),button=H('historyRunAnalysis');
  if(button)button.disabled=true;
  if(done)progress.textContent='Gespeicherte Analyse geladen ('+done+'/'+total+'). Fehlende Züge werden ergänzt …';
@@ -4775,7 +4775,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    // Evaluation entries are for the position AFTER their move. Index 0 is the starting FEN.
    let a=hIndex>0?hAnalysis[hIndex-1]:null;
    // The first position can use Stockfish's before-move evaluation when available, but not a later score.
-   let cp=a&&Number.isFinite(a.whiteScore)?a.whiteScore:null;
+   let cp=a&&!a.skipped&&Number.isFinite(a.whiteScore)?a.whiteScore:null;
    const known=cp!==null;
    // Smooth, bounded visual score: 0 cp = 50/50; +200 cp favors white, -200 favors black.
    const whiteShare=known?50+50*(2/Math.PI)*Math.atan(cp/180):50;
@@ -4791,4 +4791,18 @@ document.addEventListener('DOMContentLoaded',()=>{
  hOpen=function(game){oldOpen(game);if(typeof hV91Load==='function'){const cached=hV91Load(hReview);if(cached.length){hAnalysis=cached;hPaint()}}};
 })();
 </script>
+<style id="v97-meter-fix">
+/* A visible reserved column, never placed outside the scrolling board region. */
+#historyView #historyReview .history-layout{grid-template-columns:minmax(0,550px) minmax(250px,1fr)}
+#historyView #historyReview .v96-board-area{display:grid!important;grid-template-columns:42px minmax(0,1fr)!important;gap:9px!important;align-items:stretch!important;width:100%!important;min-width:0!important;overflow:visible!important}
+#historyView #historyReview .v96-board-area .v96-eval-wrap{display:flex!important;min-height:250px!important;width:42px!important;min-width:42px!important;flex-direction:column!important;align-items:center!important;visibility:visible!important;opacity:1!important;align-self:stretch!important;gap:5px!important}
+#historyView #historyReview .v96-board-area .v96-eval-track{display:block!important;flex:1 1 auto!important;width:31px!important;min-height:235px!important;border:2px solid #d5aa68!important;border-radius:7px!important;background:#11151d!important;box-shadow:0 0 0 2px #09131b,0 3px 13px #0006!important;visibility:visible!important}
+#historyView #historyReview .v96-board-area .v96-eval-white{display:block!important;background:#f6f7fa!important;border-top:2px solid #d7b473!important}
+#historyView #historyReview .v96-board-area .v96-eval-label{font-size:15px!important;line-height:20px!important;letter-spacing:0!important;color:#f5d6a4!important}
+#historyView #historyReview .v96-board-area>.history-board{display:block!important;min-width:0!important;width:100%!important;max-width:100%!important;align-self:start!important}
+#historyView #historyReview .v96-board-area>.history-board .board{width:100%!important;max-width:100%!important}
+#historyView #v96EvaluationCaption{display:block!important;font-size:15px!important;border:1px solid #bb9866!important}
+@media(max-width:820px){#historyView #historyReview .history-layout{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:500px){#historyView #historyReview .v96-board-area{grid-template-columns:30px minmax(0,1fr)!important;gap:5px!important}#historyView #historyReview .v96-board-area .v96-eval-wrap{width:30px!important;min-width:30px!important}#historyView #historyReview .v96-board-area .v96-eval-track{width:22px!important;min-height:180px!important}#historyView #historyReview .v96-board-area .v96-eval-label{font-size:12px!important}}
+</style>
 </body></html>
