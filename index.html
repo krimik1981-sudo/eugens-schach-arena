@@ -1554,10 +1554,11 @@ body{background:var(--arena62-bg)}
 <strong id="historyPly">Startstellung</strong>
 <div class="history-actions"><button id="historyFirst" type="button">⏮</button><button id="historyPrev" type="button">◀ Zurück</button><button id="historyNext" type="button">Weiter ▶</button><button id="historyLast" type="button">⏭</button></div>
 <div aria-label="Zugliste" class="history-moves" id="historyMoves"></div>
+<label class="v92-arrow-toggle" for="v92ShowArrows"><input type="checkbox" id="v92ShowArrows" checked> <span>🟢 Beste Züge als Pfeile zeigen</span></label>
 <div class="history-actions"><button id="historyRunAnalysis" type="button">🔎 Analyse starten / fortsetzen</button><button class="secondary" id="historyStopAnalysis" type="button">Stopp</button><button class="secondary" id="historyExportPGN" type="button">PGN herunterladen</button></div>
 <p id="historyProgress" role="status"></p>
 <p id="historyMoveNote">Wähle einen Zug in der Liste.</p>
-<div id="historyAnalysis"></div><div class="v91-analysis-help">♟️ <strong>Partieanalyse</strong> · ✓ gute Züge · ?! Ungenauigkeit · ? Fehler · ?? grober Fehler. Tippe auf einen Zug, um die Stellung und Stockfish-Empfehlung zu sehen. Ergebnisse bleiben auf diesem Gerät gespeichert.</div><div id="historyGraph" style="margin-top:14px"></div>
+<div id="historyAnalysis"></div><div class="v91-analysis-help">♟️ <strong>Partieanalyse</strong> · ✓ gute Züge · ?! Ungenauigkeit · ? Fehler · ?? grober Fehler. Tippe auf einen Zug, um die Stellung zu sehen. Grüne Pfeile zeigen den besten Zug in genau dieser Stellung. Ergebnisse bleiben auf diesem Gerät gespeichert.</div><div id="historyGraph" style="margin-top:14px"></div>
 </div>
 </div>
 </div>
@@ -2782,7 +2783,7 @@ function hV91Format(i,game,before,after){
  const best=before?.best&&before.best!=='(none)'?before.best:'';
  const played=game.moves[i];
  const cat=diff==null?'Nicht vollständig bewertet':best===played?'Bester Zug':diff<75?'Guter Zug':diff<170?'Ungenauigkeit':diff<320?'Fehler':'Grober Fehler';
- return {best,whiteScore:after?.scoreWhite??null,drop:diff,text:(white?'Weiß':'Schwarz')+': '+cat+(diff!=null?' ('+Math.round(Math.max(0,diff))+' Centipawns Unterschied)':'')};
+ return {best,nextBest:(after?.best&&after.best!=='(none)'?after.best:''),whiteScore:after?.scoreWhite??null,drop:diff,text:(white?'Weiß':'Schwarz')+': '+cat+(diff!=null?' ('+Math.round(Math.max(0,diff))+' Centipawns Unterschied)':'')};
 }
 async function hAnalyze(){
  if(!hReview)return;
@@ -2861,18 +2862,49 @@ async function hAnalyze(){
  }
  function showBest(){
   board.querySelectorAll('.arena-best-square').forEach(el=>el.classList.remove('arena-best-square'));
-  if(!hIndex||!hAnalysis[hIndex-1]){hint.textContent='';return}
-  const a=hAnalysis[hIndex-1];hint.textContent='Stockfish empfiehlt vor diesem Zug: '+(a.best?hPrettyMove(a.best):'keine Empfehlung')+' · '+(a.text||'');
-  // The recommendation belongs to the position BEFORE the selected move.
-  // Use a small visual destination marker only when the recommended move is available.
-  if(a.best&&a.best.length>=4){const sq=a.best.slice(2,4),files='abcdefgh',rank=Number(sq[1]),file=files.indexOf(sq[0]);
-   if(file>=0&&rank>=1&&rank<=8){const idx=(8-rank)*8+file;board.children[idx]?.classList.add('arena-best-square')}}
+  board.querySelectorAll('.v92-best-arrow').forEach(el=>el.remove());
+  if(!hReview)return;
+  // The visible FEN is frames[hIndex], so use an engine move calculated FOR THAT POSITION.
+  // The old v91 highlight used hAnalysis[hIndex-1].best, which belongs to frames[hIndex-1].
+  const now=hAnalysis[hIndex];
+  const previous=hIndex>0?hAnalysis[hIndex-1]:null;
+  const best=(now?.best && !now.skipped?now.best:(previous?.nextBest||''));
+  const canShow=best&&/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(best);
+  if(!canShow){hint.textContent=hIndex===hReview.moves.length?'Für diese Schlussstellung liegt noch kein berechneter bester Zug vor.':'Für die angezeigte Stellung liegt noch keine Engine-Empfehlung vor.';return}
+  hint.textContent='Stockfish empfiehlt in dieser Stellung: '+hPrettyMove(best);
+  const enabled=document.getElementById('v92ShowArrows');
+  if(enabled && !enabled.checked)return;
+  const from=best.slice(0,2),to=best.slice(2,4);
+  if(from===to)return;
+  const files='abcdefgh';
+  const xy=sq=>({x:files.indexOf(sq[0])*100+50,y:(8-Number(sq[1]))*100+50});
+  const p1=xy(from),p2=xy(to);
+  if(p1.x<0||p2.x<0)return;
+  const dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.hypot(dx,dy);
+  if(len<10)return;
+  const x2=p2.x-dx/len*25,y2=p2.y-dy/len*25;
+  const NS='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(NS,'svg');
+  svg.classList.add('v92-best-arrow');
+  svg.setAttribute('viewBox','0 0 800 800');
+  svg.setAttribute('preserveAspectRatio','none');
+  svg.setAttribute('aria-hidden','true');
+  const make=(tag,attrs)=>{const el=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));return el};
+  const defs=make('defs',{});
+  const marker=make('marker',{id:'v92-arrow-tip',markerWidth:8,markerHeight:8,refX:5,refY:3,orient:'auto',markerUnits:'strokeWidth'});
+  marker.appendChild(make('path',{d:'M0,0 L6,3 L0,6 Z',fill:'#45cf96',stroke:'#0b4635','stroke-width':'.7'}));
+  defs.appendChild(marker);svg.appendChild(defs);
+  svg.appendChild(make('line',{x1:p1.x,y1:p1.y,x2,y2,'stroke':'#08241f','stroke-opacity':'.85','stroke-width':23,'stroke-linecap':'round'}));
+  svg.appendChild(make('line',{x1:p1.x,y1:p1.y,x2,y2,'stroke':'#45cf96','stroke-width':15,'stroke-linecap':'round','marker-end':'url(#v92-arrow-tip)'}));
+  board.appendChild(svg);
  }
+
  hPaint=function(){oldPaint();
   const btns=document.getElementById('historyMoves').querySelectorAll('button');
   btns.forEach((btn,i)=>{const a=hAnalysis[i];if(!a)return;const mark=label(a);if(mark){const badge=document.createElement('span');badge.className='arena-move-mark '+(mark==='??'?'bad':mark==='?'?'error':mark==='?!'?'inaccurate':'good');badge.textContent=mark;btn.append(' ',badge)}});
   showBest();
  };
+ document.getElementById('v92ShowArrows')?.addEventListener('change',()=>hPaint());
  hDrawEvaluation=function(){oldGraph();updateSummary();
   const svg=document.querySelector('#historyGraph svg');if(!svg)return;
   svg.style.cursor='crosshair';svg.setAttribute('aria-label','Interaktiver Bewertungsverlauf: klicken, um zum Zug zu springen');
@@ -4661,5 +4693,15 @@ document.addEventListener('DOMContentLoaded',()=>{
 #historyView .v91-analysis-help{padding:12px 14px;margin:12px 0;border:1px solid #ad874d;border-radius:12px;color:#d8e5f4;background:#10263b;line-height:1.5}
 #historyView .history-moves button{min-height:42px}
 @media(max-width:700px){#historyView .history-actions{display:flex;flex-wrap:wrap;gap:8px}#historyView .history-actions button{flex:1 1 150px;min-width:0}#historyView .history-layout{display:grid;grid-template-columns:1fr}#historyView .history-board{max-width:100%;margin:auto}}
+</style>
+
+<style id="v92-analysis-arrow-style">
+#historyBoard{position:relative;isolation:isolate}
+#historyBoard .v92-best-arrow{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);z-index:5;pointer-events:none;overflow:visible;touch-action:none}
+#historyView .v92-arrow-toggle{display:flex;align-items:center;gap:10px;margin:13px 0;padding:12px 15px;background:#102c41;border:1px solid #a8894b;color:#ffe0a2;border-radius:12px;font-weight:750;cursor:pointer;min-height:48px}
+#historyView .v92-arrow-toggle input{width:20px;height:20px;accent-color:#4dd29a;flex-shrink:0}
+#historyView .v92-arrow-toggle span{line-height:1.4}
+#historyView .arena-best-hint{color:#91e4ba}
+@media(max-width:650px){#historyView .v92-arrow-toggle{font-size:14px;padding:10px}}
 </style>
 </body></html>
