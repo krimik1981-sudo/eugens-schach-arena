@@ -1575,16 +1575,7 @@ body{background:var(--arena62-bg)}
 </div>
 </div>
 </section>
-<section class="heavy-menu" hidden="" id="eugenMenu">
-<button class="course-return" id="backEugenHome" type="button">← Alle Kurse</button>
-<h1 class="heavy-title">♟️ Spiel gegen Eugen</h1>
-<p class="heavy-prompt">Wähle deinen Gegner:</p>
-<div class="eugen-level-cards">
-<button class="eugen-level-card" data-level="beginner" type="button"><span class="eugen-emoji">🌱</span><strong>Anfänger</strong><small>Eugen spielt einfache Züge und macht öfter Fehler.</small><span class="heavy-open">Spielen →</span></button>
-<button class="eugen-level-card" data-level="intermediate" type="button"><span class="eugen-emoji">⚔️</span><strong>Fortgeschrittene</strong><small>Eugen achtet auf Material und einfache Taktik.</small><span class="heavy-open">Spielen →</span></button>
-<button class="eugen-level-card" data-level="expert" type="button"><span class="eugen-emoji">🏆</span><strong>Profi</strong><small>Die stärkste Stufe dieser Arena: Mit Stockfish gegen eine starke Schachengine spielen (Internet benötigt).</small><span class="heavy-open">Spielen →</span></button>
-</div>
-</section>
+<section id="eugenMenu" hidden aria-hidden="true"></section>
 <div aria-label="Bauernumwandlung" aria-modal="true" hidden="" id="eugenPromotionDialog" role="dialog">
 <div class="eugen-promobox">
 <h2>Wähle deine neue Figur</h2>
@@ -1593,7 +1584,7 @@ body{background:var(--arena62-bg)}
 </div>
 </div>
 <section class="rook-game" hidden="" id="eugenGame">
-<button class="course-return" id="backEugenLevels" type="button">← Schwierigkeitsstufen</button>
+<button class="course-return" id="backEugenLevels" type="button">← Spielen</button>
 <h1 id="eugenTitle">♟️ Spiel gegen Eugen</h1>
 <p class="intro" id="v93EugenIntro">Du spielst mit Weiß. Eugen spielt Schwarz. Tippe auf eine Figur und dann auf ihr Zielfeld.</p>
 <div class="rook-game-layout">
@@ -2412,10 +2403,10 @@ function egAIMove(){
  }
  egMove(chosen);
 }
-$('openEugen').addEventListener('click',()=>{$('courseHome').hidden=true;$('eugenMenu').hidden=false;window.scrollTo(0,0)});
+$('openEugen').addEventListener('click',()=>{const level=document.querySelector('input[name="v83chessLevel"]:checked')?.value||document.querySelector('input[name="v85ChessLevel"]:checked')?.value||'beginner';egStart(level);});
 $('backEugenHome').addEventListener('click',()=>{$('eugenMenu').hidden=true;$('courseHome').hidden=false;window.scrollTo(0,0)});
 for(const b of document.querySelectorAll('[data-level]'))b.addEventListener('click',()=>egStart(b.dataset.level));
-$('backEugenLevels').addEventListener('click',()=>{egHidePromotion();egDisposeStockfish();clearTimeout(egTimer);hideRookMate();$('eugenGame').hidden=true;$('eugenMenu').hidden=false;window.scrollTo(0,0)});
+$('backEugenLevels').addEventListener('click',()=>{egHidePromotion();egDisposeStockfish();clearTimeout(egTimer);hideRookMate();$('eugenGame').hidden=true;$('eugenMenu').hidden=true;$('courseHome').hidden=false;const nav=document.querySelector('#courseHome .arena-navitem[data-page="spielen"]');if(nav)nav.click();window.scrollTo(0,0)});
 $('eugenRestart').addEventListener('click',()=>{hideRookMate();egReset();if(egMode==='expert')egInitStockfish();if(egHuman==='b')egTimer=setTimeout(egAIMove,380)});
 $('eugenUndo').addEventListener('click',()=>{
  egDisposeStockfish();clearTimeout(egTimer);hideRookMate();if(!egHistory.length)return;
@@ -4297,10 +4288,7 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
  const radio=name=>document.querySelector('input[name="'+name+'"]:checked')?.value;
  byId('v83PlayChess')?.addEventListener('click',()=>{window.arenaChessChosenColor=radio('v83ChessColor')||'w';
 
-   const level=radio('v83chessLevel')||'beginner';
    byId('openEugen')?.click();
-   const button=document.querySelector('#eugenMenu .eugen-level-card[data-level="'+level+'"]');
-   if(button)button.click();
  });
  byId('v83PlayDame')?.addEventListener('click',()=>{
    nav('dame');
