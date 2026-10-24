@@ -1119,12 +1119,14 @@ body{background:var(--arena62-bg)}
       <article class="v83-mode" data-game="schach" data-type="computer">
         <div class="v83-card-top"><span class="v83-icon" aria-hidden="true">♞</span><div><h3>Schach spielen</h3><p>Nur gegen Computer</p></div></div>
         <fieldset class="v83-levels"><legend>Schwierigkeitsgrad</legend><label><input type="radio" name="v83chessLevel" value="beginner" checked><span>Anfänger</span></label><label><input type="radio" name="v83chessLevel" value="intermediate"><span>Fortgeschritten</span></label><label><input type="radio" name="v83chessLevel" value="expert"><span>Profi</span></label></fieldset>
-        <button class="v83-launch" type="button" id="v83PlayChess">Jetzt spielen <span>→</span></button>
+        <fieldset class="v93-colors"><legend>Meine Farbe</legend><label><input type="radio" name="v83ChessColor" value="w" checked><span>♔ Weiß</span></label><label><input type="radio" name="v83ChessColor" value="b"><span>♚ Schwarz</span></label></fieldset>
+      <button class="v83-launch" type="button" id="v83PlayChess">Jetzt spielen <span>→</span></button>
       </article>
       <article class="v83-mode" data-game="dame" data-type="computer">
         <div class="v83-card-top"><span class="v83-icon" aria-hidden="true">⛀</span><div><h3>Dame spielen</h3><p>Nur gegen Computer</p></div></div>
         <fieldset class="v83-levels"><legend>Schwierigkeitsgrad</legend><label><input type="radio" name="v83dameLevel" value="easy" checked><span>Anfänger</span></label><label><input type="radio" name="v83dameLevel" value="medium"><span>Fortgeschritten</span></label><label><input type="radio" name="v83dameLevel" value="hard"><span>Profi</span></label></fieldset>
-        <button class="v83-launch" type="button" id="v83PlayDame">Jetzt spielen <span>→</span></button>
+        <fieldset class="v93-colors v94-dame-colors"><legend>Meine Farbe</legend><label><input type="radio" name="v83DameColor" value="w" checked><span>⚪ Weiß</span></label><label><input type="radio" name="v83DameColor" value="b"><span>⚫ Schwarz</span></label></fieldset>
+      <button class="v83-launch" type="button" id="v83PlayDame">Jetzt spielen <span>→</span></button>
       </article>
       <article class="v83-mode" data-game="schach" data-type="training"><div class="v83-card-top"><span class="v83-icon" aria-hidden="true">♜</span><div><h3>Schach-Training</h3><p>Aufgaben und Lernen</p></div></div><p class="v83-description">Matt, Taktik, Figuren und Endspiele trainieren.</p><button class="v83-launch" type="button" data-page="lernen">Zum Training <span>→</span></button></article>
       <article class="v83-mode" data-game="dame" data-type="training"><div class="v83-card-top"><span class="v83-icon" aria-hidden="true">◎</span><div><h3>Dame-Training</h3><p>Aufgaben und Lernen</p></div></div><p class="v83-description">Schlagen, Kombinationen und Damen trainieren.</p><button class="v83-launch" type="button" data-page="dame-training">Zum Training <span>→</span></button></article>
@@ -1155,6 +1157,7 @@ body{background:var(--arena62-bg)}
         <label><input type="radio" name="v85ChessLevel" value="intermediate"><span>Fortgeschritten</span></label>
         <label><input type="radio" name="v85ChessLevel" value="expert"><span>Profi</span></label>
       </fieldset>
+      <fieldset class="v93-colors"><legend>Meine Farbe</legend><label><input type="radio" name="v85ChessColor" value="w" checked><span>♔ Weiß</span></label><label><input type="radio" name="v85ChessColor" value="b"><span>♚ Schwarz</span></label></fieldset>
       <button type="button" class="v85-playbutton" id="v85PlayChess">Jetzt spielen <span>→</span></button>
     </article>
     <article class="v85-playcard" data-kind="dame">
@@ -1164,6 +1167,7 @@ body{background:var(--arena62-bg)}
         <label><input type="radio" name="v85DameLevel" value="medium"><span>Fortgeschritten</span></label>
         <label><input type="radio" name="v85DameLevel" value="hard"><span>Profi</span></label>
       </fieldset>
+      <fieldset class="v93-colors v94-dame-colors"><legend>Meine Farbe</legend><label><input type="radio" name="v85DameColor" value="w" checked><span>⚪ Weiß</span></label><label><input type="radio" name="v85DameColor" value="b"><span>⚫ Schwarz</span></label></fieldset>
       <button type="button" class="v85-playbutton" id="v85PlayDame">Jetzt spielen <span>→</span></button>
     </article>
   </div>
@@ -1173,7 +1177,7 @@ body{background:var(--arena62-bg)}
 <!-- Dame-Training ist ausschließlich über Lernen zugänglich. -->
 <div class="dame-layout"><div class="dame-board-area"><div aria-label="Damebrett" class="dame-board" id="dameBoard"></div><div class="dame-note">Tippe auf einen Stein und danach auf einen grünen Punkt. Beim Mehrfachschlag weiterziehen.</div></div>
 <div class="dame-panel"><h3>Spielmodus</h3><label for="dameMode">Gegner</label><select id="dameMode"><option value="ai">Gegen Computer</option><option value="local">Zwei Spieler am Gerät</option><option value="online">🌐 Online gegen Freunde</option></select>
-<div id="dameComputerColorBox"><label for="dameComputerColor">Meine Farbe gegen Computer</label><select id="dameComputerColor"><option value="w">⚪ Weiß – du beginnst</option><option value="b">⚫ Schwarz – Computer beginnt</option></select></div>
+<div id="dameComputerColorBox"><label for="dameComputerColor">Meine Farbe (Weiß beginnt)</label><select id="dameComputerColor"><option value="w">⚪ Weiß – du beginnst</option><option value="b">⚫ Schwarz – Computer beginnt</option></select></div>
 <label for="dameLevel">Computerstärke</label><select id="dameLevel"><option value="easy">Anfänger</option><option selected="" value="medium">Fortgeschritten</option><option value="hard">Profi</option></select>
 <div hidden="" id="dameOnlineBox">
 <h3>🌐 Online-Dame</h3>
@@ -1583,7 +1587,7 @@ body{background:var(--arena62-bg)}
 <section class="rook-game" hidden="" id="eugenGame">
 <button class="course-return" id="backEugenLevels" type="button">← Schwierigkeitsstufen</button>
 <h1 id="eugenTitle">♟️ Spiel gegen Eugen</h1>
-<p class="intro">Du spielst mit Weiß. Eugen spielt Schwarz. Tippe auf eine Figur und dann auf ihr Zielfeld.</p>
+<p class="intro" id="v93EugenIntro">Du spielst mit Weiß. Eugen spielt Schwarz. Tippe auf eine Figur und dann auf ihr Zielfeld.</p>
 <div class="rook-game-layout">
 <div class="wood rook-board-frame"><div aria-label="Schachpartie gegen Eugen" class="board rook-board" id="eugenBoard" role="group"></div></div>
 <aside class="rook-panel">
@@ -2075,7 +2079,7 @@ const egFiles='abcdefgh';
 const egRanks='87654321';
 const egLevels={beginner:'Anfänger',intermediate:'Fortgeschrittene',expert:'Profi'};
 const egValue={p:100,n:320,b:335,r:500,q:900,k:0};
-let egMode='beginner', egBoard={},egWhite=true,egSelected=null,egLast=[],egHistory=[],egGameOver=false,egTimer=null,egEP=null,egCastle='KQkq',egHalf=0,egFull=1,egReps=new Map();
+let egHuman='w',egMode='beginner', egBoard={},egWhite=true,egSelected=null,egLast=[],egHistory=[],egGameOver=false,egTimer=null,egEP=null,egCastle='KQkq',egHalf=0,egFull=1,egReps=new Map();
  let egCapturedBlack=[],egCapturedWhite=[];
 function egSquare(f,r){return egFiles[f]+r}
 function egCoords(s){return [egFiles.indexOf(s[0]),Number(s[1])]}
@@ -2104,7 +2108,7 @@ function egStockFailure(msg){
  if(egStockWorker){try{egStockWorker.terminate()}catch(e){}egStockWorker=null}
  if(egStockWorkerURL){URL.revokeObjectURL(egStockWorkerURL);egStockWorkerURL=null}
  egEngineInfo('Stockfish nicht erreichbar ('+msg+'). Eugen nutzt ersatzweise seinen lokalen Schachgegner.');
- if(!egWhite&&!egGameOver&&!$('eugenGame').hidden)egTimer=setTimeout(egAIMove,100);
+ if((egWhite?'w':'b')!==egHuman&&!egGameOver&&!$('eugenGame').hidden)egTimer=setTimeout(egAIMove,100);
 }
 function egFen(){
  const ranks=[];
@@ -2134,9 +2138,9 @@ function egInitStockfish(){
     egEngineInfo('Profi aktiv: Stockfish 10 – starke Schachengine (2,8 Sekunden pro Zug).');
    }else if(msg.startsWith('bestmove ')){
     if(!egStockBusy)return;egStockBusy=false;clearTimeout(egStockMoveTimer);
-    if(egWhite||egGameOver||$('eugenGame').hidden)return;
+    if((egWhite?'w':'b')===egHuman||egGameOver||$('eugenGame').hidden)return;
     const uci=msg.split(/\s+/)[1]||'';
-    const legal=egLegal(egBoard,'b',egEP,egCastle);
+    const legal=egLegal(egBoard,egEnemy(egHuman),egEP,egCastle);
     const m=legal.find(x=>x.from===uci.slice(0,2)&&x.to===uci.slice(2,4)&&(!x.promotion||x.promotion===uci.slice(4,5)))
       ||legal.find(x=>x.from===uci.slice(0,2)&&x.to===uci.slice(2,4));
     if(m)egMove(m);else egStockFailure('ungültige Engine-Antwort');
@@ -2246,12 +2250,11 @@ function egReset(){
  historyBeforeEugenReset();
  egHidePromotion();
  egDisposeStockfish();clearTimeout(egTimer);egBoard=egInit();egWhite=true;egSelected=null;egLast=[];egHistory=[];egCapturedBlack=[];egCapturedWhite=[];egGameOver=false;egEP=null;egCastle='KQkq';egHalf=0;egFull=1;egReps=new Map();egReps.set(egPositionKey(),1);
- $('eugenStatus').textContent='Du bist Weiß und beginnst. Wähle eine Figur.';$('eugenHeadline').textContent='♔ Weiß am Zug';egDraw();
+ $('eugenStatus').textContent=egHuman==='w'?'Du bist Weiß und beginnst. Wähle eine Figur.':'Du bist Schwarz. Eugen eröffnet mit Weiß.';$('eugenHeadline').textContent='♔ Weiß am Zug';egDraw();
  historyEugenReset();
 }
-function egStart(mode){
- egMode=mode;egReset();$('courseHome').hidden=true;$('heavyMenu').hidden=true;$('trainingView').hidden=true;$('rookGame').hidden=true;$('eugenMenu').hidden=true;$('eugenGame').hidden=false;
- $('eugenTitle').textContent='♟️ Spiel gegen Eugen – '+egLevels[mode];$('eugenLevelLabel').textContent=egLevels[mode];egDraw();if(mode==='expert')egInitStockfish();else egEngineInfo(mode==='beginner'?'Anfänger: lockerer Computergegner.':'Fortgeschrittene: taktisch stärkerer Computergegner.');window.scrollTo(0,0);
+function egStart(mode){  egHuman=window.arenaChessChosenColor==='b'?'b':'w';egMode=mode;egReset();$('courseHome').hidden=true;$('heavyMenu').hidden=true;$('trainingView').hidden=true;$('rookGame').hidden=true;$('eugenMenu').hidden=true;$('eugenGame').hidden=false;
+ $('eugenTitle').textContent='♟️ Spiel gegen Eugen – '+egLevels[mode];$('eugenLevelLabel').textContent=egLevels[mode];egDraw();$('v93EugenIntro').textContent=egHuman==='w'?'Du spielst Weiß, Eugen Schwarz. Tippe auf eine Figur und dann auf ihr Zielfeld.':'Du spielst Schwarz, Eugen Weiß. Eugen macht den ersten Zug.';if(mode==='expert')egInitStockfish();else egEngineInfo(mode==='beginner'?'Anfänger: lockerer Computergegner.':'Fortgeschrittene: taktisch stärkerer Computergegner.');if(egHuman==='b')egTimer=setTimeout(egAIMove,380);window.scrollTo(0,0);
 }
  function egDrawCaptures(){
   const order={q:0,r:1,b:2,n:3,p:4};
@@ -2267,21 +2270,23 @@ function egStart(mode){
  }
 function egDraw(){
  const el=$('eugenBoard');el.replaceChildren();
- const choices=egSelected&&!egGameOver&&egWhite?egLegal(egBoard,'w',egEP,egCastle).filter(m=>m.from===egSelected).map(m=>m.to):[];
- for(let r=8;r>=1;r--)for(let f=0;f<8;f++){
-  const sq=egSquare(f,r),pc=egBoard[sq],cell=document.createElement('button');cell.type='button';
+ const choices=egSelected&&!egGameOver&&(egWhite?'w':'b')===egHuman?egLegal(egBoard,egHuman,egEP,egCastle).filter(m=>m.from===egSelected).map(m=>m.to):[];
+ for(let vr=8;vr>=1;vr--)for(let vf=0;vf<8;vf++){
+   const r=egHuman==='b'?9-vr:vr,f=egHuman==='b'?7-vf:vf;
+   const sq=egSquare(f,r),pc=egBoard[sq],cell=document.createElement('button');cell.type='button';
   cell.className='sq rook-square '+(((f+r)%2===1)?'light':'dark');
   if(egSelected===sq)cell.classList.add('selected');else if(egLast.includes(sq))cell.classList.add('last');
   if(choices.includes(sq))cell.classList.add('target');
   cell.setAttribute('aria-label',sq+' '+(pc?({K:'weißer König',k:'schwarzer König',Q:'weiße Dame',q:'schwarze Dame',R:'weißer Turm',r:'schwarzer Turm',B:'weißer Läufer',b:'schwarzer Läufer',N:'weißer Springer',n:'schwarzer Springer',P:'weißer Bauer',p:'schwarzer Bauer'}[pc]):'leer'));
   if(pc)cell.innerHTML=figure(pc);
-  if(f===0){const c=document.createElement('span');c.className='coord rank';c.textContent=r;cell.appendChild(c)}
-  if(r===1){const c=document.createElement('span');c.className='coord file';c.textContent=egFiles[f];cell.appendChild(c)}
+  if(vf===0){const c=document.createElement('span');c.className='coord rank';c.textContent=r;cell.appendChild(c)}
+   if(vr===1){const c=document.createElement('span');c.className='coord file';c.textContent=egFiles[f];cell.appendChild(c)}
   cell.addEventListener('click',()=>egClick(sq));el.appendChild(cell);
  }
  $('eugenMoves').textContent='Züge: '+(egFull-1)+(egWhite?'':' (Weiß gezogen)');
   egDrawCaptures();
-}
+  const labels=document.querySelectorAll('#eugenGame .eugen-capture-group>strong');if(labels.length===2){labels[0].textContent=(egHuman==='w'?'⚪ Von dir':'⚫ Von Eugen')+' geschlagen (Schwarz)';labels[1].textContent=(egHuman==='b'?'⚫ Von dir':'⚪ Von Eugen')+' geschlagen (Weiß)';}
+ }
 
 let egPendingPromotion=null;
 function egHidePromotion(){
@@ -2296,7 +2301,7 @@ function egShowPromotion(m){
     const button=document.createElement('button');
     button.type='button';
     button.setAttribute('aria-label',label);
-    button.innerHTML=figure(symbol.toUpperCase())+'<span>'+label+'</span>';
+    button.innerHTML=figure(egHuman==='w'?symbol.toUpperCase():symbol)+'<span>'+label+'</span>';
     button.addEventListener('click',()=>{
       const pending=egPendingPromotion;
       if(!pending)return;
@@ -2316,10 +2321,10 @@ $('eugenPromotionCancel').addEventListener('click',()=>{
   egDraw();
 });
 function egClick(sq){
- if(egGameOver||!egWhite||promotionPending||egPendingPromotion)return;
- const p=egBoard[sq];if(p&&egSide(p)==='w'){egSelected=egSelected===sq?null:sq;egDraw();return}
+ if(egGameOver||(egWhite?'w':'b')!==egHuman||promotionPending||egPendingPromotion)return;
+  const p=egBoard[sq];if(p&&egSide(p)===egHuman){egSelected=egSelected===sq?null:sq;egDraw();return}
  if(!egSelected)return;
- let m=egLegal(egBoard,'w',egEP,egCastle).find(m=>m.from===egSelected&&m.to===sq);
+ let m=egLegal(egBoard,egHuman,egEP,egCastle).find(m=>m.from===egSelected&&m.to===sq);
  if(!m){$('eugenStatus').textContent='Dieser Zug ist nicht erlaubt.';egDraw();return}
  if(m.promotion){
   egShowPromotion(m);
@@ -2345,10 +2350,10 @@ function egMove(m){
 }
 function egAssess(){
  const side=egWhite?'w':'b',legal=egLegal(egBoard,side,egEP,egCastle),checked=egCheck(egBoard,side);
- if(!legal.length){egGameOver=true;if(checked){$('eugenHeadline').textContent=egWhite?'♚ Eugen gewinnt':'🏆 Du hast gewonnen!';$('eugenStatus').textContent=egWhite?'Schachmatt! Eugen hat gewonnen.':'Schachmatt! Du hast Eugen besiegt!';if(!egWhite)showRookMate()}else{$('eugenHeadline').textContent='Remis';$('eugenStatus').textContent='Patt – unentschieden.'}return}
+ if(!legal.length){egGameOver=true;if(checked){$('eugenHeadline').textContent=side===egHuman?'♚ Eugen gewinnt':'🏆 Du hast gewonnen!';$('eugenStatus').textContent=side===egHuman?'Schachmatt! Eugen hat gewonnen.':'Schachmatt! Du hast Eugen besiegt!';if(side!==egHuman)showRookMate()}else{$('eugenHeadline').textContent='Remis';$('eugenStatus').textContent='Patt – unentschieden.'}return}
  if(egHalf>=100||(egReps.get(egPositionKey())||0)>=3){egGameOver=true;$('eugenHeadline').textContent='Remis';$('eugenStatus').textContent='Unentschieden nach der 50-Züge-Regel oder Stellungswiederholung.';return}
- $('eugenHeadline').textContent=egWhite?'♔ Weiß am Zug':'♚ Eugen am Zug';
- $('eugenStatus').textContent=checked?'Schach! '+(egWhite?'Du':'Eugen')+' musst den König schützen.':egWhite?'Du bist am Zug.':'Eugen überlegt …';
+ $('eugenHeadline').textContent=(egWhite?'♔ Weiß':'♚ Schwarz')+' am Zug';
+  $('eugenStatus').textContent=checked?'Schach! '+(side===egHuman?'Du':'Eugen')+' musst den König schützen.':side===egHuman?'Du bist am Zug.':'Eugen überlegt …';
 }
 function egEvaluate(p){
  let value=0;
@@ -2376,22 +2381,23 @@ function egSearch(p,side,depth,alpha,beta,ep,castle){
  }
 }
 function egAIMove(){
- if(egWhite||egGameOver||$('eugenGame').hidden)return;
- if(egMode==='expert'&&!egStockFailed){
+ if((egWhite?'w':'b')===egHuman||egGameOver||$('eugenGame').hidden)return;
+  if(egMode==='expert'&&!egStockFailed){
   if(egRunStockfish())return;
   if(!egStockWorker)egInitStockfish();
   if(!egStockFailed){egTimer=setTimeout(egAIMove,350);return}
  }
  if(egMode==='expert'&&egStockFailed)egEngineInfo('Stockfish nicht erreichbar: lokaler Ersatzgegner (nicht Profi-Niveau).');
- const legal=egLegal(egBoard,'b',egEP,egCastle);if(!legal.length){egAssess();return}
+ const aiSide=egEnemy(egHuman),legal=egLegal(egBoard,aiSide,egEP,egCastle);if(!legal.length){egAssess();return}
  let chosen;
  if(egMode==='beginner'){
   // Häufig zufällige, legale Züge; gelegentlich einen Schlagzug.
   const captures=legal.filter(m=>egBoard[m.to]);chosen=(captures.length&&Math.random()<.25)?captures[Math.floor(Math.random()*captures.length)]:legal[Math.floor(Math.random()*legal.length)];
  }else{
   const depth=egMode==='expert'?3:2;let best=-Infinity;let contenders=[];
-  for(const m of legal){const next=egApply(egBoard,m),pc=egBoard[m.from],castle=egChangeCastle(egCastle,m,pc,egBoard[m.to]);const [f,r]=egCoords(m.from);const ep=m.double?egSquare(f,r-1):null;
-   const v=egSearch(next,'w',depth,-Infinity,Infinity,ep,castle)+(Math.random()-.5)*(egMode==='expert'?3:28);
+  for(const m of legal){const next=egApply(egBoard,m),pc=egBoard[m.from],castle=egChangeCastle(egCastle,m,pc,egBoard[m.to]);const [f,r]=egCoords(m.from);const ep=m.double?egSquare(f,r+(aiSide==='w'?1:-1)):null;
+    const score=egSearch(next,egHuman,depth,-Infinity,Infinity,ep,castle);
+    const v=(aiSide==='b'?score:-score)+(Math.random()-.5)*(egMode==='expert'?3:28);
    if(v>best+.01){best=v;contenders=[m]}else if(v>best-.01){contenders.push(m)}
   }
   chosen=contenders[Math.floor(Math.random()*contenders.length)]||legal[0];
@@ -2402,11 +2408,11 @@ $('openEugen').addEventListener('click',()=>{$('courseHome').hidden=true;$('euge
 $('backEugenHome').addEventListener('click',()=>{$('eugenMenu').hidden=true;$('courseHome').hidden=false;window.scrollTo(0,0)});
 for(const b of document.querySelectorAll('[data-level]'))b.addEventListener('click',()=>egStart(b.dataset.level));
 $('backEugenLevels').addEventListener('click',()=>{egHidePromotion();egDisposeStockfish();clearTimeout(egTimer);hideRookMate();$('eugenGame').hidden=true;$('eugenMenu').hidden=false;window.scrollTo(0,0)});
-$('eugenRestart').addEventListener('click',()=>{hideRookMate();egReset();if(egMode==='expert')egInitStockfish()});
+$('eugenRestart').addEventListener('click',()=>{hideRookMate();egReset();if(egMode==='expert')egInitStockfish();if(egHuman==='b')egTimer=setTimeout(egAIMove,380)});
 $('eugenUndo').addEventListener('click',()=>{
  egDisposeStockfish();clearTimeout(egTimer);hideRookMate();if(!egHistory.length)return;
- let target=egHistory.length-1;while(target>0&&!egHistory[target].white)target--;
- const s=egHistory[target];egHistory=egHistory.slice(0,target);egBoard={...s.board};egWhite=true;egEP=s.ep;egCastle=s.castle;egHalf=s.half;egFull=s.full;egLast=[...s.last];egCapturedBlack=[...s.capturedBlack];egCapturedWhite=[...s.capturedWhite];egSelected=null;egGameOver=false;egReps=new Map([[egPositionKey(),1]]);$('eugenHeadline').textContent='♔ Weiß am Zug';$('eugenStatus').textContent='Zug zurückgenommen. Du bist am Zug.';egDraw();historyEugenUndo();
+ let target=egHistory.length-1;while(target>0&&(egHistory[target].white?'w':'b')!==egHuman)target--;
+ const s=egHistory[target];egHistory=egHistory.slice(0,target);egBoard={...s.board};egWhite=s.white;egEP=s.ep;egCastle=s.castle;egHalf=s.half;egFull=s.full;egLast=[...s.last];egCapturedBlack=[...s.capturedBlack];egCapturedWhite=[...s.capturedWhite];egSelected=null;egGameOver=false;egReps=new Map([[egPositionKey(),1]]);$('eugenHeadline').textContent=(egWhite?'♔ Weiß':'♚ Schwarz')+' am Zug';$('eugenStatus').textContent='Zug zurückgenommen. '+((egWhite?'w':'b')===egHuman?'Du bist am Zug.':'Eugen denkt …');egDraw();historyEugenUndo();if(egMode==='expert')egInitStockfish();if((egWhite?'w':'b')!==egHuman)egTimer=setTimeout(egAIMove,350);
 });
 
 rebuild();
@@ -2882,20 +2888,23 @@ async function hAnalyze(){
   if(p1.x<0||p2.x<0)return;
   const dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.hypot(dx,dy);
   if(len<10)return;
-  const x2=p2.x-dx/len*25,y2=p2.y-dy/len*25;
+  const ux=dx/len,uy=dy/len,px=-uy,py=ux;
+  const tip={x:p2.x-ux*20,y:p2.y-uy*20};
+  const neck={x:tip.x-ux*43,y:tip.y-uy*43};
+  const tail={x:p1.x+ux*17,y:p1.y+uy*17};
+  const fmt=p=>p.x.toFixed(1)+','+p.y.toFixed(1);
+  const offset=(p,x,y)=>({x:p.x+px*x+ux*y,y:p.y+py*x+uy*y});
   const NS='http://www.w3.org/2000/svg';
-  const svg=document.createElementNS(NS,'svg');
-  svg.classList.add('v92-best-arrow');
-  svg.setAttribute('viewBox','0 0 800 800');
-  svg.setAttribute('preserveAspectRatio','none');
-  svg.setAttribute('aria-hidden','true');
+  const svg=document.createElementNS(NS,'svg');svg.classList.add('v92-best-arrow');
+  svg.setAttribute('viewBox','0 0 800 800');svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('aria-hidden','true');
   const make=(tag,attrs)=>{const el=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));return el};
-  const defs=make('defs',{});
-  const marker=make('marker',{id:'v92-arrow-tip',markerWidth:8,markerHeight:8,refX:5,refY:3,orient:'auto',markerUnits:'strokeWidth'});
-  marker.appendChild(make('path',{d:'M0,0 L6,3 L0,6 Z',fill:'#45cf96',stroke:'#0b4635','stroke-width':'.7'}));
-  defs.appendChild(marker);svg.appendChild(defs);
-  svg.appendChild(make('line',{x1:p1.x,y1:p1.y,x2,y2,'stroke':'#08241f','stroke-opacity':'.85','stroke-width':23,'stroke-linecap':'round'}));
-  svg.appendChild(make('line',{x1:p1.x,y1:p1.y,x2,y2,'stroke':'#45cf96','stroke-width':15,'stroke-linecap':'round','marker-end':'url(#v92-arrow-tip)'}));
+  const defs=make('defs',{}),grad=make('linearGradient',{id:'v93-arrow-fill',x1:'0%',y1:'0%',x2:'100%',y2:'100%'});
+  grad.append(make('stop',{offset:'0%','stop-color':'#b7ffe1','stop-opacity':'.87'}));
+  grad.append(make('stop',{offset:'65%','stop-color':'#36ca92','stop-opacity':'.88'}));
+  grad.append(make('stop',{offset:'100%','stop-color':'#16996e','stop-opacity':'.91'}));defs.append(grad);svg.append(defs);
+  const d='M '+fmt(offset(tail,-8,0))+' L '+fmt(offset(neck,-8,0))+' L '+fmt(offset(neck,-24,0))+' L '+fmt(tip)+' L '+fmt(offset(neck,24,0))+' L '+fmt(offset(neck,8,0))+' L '+fmt(offset(tail,8,0))+' Q '+fmt(offset(tail,-8,-9))+' '+fmt(offset(tail,-8,0))+' Z';
+  svg.append(make('path',{d,fill:'#062c25','fill-opacity':'.25',stroke:'#03231d','stroke-opacity':'.55','stroke-width':7,'stroke-linejoin':'round'}));
+  svg.append(make('path',{d,fill:'url(#v93-arrow-fill)',stroke:'#b6ffdb','stroke-opacity':'.4','stroke-width':2,'stroke-linejoin':'round'}));
   board.appendChild(svg);
  }
 
@@ -4271,7 +4280,8 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
  function nav(page){const button=document.querySelector('#courseHome .arena-navitem[data-page="'+page+'"]');if(button){button.click();return true}return false}
  function change(select,value){if(!select)return;select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}))}
  const radio=name=>document.querySelector('input[name="'+name+'"]:checked')?.value;
- byId('v83PlayChess')?.addEventListener('click',()=>{
+ byId('v83PlayChess')?.addEventListener('click',()=>{window.arenaChessChosenColor=radio('v83ChessColor')||'w';
+
    const level=radio('v83chessLevel')||'beginner';
    byId('openEugen')?.click();
    const button=document.querySelector('#eugenMenu .eugen-level-card[data-level="'+level+'"]');
@@ -4281,6 +4291,8 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
    nav('dame');
    change(byId('dameMode'),'ai');
    change(byId('dameLevel'),radio('v83dameLevel')||'easy');
+   // The existing Dame engine maps the selected human color to the computer's opposite side.
+   change(byId('dameComputerColor'),radio('v83DameColor')||'w');
    byId('dameRestart')?.click();
  });
  byId('v83OnlineChess')?.addEventListener('click',()=>byId('openLive')?.click());
@@ -4409,9 +4421,13 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
   return false;
  }
  document.getElementById('v85PlayChess')?.addEventListener('click',()=>{
+   const color=selected('v85ChessColor')||'w';const radio=document.querySelector('input[name="v83ChessColor"][value="'+color+'"]');if(radio)radio.checked=true;
   if(sync('v85ChessLevel','v83chessLevel'))document.getElementById('v83PlayChess')?.click();
  });
  document.getElementById('v85PlayDame')?.addEventListener('click',()=>{
+  const color=selected('v85DameColor')||'w';
+  const radio=document.querySelector('input[name="v83DameColor"][value="'+color+'"]');
+  if(radio)radio.checked=true;
   if(sync('v85DameLevel','v83dameLevel'))document.getElementById('v83PlayDame')?.click();
  });
 })();
@@ -4703,5 +4719,17 @@ document.addEventListener('DOMContentLoaded',()=>{
 #historyView .v92-arrow-toggle span{line-height:1.4}
 #historyView .arena-best-hint{color:#91e4ba}
 @media(max-width:650px){#historyView .v92-arrow-toggle{font-size:14px;padding:10px}}
+</style>
+
+<style id="v93-colors-arrow-style">
+.v93-colors{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0;padding:0;border:0;margin:0 0 13px}
+.v93-colors legend{font-size:12px;letter-spacing:.035em;color:#e7ce9e;font-weight:750;margin:0 0 7px}
+.v93-colors label{position:relative;display:block;cursor:pointer;min-width:0}
+.v93-colors input{position:absolute;opacity:0;width:1px;height:1px}
+.v93-colors span{display:flex;justify-content:center;align-items:center;min-height:43px;padding:7px 12px;border:1px solid #5b7895;background:linear-gradient(130deg,#132c43,#183650);border-radius:9px;color:#dbe7f3;font-weight:750}
+.v93-colors input:checked+span{color:#1d2a35;background:linear-gradient(120deg,#ffe5ae,#d7a35e);border-color:#f0c27b;box-shadow:0 0 0 1px #b88d53}
+.v93-colors input:focus-visible+span{outline:3px solid #8bd0ff;outline-offset:3px}
+#historyBoard .v92-best-arrow{opacity:.9;filter:drop-shadow(0 2px 2px rgba(2,14,20,.3))}
+@media(max-width:650px){.v93-colors span{font-size:14px}}
 </style>
 </body></html>
