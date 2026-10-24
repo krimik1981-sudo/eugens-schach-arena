@@ -4059,4 +4059,79 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
  });
 })();
 </script>
+
+<style id="v84-clean-online-game">
+/* Computer screens remain unchanged; only connected online games are simplified. */
+#v84ChessHud,#v84DameHud{display:none}
+.v84-hud{width:100%;max-width:min(96vw,720px);margin:8px auto 12px;padding:10px 14px;background:#112b45;border:1px solid #9e7b4b;border-radius:13px;color:#f5f0df;box-shadow:0 8px 25px #0004}
+.v84-hud-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.v84-hud-names{font-size:clamp(15px,2.5vw,21px);font-weight:800;overflow-wrap:anywhere}
+.v84-hud-sub{font-size:13px;color:#cbdcec;margin-top:5px}
+.v84-hud-actions button{background:#355573;color:#fff;border:1px solid #68819c;border-radius:9px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:700}
+body:has(#liveGame:not([hidden])) #v84ChessHud{display:block}
+body:has(#liveGame:not([hidden])) #liveGame #liveBackMenu{display:none!important}
+body:has(#liveGame:not([hidden])) #liveGame .rook-game-layout{margin-top:0!important}
+body:has(#liveGame:not([hidden])) #liveGame #arenaChat{order:initial!important}
+body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) #v84DameHud{display:block}
+body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) .arena-page[data-panel="dame"] > h2,
+body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) .arena-page[data-panel="dame"] > p:not(.v84-hud){display:none!important}
+body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) .arena-page[data-panel="dame"] .dame-note{display:none!important}
+body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) .arena-page[data-panel="dame"] #dameOnlineBox > .dame-chat{display:block!important}
+@media(max-width:650px){.v84-hud{margin:6px auto 10px;padding:9px 11px}.v84-hud-names{font-size:16px}.v84-hud-actions button{padding:8px 10px}}
+</style>
+
+<script id="v84-clean-online-game-script">
+(function(){'use strict';
+ const $=id=>document.getElementById(id);
+ const live=$('liveGame'),damePage=document.querySelector('.arena-page[data-panel="dame"]');
+ if(!live||!damePage)return;
+ function makeHud(kind,container,reference){
+  const hud=document.createElement('section');hud.className='v84-hud';hud.id=kind==='chess'?'v84ChessHud':'v84DameHud';
+  hud.innerHTML='<div class="v84-hud-top"><div><div class="v84-hud-names" data-names>Du vs. Gegner</div><div class="v84-hud-sub" data-info>Verbinde mit deinem Freund …</div></div><div class="v84-hud-actions"><button type="button" data-leave>🚪 Raum verlassen</button></div></div>';
+  container.insertBefore(hud,reference);
+  hud.querySelector('[data-leave]').addEventListener('click',()=>{
+   if(kind==='chess')$('liveBackMenu')?.click();
+   else {$('dameDisconnect')?.click();const back=damePage.querySelector('.arena-back');back?.click();}
+  });
+  return hud;
+ }
+ const chessHud=makeHud('chess',live,live.querySelector('.rook-game-layout'));
+ const dameHud=makeHud('dame',damePage,damePage.querySelector('.dame-layout'));
+ function nameFromLogin(){
+  const who=($('arena71-who')?.textContent||'').trim();
+  const match=who.match(/^Angemeldet als (.+?)\s*[·•]/);
+  if(match)return match[1].trim().slice(0,28);
+  try{const p=JSON.parse(localStorage.getItem('eugens_arena_profil_v1')||'{}');return String(p.name||'Du').slice(0,28)}catch(_){return 'Du'}
+ }
+ function opponent(kind){
+  const value=(document.querySelector('#arena70-'+kind+' .arena70-opponent')?.textContent||'').replace(/^👤\s*/,'').replace(/\s*▾\s*$/,'').trim();
+  return value && !/nicht verbunden|wird erkannt/i.test(value)?value:'Gegner';
+ }
+ function update(hud,names,info){
+  const a=hud.querySelector('[data-names]'),b=hud.querySelector('[data-info]');
+  if(a.textContent!==names)a.textContent=names;
+  if(b.textContent!==info)b.textContent=info;
+ }
+ function sync(){
+  if(!live.hidden){
+   const status=($('liveHeadline')?.textContent||$('liveStatus')?.textContent||'').trim();
+   const side=($('liveSideLabel')?.textContent||'').trim();
+   const color=/du spielst schwarz|du bist schwarz|spielst schwarz/i.test(side+' '+$('liveStatus')?.textContent)?'Schwarz':/du spielst weiß|du spielst weiss|du bist weiß|spielst weiß/i.test(side+' '+$('liveStatus')?.textContent)?'Weiß':'–';
+   update(chessHud,nameFromLogin()+' vs. '+opponent('chess'),'Deine Farbe: '+color+' · '+(status||'Warte auf Freund …'));
+  }
+  if(!damePage.hidden && !$('dameDisconnect')?.hidden){
+   const status=($('dameStatus')?.textContent||'').trim();
+   const onlineStatus=($('dameOnlineStatus')?.textContent||'').trim();
+   let color=/du spielst schwarz/i.test(onlineStatus)?'Schwarz':/du spielst weiß/i.test(onlineStatus)?'Weiß':'–';
+   const turn=/Schwarz.*(?:am Zug|Mehrfachschlag)/i.test(status)?'Schwarz':/Weiß.*(?:am Zug|Mehrfachschlag)/i.test(status)?'Weiß':null;
+   update(dameHud,nameFromLogin()+' vs. '+opponent('dame'),'Deine Farbe: '+color+' · '+(turn?'Am Zug: '+turn:status||'Verbunden'));
+  }
+ }
+ sync();
+ // Read-only status refresh: never modify the existing game board or connection state.
+ const timer=setInterval(()=>{if(!document.hidden)sync()},900);
+ window.addEventListener('pageshow',sync);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
+})();
+</script>
 </body></html>
