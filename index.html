@@ -1554,10 +1554,10 @@ body{background:var(--arena62-bg)}
 <strong id="historyPly">Startstellung</strong>
 <div class="history-actions"><button id="historyFirst" type="button">⏮</button><button id="historyPrev" type="button">◀ Zurück</button><button id="historyNext" type="button">Weiter ▶</button><button id="historyLast" type="button">⏭</button></div>
 <div aria-label="Zugliste" class="history-moves" id="historyMoves"></div>
-<div class="history-actions"><button id="historyRunAnalysis" type="button">🔎 Mit Stockfish analysieren</button><button class="secondary" id="historyStopAnalysis" type="button">Stopp</button><button class="secondary" id="historyExportPGN" type="button">PGN herunterladen</button></div>
+<div class="history-actions"><button id="historyRunAnalysis" type="button">🔎 Analyse starten / fortsetzen</button><button class="secondary" id="historyStopAnalysis" type="button">Stopp</button><button class="secondary" id="historyExportPGN" type="button">PGN herunterladen</button></div>
 <p id="historyProgress" role="status"></p>
 <p id="historyMoveNote">Wähle einen Zug in der Liste.</p>
-<div id="historyAnalysis"></div><div id="historyGraph" style="margin-top:14px"></div>
+<div id="historyAnalysis"></div><div class="v91-analysis-help">♟️ <strong>Partieanalyse</strong> · ✓ gute Züge · ?! Ungenauigkeit · ? Fehler · ?? grober Fehler. Tippe auf einen Zug, um die Stellung und Stockfish-Empfehlung zu sehen. Ergebnisse bleiben auf diesem Gerät gespeichert.</div><div id="historyGraph" style="margin-top:14px"></div>
 </div>
 </div>
 </div>
@@ -2726,19 +2726,113 @@ function hPGN(g){
  return hdr.join('\n')+'\n\n'+body+' '+res+'\n'
 }
 function hCancelAnalysis(){hCancel++;if(hWorker){try{hWorker.terminate()}catch(e){}hWorker=null}if(hWorkerUrl){URL.revokeObjectURL(hWorkerUrl);hWorkerUrl=null}}
-function hAnalyzeFen(fen,worker,run){return new Promise((resolve,reject)=>{let score=null,best='',done=false;const finish=(err,val)=>{if(done)return;done=true;clearTimeout(timeout);worker.removeEventListener('message',onmsg);worker.removeEventListener('error',onerror);if(err)reject(err);else resolve(val)};const onerror=()=>finish(new Error('Stockfish konnte nicht geladen werden'));function onmsg(evt){let line=String(evt.data||'');let sm=line.match(/score (cp|mate) (-?\d+)/);if(sm){let val=Number(sm[2]);score=sm[1]==='mate'?(val>0?20000:-20000):val}if(line.startsWith('bestmove ')){best=line.split(/\s+/)[1]||'';let stm=fen.split(' ')[1];finish(null,{scoreWhite:score==null?null:(stm==='w'?score:-score),best})}}worker.addEventListener('message',onmsg);worker.addEventListener('error',onerror);let timeout=setTimeout(()=>finish(new Error('Engine-Antwort zu langsam')),16000);try{worker.postMessage('position fen '+fen);worker.postMessage('go movetime 450')}catch(e){finish(e)}})}
+function hAnalyzeFen(fen,worker,run){return new Promise((resolve,reject)=>{let score=null,best='',done=false;const finish=(err,val)=>{if(done)return;done=true;clearTimeout(timeout);worker.removeEventListener('message',onmsg);worker.removeEventListener('error',onerror);if(err)reject(err);else resolve(val)};const onerror=()=>finish(new Error('Stockfish konnte nicht geladen werden'));function onmsg(evt){let line=String(evt.data||'');let sm=line.match(/score (cp|mate) (-?\d+)/);if(sm){let val=Number(sm[2]);score=sm[1]==='mate'?(val>0?20000:-20000):val}if(line.startsWith('bestmove ')){best=line.split(/\s+/)[1]||'';let stm=fen.split(' ')[1];finish(null,{scoreWhite:score==null?null:(stm==='w'?score:-score),best})}}worker.addEventListener('message',onmsg);worker.addEventListener('error',onerror);let timeout=setTimeout(()=>finish(new Error('Engine-Antwort zu langsam')),28000);try{worker.postMessage('position fen '+fen);worker.postMessage('go movetime 450')}catch(e){finish(e)}})}
 function hDrawEvaluation(){const el=H('historyGraph');if(!el)return;const vals=hAnalysis.map(a=>a&&Number.isFinite(a.whiteScore)?Math.max(-800,Math.min(800,a.whiteScore)):null);if(!vals.length||vals.every(v=>v===null)){el.textContent='Noch keine Bewertungsdaten.';return}let counts={good:0,inaccuracy:0,mistake:0,blunder:0};hAnalysis.forEach(a=>{if(!a)return;let t=a.text||'';if(t.includes('Grober Fehler'))counts.blunder++;else if(t.includes('Ungenauigkeit'))counts.inaccuracy++;else if(t.includes('Fehler'))counts.mistake++;else counts.good++});let pts=vals.map((v,i)=>v===null?'':(12+(i/(Math.max(1,vals.length-1)))*676).toFixed(1)+','+(92-v/800*77).toFixed(1)).filter(Boolean).join(' ');el.innerHTML='<h3>📊 Bewertungsverlauf</h3><p>Positive Werte: Vorteil Weiß · Negative Werte: Vorteil Schwarz</p><svg viewBox="0 0 700 190" role="img" aria-label="Stockfish-Bewertung im Partieverlauf" style="width:100%;background:#142338;border-radius:12px"><line x1="12" y1="92" x2="688" y2="92" stroke="#cbd5e1" stroke-dasharray="5 5"/><polyline fill="none" stroke="#66d9ef" stroke-width="3" points="'+pts+'"/></svg><p>✅ Gute/beste Züge: '+counts.good+' · ⚠️ Ungenauigkeiten: '+counts.inaccuracy+' · ❌ Fehler: '+counts.mistake+' · ❗ Grobe Fehler: '+counts.blunder+'</p><small>Bewertungen sind Näherungswerte bei kurzer Rechenzeit. Keine Lichess-Genauigkeitsprozentzahl.</small>'}
-async function hAnalyze(){if(!hReview)return;hCancelAnalysis();const run=hCancel;hAnalysis=[];let game=hReview;const total=game.moves.length;if(!total){H('historyProgress').textContent='Diese Partie enthält noch keine Züge.';return}H('historyProgress').textContent='Stockfish wird geladen …';try{
- const blob=new Blob(['importScripts('+JSON.stringify(egStockfishURL)+');'],{type:'text/javascript'});hWorkerUrl=URL.createObjectURL(blob);hWorker=new Worker(hWorkerUrl);let worker=hWorker;
- await new Promise((resolve,reject)=>{let timer=setTimeout(()=>reject(new Error('Stockfish konnte nicht geladen werden')),14000);function onmessage(e){let v=String(e.data||'');if(v.includes('uciok'))worker.postMessage('isready');if(v.includes('readyok')){cleanup();resolve()}}function onerror(){cleanup();reject(new Error('Stockfish konnte nicht gestartet werden'))}function cleanup(){clearTimeout(timer);worker.removeEventListener('message',onmessage);worker.removeEventListener('error',onerror)}worker.addEventListener('message',onmessage);worker.addEventListener('error',onerror);worker.postMessage('uci')});if(hCancel!==run)return;
- let before=await hAnalyzeFen(game.frames[0],worker,run);
- for(let i=0;i<total;i++){if(run!==hCancel)return;H('historyProgress').textContent='Analysiere Zug '+(i+1)+' von '+total+' …';let after=await hAnalyzeFen(game.frames[i+1],worker,run);if(run!==hCancel)return;
- const white=i%2===0, diff=before.scoreWhite!=null&&after.scoreWhite!=null?(white?before.scoreWhite-after.scoreWhite:after.scoreWhite-before.scoreWhite):null;
- let best=before.best&&before.best!=='(none)'?before.best:'';let played=game.moves[i];let category=diff==null?'Bewertet':(best===played?'Bester Zug':diff<75?'Guter Zug':diff<170?'Ungenauigkeit':diff<320?'Fehler':'Grober Fehler');
- hAnalysis[i]={best,whiteScore:after.scoreWhite,drop:diff,text:(white?'Weiß':'Schwarz')+': '+category+(diff!=null?' ('+Math.round(Math.max(0,diff))+' Centipawns Unterschied)':'')};before=after;hPaint()}
- hDrawEvaluation();
- H('historyProgress').textContent='✅ Analyse von '+total+' Halbzügen abgeschlossen. Wähle einen Zug in der Liste.';
- }catch(error){if(run===hCancel)H('historyProgress').textContent='⚠️ Stockfish-Analyse nicht verfügbar: '+error.message+'. Internetverbindung und Browser-Einstellungen prüfen.'}finally{if(run===hCancel){hCancelAnalysis()}} }
+/* v91: resumable, failure-tolerant post-game Stockfish analysis.
+   Not a server-side Lichess analysis: this engine runs locally in a Web Worker. */
+const hV91CachePrefix='arena_analysis_v91_';
+const hV91RunState={failures:0};
+function hV91Key(game){return hV91CachePrefix+String(game.id||'game')+'_'+game.moves.length+'_'+game.moves.join('').slice(-100)}
+function hV91Load(game){try{const raw=localStorage.getItem(hV91Key(game));const data=JSON.parse(raw||'null');return Array.isArray(data)&&data.length===game.moves.length?data:[]}catch(_){return []}}
+function hV91Save(game){try{localStorage.setItem(hV91Key(game),JSON.stringify(hAnalysis))}catch(_){}}
+async function hV91Engine(run){
+ if(run!==hCancel)throw Error('Analyse angehalten');
+ if(hWorker)return hWorker;
+ let urls=[egStockfishURL];
+ let lastError=null;
+ for(const url of urls){
+  try{
+   const blob=new Blob(['importScripts('+JSON.stringify(url)+');'],{type:'text/javascript'});
+   hWorkerUrl=URL.createObjectURL(blob);
+   const worker=new Worker(hWorkerUrl);
+   hWorker=worker;
+   await new Promise((resolve,reject)=>{
+    let settled=false;
+    let ready=false;
+    const done=err=>{if(settled)return;settled=true;clearTimeout(timer);worker.removeEventListener('message',message);worker.removeEventListener('error',error);if(err)reject(err);else resolve()};
+    const timer=setTimeout(()=>done(Error('Stockfish-Start dauert zu lange')),25000);
+    function message(e){const line=String(e.data||'');if(line.includes('uciok')&&!ready){ready=true;worker.postMessage('isready')}if(line.includes('readyok'))done()}
+    function error(){done(Error('Stockfish konnte nicht gestartet werden'))}
+    worker.addEventListener('message',message);worker.addEventListener('error',error);
+    worker.postMessage('uci');
+   });
+   if(run!==hCancel)throw Error('Analyse angehalten');
+   return worker;
+  }catch(e){lastError=e;if(hWorker){try{hWorker.terminate()}catch(_){}}hWorker=null;if(hWorkerUrl)URL.revokeObjectURL(hWorkerUrl);hWorkerUrl=null}
+ }
+ throw lastError||Error('Stockfish konnte nicht geladen werden');
+}
+async function hV91Evaluate(fen,run){
+ for(let attempt=0;attempt<2;attempt++){
+  if(run!==hCancel)throw Error('Analyse angehalten');
+  try{
+   const engine=await hV91Engine(run);
+   return await hAnalyzeFen(fen,engine,run);
+  }catch(e){
+   if(run!==hCancel)throw Error('Analyse angehalten');
+   if(hWorker){try{hWorker.terminate()}catch(_){}}hWorker=null;
+   if(hWorkerUrl){URL.revokeObjectURL(hWorkerUrl);hWorkerUrl=null}
+   if(attempt===1)throw e;
+  }
+ }
+}
+function hV91Format(i,game,before,after){
+ const white=i%2===0;
+ const diff=before?.scoreWhite!=null&&after?.scoreWhite!=null?(white?before.scoreWhite-after.scoreWhite:after.scoreWhite-before.scoreWhite):null;
+ const best=before?.best&&before.best!=='(none)'?before.best:'';
+ const played=game.moves[i];
+ const cat=diff==null?'Nicht vollständig bewertet':best===played?'Bester Zug':diff<75?'Guter Zug':diff<170?'Ungenauigkeit':diff<320?'Fehler':'Grober Fehler';
+ return {best,whiteScore:after?.scoreWhite??null,drop:diff,text:(white?'Weiß':'Schwarz')+': '+cat+(diff!=null?' ('+Math.round(Math.max(0,diff))+' Centipawns Unterschied)':'')};
+}
+async function hAnalyze(){
+ if(!hReview)return;
+ hCancelAnalysis();
+ const run=hCancel,game=hReview,total=game.moves.length;
+ if(!total){H('historyProgress').textContent='Diese Partie enthält noch keine Züge.';return}
+ hAnalysis=hV91Load(game);
+ let done=hAnalysis.filter(Boolean).length;
+ const progress=H('historyProgress'),button=H('historyRunAnalysis');
+ if(button)button.disabled=true;
+ if(done)progress.textContent='Gespeicherte Analyse geladen ('+done+'/'+total+'). Fehlende Züge werden ergänzt …';
+ else progress.textContent='Stockfish startet für die Partieanalyse …';
+ hPaint();
+ try{
+  let prev=null;
+  let partial=false,consecutiveFailures=0;
+  for(let i=0;i<total;i++){
+   if(run!==hCancel)return;
+   if(hAnalysis[i]&&!hAnalysis[i].skipped){
+    // Recover the score for the next position, if available; otherwise read it below.
+    prev=null;continue;
+   }
+   progress.textContent='🔍 Analysiere Zug '+(i+1)+' von '+total+' · '+done+' fertig'+(partial?' · einzelne Züge übersprungen':'')+' …';
+   let before=null,after=null;
+   try{
+    before=await hV91Evaluate(game.frames[i],run);
+    after=await hV91Evaluate(game.frames[i+1],run);
+   }catch(err){
+    if(run!==hCancel)return;
+    partial=true;consecutiveFailures++;hV91RunState.failures++;
+    // Isolated position failures should not destroy completed analysis.
+    progress.textContent='⚠️ Zug '+(i+1)+' übersprungen: '+err.message+'. Analyse wird fortgesetzt …';
+    hAnalysis[i]={best:'',whiteScore:null,drop:null,text:(i%2===0?'Weiß':'Schwarz')+': Nicht bewertet (Stockfish hat nicht geantwortet)',skipped:true};
+    hV91Save(game);hPaint();
+    if(consecutiveFailures>=3){progress.textContent="⚠️ Stockfish antwortet nicht zuverlässig. Bisherige Ergebnisse gespeichert. Bitte später erneut versuchen.";break;}
+    continue;
+   }
+   if(run!==hCancel)return;
+   hAnalysis[i]=hV91Format(i,game,before,after);
+   consecutiveFailures=0;done++;hV91Save(game);
+   hPaint();
+   if((i+1)%4===0){hDrawEvaluation();await new Promise(resolve=>setTimeout(resolve,0));}
+  }
+  hDrawEvaluation();
+  const skipped=hAnalysis.filter(a=>a?.skipped).length;
+  progress.textContent=(skipped||done<total)?'⚠️ '+done+' von '+total+' Zügen bewertet. Analyse unvollständig: über „Analyse starten / fortsetzen“ kannst du fehlende Züge erneut prüfen.':'✅ Analyse abgeschlossen: '+done+' Züge. Tippe auf einen Zug oder den Bewertungsgraphen.';
+ }catch(error){
+  if(run===hCancel){hV91Save(game);hDrawEvaluation();progress.textContent='⚠️ Analyse unterbrochen: '+error.message+'. Bereits bewertete Züge gespeichert. Über „Analyse fortsetzen“ erneut versuchen.'}
+ }finally{if(run===hCancel){hCancelAnalysis();if(button)button.disabled=false}}
+}
 /* Analyse 2.1: erweiterte Lichess-inspirierte Auswertung */
 (function(){
  const review=document.getElementById('historyReview');
@@ -2762,7 +2856,7 @@ async function hAnalyze(){if(!hReview)return;hCancelAnalysis();const run=hCancel
   summary.hidden=false;
   const count=(side,part)=>hAnalysis.filter((a,i)=>a&&i%2===side&&(a.text||'').includes(part)).length;
   summary.innerHTML='<h3>♟️ Spielübersicht</h3><div class="arena-accuracy-grid">'+
-   [['Weiß',w,0],['Schwarz',b,1]].map(([name,val,side])=>'<div class="arena-accuracy-card"><strong>'+name+'</strong><div class="arena-accuracy-number">'+(val===null?'–':val.toFixed(1)+' %')+'</div><small>geschätzte Genauigkeit</small><p>?! '+count(side,'Ungenauigkeit')+' &nbsp; ? '+(count(side,'Fehler')-count(side,'Grober Fehler'))+' &nbsp; ?? '+count(side,'Grober Fehler')+'</p></div>').join('')+
+   [['Weiß',w,0],['Schwarz',b,1]].map(([name,val,side])=>'<div class="arena-accuracy-card"><strong>'+name+'</strong><div class="arena-accuracy-number">'+(val===null?'–':val.toFixed(1)+' %')+'</div><small>ungefähre Zugqualität</small><p>?! '+count(side,'Ungenauigkeit')+' &nbsp; ? '+(count(side,'Fehler')-count(side,'Grober Fehler'))+' &nbsp; ?? '+count(side,'Grober Fehler')+'</p></div>').join('')+
    '</div><small>Eigene Näherungsformel aus dem Centipawn-Verlust, nicht die offizielle Lichess-Genauigkeit. Die Engine nutzt kurze Rechenzeiten.</small>';
  }
  function showBest(){
@@ -4560,5 +4654,12 @@ document.addEventListener('DOMContentLoaded',()=>{
 .v90-friends-arrow{flex:0 0 42px;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:linear-gradient(#ffe0a0,#d9a252);font-size:30px;font-weight:800;color:#09182b}
 @media(max-width:550px){#courseHome .arena-page[data-panel="freunde"] .v90-friends-card{padding:16px 14px;gap:12px;margin-top:14px;border-radius:17px}.v90-friends-icon{flex-basis:51px;width:51px;height:51px;border-radius:13px;font-size:28px}.v90-friends-arrow{flex-basis:34px;width:34px;height:34px;font-size:24px}.v90-friends-content strong{font-size:20px}.v90-friends-action{font-size:13px}}
 @media(prefers-reduced-motion:reduce){#courseHome .arena-page[data-panel="freunde"] .v90-friends-card{transition:none}}
+</style>
+<style id="v91-analysis-style">
+#historyView .history-actions button{min-height:43px;border-radius:12px}
+#historyView #historyProgress{padding:12px 14px;background:#102b43;color:#f3d5a0;border:1px solid #476a86;border-radius:12px;line-height:1.5}
+#historyView .v91-analysis-help{padding:12px 14px;margin:12px 0;border:1px solid #ad874d;border-radius:12px;color:#d8e5f4;background:#10263b;line-height:1.5}
+#historyView .history-moves button{min-height:42px}
+@media(max-width:700px){#historyView .history-actions{display:flex;flex-wrap:wrap;gap:8px}#historyView .history-actions button{flex:1 1 150px;min-width:0}#historyView .history-layout{display:grid;grid-template-columns:1fr}#historyView .history-board{max-width:100%;margin:auto}}
 </style>
 </body></html>
