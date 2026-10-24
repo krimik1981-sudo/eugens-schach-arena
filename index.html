@@ -3647,44 +3647,50 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
   .premium-welcome-text small{font-size:11px!important;}
 }
 </style>
-<script id="v73-server-account-greeting">
-/* Use the authenticated Supabase/Render account nickname for the home welcome.
-   Legacy account display is supported only when no server account is active. */
+<script id="v74-server-account-greeting">
 (function(){'use strict';
-  const byId=id=>document.getElementById(id);
-  function authenticatedName(){
-    const serverWho=byId('arena71-who');
-    const serverText=(serverWho?.textContent||'').trim();
-    const serverMatch=serverText.match(/^Angemeldet als\s+(.+?)\s+·\s+EF-[A-Z0-9]{6}\s*$/i);
-    if(serverMatch)return serverMatch[1].trim().slice(0,28);
-    const legacyLogged=byId('chessLoggedIn');
-    const legacyWho=byId('chessWho');
-    if(legacyLogged && !legacyLogged.hidden && legacyWho){
-      const match=(legacyWho.textContent||'').match(/Angemeldet:\s*(.+)$/);
-      if(match)return match[1].trim().slice(0,28);
-    }
-    return '';
+  const TOKEN_KEY='arena71_token';
+  const $=id=>document.getElementById(id);
+  let verifiedName='';
+  function fromAccountDisplay(){
+    if(!localStorage.getItem(TOKEN_KEY))return '';
+    const txt=($('arena71-who')?.textContent||'').trim();
+    // The Supabase backend issues EF- + 18 hex characters, not six.
+    const found=txt.match(/^Angemeldet als\s+(.+?)\s+·\s+EF-[A-Z0-9]+\s*$/i);
+    return found?found[1].trim().slice(0,28):'';
   }
-  function updateGreeting(){
-    const target=byId('premiumUserName');
-    if(!target)return;
-    const nick=authenticatedName();
-    target.textContent=nick||'Gast';
-    target.parentElement?.setAttribute('aria-label','Hallo, '+(nick||'Gast')+'!');
+  function render(){
+    const target=$('premiumUserName');if(!target)return;
+    const name=fromAccountDisplay()||verifiedName||'Gast';
+    target.textContent=name;
+  }
+  async function verifySession(){
+    const token=localStorage.getItem(TOKEN_KEY);
+    if(!token){verifiedName='';render();return;}
+    try{
+      const response=await fetch('/api/friends/list',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:'{}',cache:'no-store'});
+      if(!response.ok){verifiedName='';render();return;}
+      const data=await response.json();
+      if(token!==localStorage.getItem(TOKEN_KEY))return;
+      verifiedName=String(data?.profile?.name||'').trim().slice(0,28);
+    }catch(_){verifiedName='';}
+    render();
   }
   function init(){
-    updateGreeting();
-    for(const id of ['arena71-who','chessWho']){
-      const node=byId(id);
-      if(node)new MutationObserver(updateGreeting).observe(node,{childList:true,characterData:true,subtree:true});
-    }
-    const logged=byId('chessLoggedIn');
-    if(logged)new MutationObserver(updateGreeting).observe(logged,{attributes:true,attributeFilter:['hidden']});
-    document.addEventListener('arena70-friends-updated',updateGreeting);
-    window.addEventListener('pageshow',updateGreeting);
+    render();
+    // The account pane may be inserted after this script initializes.
+    const root=$('courseHome')||document.body;
+    let lastText='';
+    const observer=new MutationObserver(()=>{
+      const text=($('arena71-who')?.textContent||'').trim();
+      if(text!==lastText){lastText=text;render();}
+    });
+    observer.observe(root,{childList:true,subtree:true,characterData:true});
+    document.addEventListener('arena70-friends-updated',()=>{render();});
+    window.addEventListener('pageshow',()=>{render();verifySession();});
+    verifySession();
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
-  else init();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script><script id="v68-online-rooms-script">
 (function(){'use strict';
