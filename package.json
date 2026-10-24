@@ -1,8 +1,8 @@
 {
-  "name": "eugens-schach-arena-online",
-  "version": "4.8.0",
-  "private": true,
-  "description": "Schach Arena with public two-player matchmaking",
-  "scripts": {"start": "node server.js", "test": "node --test server.test.js"},
-  "engines": {"node": ">=18"}
+  "name":"eugens-schach-arena-v71",
+  "version":"7.1.0",
+  "private":true,
+  "description":"Eugens Schach Arena with persistent server accounts and friend requests",
+  "scripts":{"start":"node server.js"},
+  "engines":{"node":">=18"}
 }

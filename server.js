@@ -1,105 +1,167 @@
 'use strict';
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const accounts = require('./account-storage');
-const PORT = Number(process.env.PORT || 10000);
-const ROOT = __dirname;
-const rooms = new Map();
-const dameRooms = new Map();
-const validClient = x => typeof x === 'string' && /^[a-zA-Z0-9_-]{12,70}$/.test(x);
-const validRoom = x => typeof x === 'string' && /^EUGEN-[A-F0-9]{14}$/.test(x);
-const safeTime = x => [0,3,5,10,15,30].includes(Number(x)) ? Number(x) : 10;
-const fresh = r => Date.now() - r.lastHost < 45000 && (!r.guest || Date.now() - r.lastGuest < 45000);
-function clean() { for (const pool of [rooms,dameRooms]) for (const [code,r] of pool) if (!fresh(r)) pool.delete(code); }
-setInterval(clean, 10000).unref();
-function json(res, code, body) {res.writeHead(code, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(body));}
-function readBody(req) {return new Promise((resolve, reject)=>{let parts=[],n=0; req.on('data',d=>{n+=d.length;if(n>4096){reject(Error('Too large'));req.destroy();return}parts.push(d)});req.on('end',()=>{try{resolve(JSON.parse(Buffer.concat(parts).toString()||'{}'))}catch(e){reject(e)}});req.on('error',reject)});}
-async function api(req,res) {
- if(req.method!=='POST')return json(res,405,{error:'Method not allowed'});
- let data;try{data=await readBody(req)}catch{return json(res,400,{error:'Invalid request'})}
- if(req.url.startsWith('/api/dame-match/')) {
-   if(!validClient(data.clientId)) return json(res,400,{error:'Invalid player identifier'});
-   clean();
-   const endpoint=req.url.slice('/api/dame-match/'.length);
-   if(endpoint==='join') {
-     for(const r of dameRooms.values()) if(r.host===data.clientId||r.guest===data.clientId)
-       return json(res,200,{role:r.host===data.clientId?'host':'guest',room:r.room,ready:r.ready,found:!!r.guest});
-     const waiting=[...dameRooms.values()].filter(r=>r.ready&&!r.guest&&fresh(r)).sort((a,b)=>a.created-b.created)[0];
-     if(waiting){waiting.guest=data.clientId;waiting.lastGuest=Date.now();return json(res,200,{role:'guest',room:waiting.room,ready:true,found:true});}
-     let room;do{const h=crypto.randomBytes(6).toString('hex').toUpperCase();room='DAME-'+h.slice(0,8)+'-'+h.slice(8)}while(dameRooms.has(room));
-     dameRooms.set(room,{room,host:data.clientId,guest:null,ready:false,created:Date.now(),lastHost:Date.now(),lastGuest:0});
-     return json(res,200,{role:'host',room,ready:false,found:false});
-   }
-   if(typeof data.room!=='string'||!/^DAME-[0-9A-F]{8}-[0-9A-F]{4}$/.test(data.room))return json(res,400,{error:'Invalid room'});
-   const r=dameRooms.get(data.room);
-   if(endpoint==='leave'){
-     if(r&&(r.host===data.clientId||r.guest===data.clientId))dameRooms.delete(data.room);
-     return json(res,200,{ok:true});
-   }
-   if(!r||!(r.host===data.clientId||r.guest===data.clientId))return json(res,404,{error:'Room expired or not yours'});
-   if(endpoint==='heartbeat'){
-     if(r.host===data.clientId){r.lastHost=Date.now();if(data.ready)r.ready=true;}else r.lastGuest=Date.now();
-     return json(res,200,{ok:true,ready:r.ready,occupied:!!r.guest});
-   }
-   return json(res,404,{error:'No such endpoint'});
- }
- if(req.url.startsWith('/api/account/') || req.url.startsWith('/api/friends/')) {
-   try {
-     let out;
-     if(req.url==='/api/account/register') out=await accounts.signup(data.nick,data.password);
-     else if(req.url==='/api/account/login') out=await accounts.login(data.nick,data.password);
-     else if(req.url==='/api/account/me') out={player:await accounts.auth(data.token)};
-     else if(req.url==='/api/account/logout') {await accounts.logout(data.token);out={ok:true}}
-     else {const player=await accounts.auth(data.token);
-       if(req.url==='/api/friends/invite') out=await accounts.invite(player,data.nick,data.room);
-       else if(req.url==='/api/friends/inbox') out={invites:await accounts.inbox(player)};
-       else if(req.url==='/api/friends/accept') out=await accounts.accept(player,data.id);
-       else return json(res,404,{error:'Unknown endpoint'});
-     }
-     return json(res,200,out);
-   }catch(e){return json(res,e.status||500,{error:e.message||'Ошибка аккаунта'})}
- }
- if(!validClient(data.clientId))return json(res,400,{error:'Invalid player identifier'});
- clean();
- if(req.url==='/api/match/join') {
-   const time=safeTime(data.time);
-   for(const [code,r] of rooms) if(r.host===data.clientId || r.guest===data.clientId){
-      return json(res,200,{role:r.host===data.clientId?'host':'guest',room:code,time:r.time,ready:r.ready,found:true});
-   }
-   const waiting=[...rooms.values()].filter(r=>r.ready&&!r.guest&&r.time===time&&fresh(r)).sort((a,b)=>a.created-b.created)[0];
-   if(waiting){waiting.guest=data.clientId;waiting.lastGuest=Date.now();return json(res,200,{role:'guest',room:waiting.room,time:waiting.time,ready:true,found:true})}
-   let room;do{room='EUGEN-'+crypto.randomBytes(7).toString('hex').toUpperCase()}while(rooms.has(room));
-   rooms.set(room,{room,host:data.clientId,guest:null,ready:false,time,created:Date.now(),lastHost:Date.now(),lastGuest:0});
-   return json(res,200,{role:'host',room,time,ready:false,found:false});
- }
- if(!validRoom(data.room))return json(res,400,{error:'Invalid room'});
- const r=rooms.get(data.room);
- if(req.url==='/api/match/leave') {
-   if(r&&(r.host===data.clientId||r.guest===data.clientId))rooms.delete(data.room);
-   return json(res,200,{ok:true});
- }
- if(!r||!(r.host===data.clientId||r.guest===data.clientId))return json(res,404,{error:'Room expired or not yours'});
- if(req.url==='/api/match/heartbeat') {
-   if(r.host===data.clientId){r.lastHost=Date.now();if(data.ready)r.ready=true}else r.lastGuest=Date.now();
-   return json(res,200,{ok:true,ready:r.ready,occupied:!!r.guest});
- }
- return json(res,404,{error:'No such endpoint'});
+// Eugens Schach Arena v72 — accounts + friendships stored in Supabase.
+// Requires Node.js 18+, SUPABASE_URL and SUPABASE_SECRET_KEY in Render Environment.
+const http = require('node:http');
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+
+const PORT = Number(process.env.PORT) || 3000;
+const BASE = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+const SECRET = String(process.env.SUPABASE_SECRET_KEY || '');
+if (!/^https:\/\/[^/]+$/.test(BASE) || !SECRET) {
+  console.error('Missing SUPABASE_URL or SUPABASE_SECRET_KEY. Keep both in Render Environment, not in source code.');
+  process.exit(1);
 }
-const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.png':'image/png','.svg':'image/svg+xml','.webp':'image/webp','.ico':'image/x-icon','.webmanifest':'application/manifest+json; charset=utf-8'};
-const server=http.createServer(async(req,res)=>{
- let url;try{url=new URL(req.url,'http://localhost')}catch{return json(res,400,{error:'Bad URL'})}
- if(url.pathname.startsWith('/api/')) {req.url=url.pathname;return api(req,res)}
- if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405);return res.end()}
- const pathname=url.pathname==='/'?'/index.html':url.pathname;
- if(!/^\/(?:index\.html|[a-zA-Z0-9_-]+\.(?:css|js|png|svg|webp|ico|webmanifest))$/.test(pathname) || pathname==='/server.js' || pathname==='/server.test.js') {res.writeHead(404);return res.end('Not found')}
- const filename=path.resolve(ROOT,'.'+decodeURIComponent(pathname));
- if(!filename.startsWith(ROOT+path.sep)){res.writeHead(403);return res.end()}
- fs.stat(filename,(err,stat)=>{if(err||!stat.isFile()){res.writeHead(404);return res.end('Not found')}
-   res.writeHead(200,{'Content-Type':mime[path.extname(filename)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff'});
-   if(req.method==='HEAD')return res.end();fs.createReadStream(filename).pipe(res);
- });
-});
-if(require.main===module)server.listen(PORT,'0.0.0.0',()=>console.log('Eugens Schach Arena:',PORT));
-module.exports={server,rooms,dameRooms,clean};
+const tokenSecret = crypto.createHmac('sha256', SECRET).update('eugens-schach-arena/v72/session').digest();
+const key = s => String(s || '').trim().toLocaleLowerCase('de');
+const allowedName = s => typeof s === 'string' && /^[\p{L}\p{N}_ .-]{3,28}$/u.test(s.trim());
+const passwordOk = s => typeof s === 'string' && s.length >= 10 && s.length <= 128;
+const hash = (pwd, salt) => crypto.scryptSync(pwd, Buffer.from(salt, 'hex'), 64).toString('hex');
+const pub = a => ({ code: a.code, name: a.name, avatar: '♟️' });
+const reply = (res, status, body) => {
+  res.writeHead(status, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
+  res.end(JSON.stringify(body));
+};
+function tokenFor(a) {
+  const payload = Buffer.from(JSON.stringify({id:a.id,exp:Date.now()+30*86400000})).toString('base64url');
+  const sig = crypto.createHmac('sha256',tokenSecret).update(payload).digest('base64url');
+  return payload+'.'+sig;
+}
+function authId(req) {
+  const token = (req.headers.authorization || '').match(/^Bearer (\S+)$/)?.[1];
+  if (!token) return null;
+  const [payload,sig,extra] = token.split('.');
+  if (!payload || !sig || extra !== undefined) return null;
+  const expected = crypto.createHmac('sha256',tokenSecret).update(payload).digest('base64url');
+  if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig),Buffer.from(expected))) return null;
+  try {
+    const p = JSON.parse(Buffer.from(payload,'base64url').toString('utf8'));
+    return Number.isSafeInteger(p.exp) && p.exp > Date.now() && /^[0-9a-f-]{36}$/i.test(p.id) ? p.id : null;
+  } catch { return null; }
+}
+class DatabaseError extends Error {
+  constructor(message, status, details) { super(message); this.status = status; this.details = details; }
+}
+async function db(table, method='GET', params={}, body) {
+  const url = new URL(BASE+'/rest/v1/'+table);
+  for (const [k,v] of Object.entries(params)) url.searchParams.set(k,String(v));
+  const headers = {'apikey':SECRET,'Content-Type':'application/json','Accept':'application/json'};
+  // New sb_secret_* keys are opaque, not JWTs: never put them into Bearer.
+  if (!SECRET.startsWith('sb_secret_')) headers.Authorization = 'Bearer '+SECRET;
+  if (method !== 'GET') headers.Prefer = 'return=representation';
+  let resp;
+  try { resp = await fetch(url,{method,headers,body:body === undefined ? undefined : JSON.stringify(body),signal:AbortSignal.timeout(12000)}); }
+  catch (e) { throw new DatabaseError('Supabase nicht erreichbar.',503,e.message); }
+  let data; try { data = await resp.json(); } catch { data = null; }
+  if (!resp.ok) throw new DatabaseError('Datenbankabfrage fehlgeschlagen.',resp.status,data);
+  return data || [];
+}
+const accounts = (params, method='GET', body) => db('arena_accounts',method,params,body);
+const relationships = (params, method='GET', body) => db('arena_friendships',method,params,body);
+async function findName(name) { return (await accounts({nick_key:'eq.'+key(name),select:'*',limit:1}))[0] || null; }
+async function findCode(code) { return (await accounts({code:'eq.'+String(code || '').trim().toUpperCase(),select:'*',limit:1}))[0] || null; }
+async function findId(id) { return (await accounts({id:'eq.'+id,select:'*',limit:1}))[0] || null; }
+async function pair(a,b) {return a < b ? [a,b] : [b,a];}
+async function relation(a,b) {
+  const [player1_id,player2_id] = await pair(a,b);
+  return (await relationships({player1_id:'eq.'+player1_id,player2_id:'eq.'+player2_id,select:'*',limit:1}))[0] || null;
+}
+async function lists(a) {
+  const rels = await relationships({or:'(player1_id.eq.'+a.id+',player2_id.eq.'+a.id+')',select:'*',limit:300});
+  const ids = [...new Set(rels.map(r=>r.player1_id===a.id?r.player2_id:r.player1_id))];
+  const others = ids.length ? await accounts({id:'in.('+ids.join(',')+')',select:'id,code,name'}) : [];
+  const byId = new Map(others.map(x=>[x.id,x]));
+  const friends=[], incoming=[], outgoing=[];
+  for(const r of rels) {
+    const target = byId.get(r.player1_id===a.id?r.player2_id:r.player1_id);
+    if (!target) continue;
+    if(r.status==='accepted') friends.push(pub(target));
+    else if(r.status==='pending') {
+      if(r.requested_by===a.id) outgoing.push({id:r.id,to:pub(target)});
+      else incoming.push({id:r.id,from:pub(target)});
+    }
+  }
+  return {profile:pub(a),friends,incoming,outgoing};
+}
+async function handle(req,res) {
+  const url=new URL(req.url,'http://localhost');
+  if(url.pathname.startsWith('/api/friends/')) {
+    if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
+    let raw='';try {for await (const chunk of req) {raw+=chunk;if(raw.length>5000)throw Error('Too long');}}
+    catch {return reply(res,413,{error:'Anfrage zu groß'});}
+    let v={};try {v=JSON.parse(raw||'{}');if(!v||typeof v!=='object'||Array.isArray(v))throw Error('Invalid');}
+    catch {return reply(res,400,{error:'Ungültiges JSON'});}
+    const action=url.pathname.slice('/api/friends/'.length);
+    if (action==='register') {
+      if (!allowedName(v.name)||!passwordOk(v.password)) return reply(res,400,{error:'Name: 3–28 Zeichen. Passwort: mindestens 10 Zeichen.'});
+      if (await findName(v.name)) return reply(res,409,{error:'Spielername schon vergeben.'});
+      const salt=crypto.randomBytes(16).toString('hex');
+      const item={name:v.name.trim(),nick_key:key(v.name),code:'EF-'+crypto.randomBytes(9).toString('hex').toUpperCase(),password_salt:salt,password_hash:hash(v.password,salt)};
+      let result;
+      try { result=await accounts({select:'*'},'POST',item); }
+      catch(e) { if(e.status===409)return reply(res,409,{error:'Spielername schon vergeben.'});throw e; }
+      const a=result[0];return reply(res,200,{token:tokenFor(a),...await lists(a)});
+    }
+    if (action==='login') {
+      const a=await findName(v.name);
+      if(!a||typeof v.password!=='string'||v.password.length>128) return reply(res,401,{error:'Spielername oder Passwort falsch.'});
+      const actual=Buffer.from(hash(v.password,a.password_salt),'hex');
+      const stored=Buffer.from(a.password_hash||'','hex');
+      if(stored.length!==actual.length||!crypto.timingSafeEqual(actual,stored)) return reply(res,401,{error:'Spielername oder Passwort falsch.'});
+      return reply(res,200,{token:tokenFor(a),...await lists(a)});
+    }
+    const id=authId(req), a=id?await findId(id):null;
+    if(!a) return reply(res,401,{error:'Bitte anmelden.'});
+    if(action==='list')return reply(res,200,await lists(a));
+    if(action==='request') {
+      const b=await findCode(v.code);
+      if(!b||b.id===a.id)return reply(res,404,{error:'Spieler nicht gefunden.'});
+      const r=await relation(a.id,b.id);
+      if(r) {
+        if(r.status==='accepted')return reply(res,200,{...await lists(a),message:'Ihr seid bereits Freunde.'});
+        if(r.requested_by===a.id)return reply(res,200,{...await lists(a),message:'Anfrage wurde bereits gesendet.'});
+        return reply(res,409,{error:'Du hast bereits eine Anfrage von diesem Spieler. Bitte annehmen.'});
+      }
+      const current=await lists(a);
+      const target=await lists(b);
+      if(current.friends.length>=100||target.friends.length>=100)return reply(res,400,{error:'Freundesliste voll.'});
+      const [player1_id,player2_id]=await pair(a.id,b.id);
+      try {await relationships({},'POST',{player1_id,player2_id,requested_by:a.id,status:'pending'});}
+      catch(e){if(e.status===409)return reply(res,409,{error:'Anfrage bereits vorhanden. Liste aktualisieren.'});throw e;}
+      return reply(res,200,{...await lists(a),message:'Freundschaftsanfrage gesendet.'});
+    }
+    if(action==='respond') {
+      if(typeof v.id!=='string'||!(/^[0-9a-f-]{36}$/i.test(v.id))||typeof v.accept!=='boolean') return reply(res,400,{error:'Ungültige Antwort.'});
+      const r=(await relationships({id:'eq.'+v.id,status:'eq.pending',select:'*',limit:1}))[0];
+      if(!r||r.requested_by===a.id||!([r.player1_id,r.player2_id].includes(a.id)))return reply(res,404,{error:'Anfrage nicht gefunden.'});
+      if(v.accept) {
+        const current=await lists(a);
+        const other=await findId(r.requested_by);
+        if(!other)return reply(res,404,{error:'Spieler nicht gefunden.'});
+        if(current.friends.length>=100||(await lists(other)).friends.length>=100)return reply(res,400,{error:'Freundesliste voll.'});
+        await relationships({id:'eq.'+r.id,status:'eq.pending'},'PATCH',{status:'accepted'});
+      } else await relationships({id:'eq.'+r.id,status:'eq.pending'},'DELETE');
+      return reply(res,200,{...await lists(a),message:v.accept?'Freundschaft bestätigt.':'Anfrage abgelehnt.'});
+    }
+    if(action==='remove') {
+      const b=await findCode(v.code);
+      if(!b)return reply(res,404,{error:'Spieler nicht gefunden.'});
+      const [player1_id,player2_id]=await pair(a.id,b.id);
+      await relationships({player1_id:'eq.'+player1_id,player2_id:'eq.'+player2_id},'DELETE');
+      return reply(res,200,{...await lists(a),message:'Freund entfernt.'});
+    }
+    return reply(res,404,{error:'Nicht gefunden'});
+  }
+  if(req.method!=='GET'&&req.method!=='HEAD') {res.writeHead(405);return res.end();}
+  const file=url.pathname==='/'?'/index.html':url.pathname;
+  if(file==='/health')return reply(res,200,{status:'ok'});
+  if(file!=='/index.html'){res.writeHead(404);return res.end('Not found');}
+  res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff'});
+  if(req.method==='HEAD')return res.end();
+  fs.createReadStream(path.join(__dirname,'index.html')).on('error',()=>res.end('index.html missing')).pipe(res);
+}
+http.createServer((req,res)=>handle(req,res).catch(e=>{
+  console.error('Request failed',e.status||'',e.message,e.details||'');
+  if(!res.headersSent)reply(res,500,{error:'Serverfehler. Datenbankverbindung und Tabellen prüfen.'});else res.end();
+})).listen(PORT,'0.0.0.0',()=>console.log('Arena v72 / Supabase on port '+PORT));
