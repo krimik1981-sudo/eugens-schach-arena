@@ -2406,7 +2406,26 @@ function egAIMove(){
 $('openEugen').addEventListener('click',()=>{const level=document.querySelector('input[name="v83chessLevel"]:checked')?.value||document.querySelector('input[name="v85ChessLevel"]:checked')?.value||'beginner';egStart(level);});
 $('backEugenHome').addEventListener('click',()=>{$('eugenMenu').hidden=true;$('courseHome').hidden=false;window.scrollTo(0,0)});
 for(const b of document.querySelectorAll('[data-level]'))b.addEventListener('click',()=>egStart(b.dataset.level));
-$('backEugenLevels').addEventListener('click',()=>{egHidePromotion();egDisposeStockfish();clearTimeout(egTimer);hideRookMate();$('eugenGame').hidden=true;$('eugenMenu').hidden=true;$('courseHome').hidden=false;const nav=document.querySelector('#courseHome .arena-navitem[data-page="spielen"]');if(nav)nav.click();window.scrollTo(0,0)});
+$('backEugenLevels').addEventListener('click',()=>{
+ // The return must work even when Stockfish, promotion or a timed move cannot be cancelled.
+ try{clearTimeout(egTimer)}catch(e){console.warn('Timer cleanup',e)}
+ try{egDisposeStockfish()}catch(e){console.warn('Stockfish cleanup',e)}
+ try{egHidePromotion()}catch(e){console.warn('Promotion cleanup',e)}
+ try{hideRookMate()}catch(e){console.warn('Puzzle cleanup',e)}
+ // Navigate first; never let a cleanup error strand the user on the board.
+ const game=$('eugenGame'),home=$('courseHome'),menu=$('eugenMenu');
+ if(game)game.hidden=true;
+ if(menu)menu.hidden=true;
+ if(home){
+   home.hidden=false;
+   const nav=home.querySelector('.arena-bottomnav [data-page="spielen"]')||home.querySelector('.arena-navitem[data-page="spielen"]');
+   if(nav)nav.click();
+   // Fallback if a theme-specific navigation handler has not yet initialized.
+   const play=home.querySelector('.arena-page[data-panel="spielen"]');
+   if(play && play.hidden){home.querySelectorAll('.arena-page[data-panel]').forEach(p=>p.hidden=p!==play)}
+ }
+ window.scrollTo(0,0);
+});
 $('eugenRestart').addEventListener('click',()=>{hideRookMate();egReset();if(egMode==='expert')egInitStockfish();if(egHuman==='b')egTimer=setTimeout(egAIMove,380)});
 $('eugenUndo').addEventListener('click',()=>{
  egDisposeStockfish();clearTimeout(egTimer);hideRookMate();if(!egHistory.length)return;
