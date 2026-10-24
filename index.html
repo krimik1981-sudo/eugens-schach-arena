@@ -1113,16 +1113,25 @@ body{background:var(--arena62-bg)}
     <div class="premium-hero-piece" aria-hidden="true">♚</div>
     <button class="premium-welcome" type="button" data-page="profil"><span class="premium-avatar" aria-hidden="true">♟</span><span class="premium-welcome-text"><strong>Hallo, <span id="premiumUserName">Gast</span></strong><small>Schön, dass du da bist!</small></span><span class="premium-welcome-arrow">›</span></button>
   </section>
-  <section class="premium-start-content">
-    <div class="premium-section-head"><h2>Schnell starten</h2><button type="button" data-page="schach">Alle Modi <span>›</span></button></div>
-    <div class="premium-feature-grid">
-       <button class="premium-feature premium-chess" data-page="spielen" type="button"><span class="premium-feature-illustration" aria-hidden="true">♘</span><span class="premium-feature-label"><strong>Schach spielen</strong><small>Gegen Mensch oder KI</small></span><span class="premium-feature-next">›</span></button>
-       <button class="premium-feature premium-dame" data-page="dame" type="button"><span class="premium-feature-illustration" aria-hidden="true">⛀</span><span class="premium-feature-label"><strong>Dame spielen</strong><small>Mit Freunden oder KI</small></span><span class="premium-feature-next">›</span></button>
-       <button class="premium-feature premium-training" data-page="lernen" type="button"><span class="premium-feature-illustration" aria-hidden="true">♜</span><span class="premium-feature-label"><strong>Training</strong><small>Schritt für Schritt lernen</small></span><span class="premium-feature-next">›</span></button>
-       <button class="premium-feature premium-online" data-page="freunde" type="button"><span class="premium-feature-illustration" aria-hidden="true">◎</span><span class="premium-feature-label"><strong>Online</strong><small>Gegen Freunde spielen</small></span><span class="premium-feature-next">›</span></button>
+  <section class="premium-start-content v83-menu">
+    <div class="v83-menu-heading"><span>EUGENS SCHACH ARENA · SPIELMODI</span><h2>Was möchtest du spielen?</h2><p>Schach und Dame sind klar getrennt – gegen den Computer, im Training oder online gegen Freunde.</p></div>
+    <div class="v83-grid">
+      <article class="v83-mode" data-game="schach" data-type="computer">
+        <div class="v83-card-top"><span class="v83-icon" aria-hidden="true">♞</span><div><h3>Schach spielen</h3><p>Nur gegen Computer</p></div></div>
+        <fieldset class="v83-levels"><legend>Schwierigkeitsgrad</legend><label><input type="radio" name="v83chessLevel" value="beginner" checked><span>Anfänger</span></label><label><input type="radio" name="v83chessLevel" value="intermediate"><span>Fortgeschritten</span></label><label><input type="radio" name="v83chessLevel" value="expert"><span>Profi</span></label></fieldset>
+        <button class="v83-launch" type="button" id="v83PlayChess">Jetzt spielen <span>→</span></button>
+      </article>
+      <article class="v83-mode" data-game="dame" data-type="computer">
+        <div class="v83-card-top"><span class="v83-icon" aria-hidden="true">⛀</span><div><h3>Dame spielen</h3><p>Nur gegen Computer</p></div></div>
+        <fieldset class="v83-levels"><legend>Schwierigkeitsgrad</legend><label><input type="radio" name="v83dameLevel" value="easy" checked><span>Anfänger</span></label><label><input type="radio" name="v83dameLevel" value="medium"><span>Fortgeschritten</span></label><label><input type="radio" name="v83dameLevel" value="hard"><span>Profi</span></label></fieldset>
+        <button class="v83-launch" type="button" id="v83PlayDame">Jetzt spielen <span>→</span></button>
+      </article>
+      <article class="v83-mode" data-game="schach" data-type="training"><div class="v83-card-top"><span class="v83-icon" aria-hidden="true">♜</span><div><h3>Schach-Training</h3><p>Aufgaben und Lernen</p></div></div><p class="v83-description">Matt, Taktik, Figuren und Endspiele trainieren.</p><button class="v83-launch" type="button" data-page="lernen">Zum Training <span>→</span></button></article>
+      <article class="v83-mode" data-game="dame" data-type="training"><div class="v83-card-top"><span class="v83-icon" aria-hidden="true">◎</span><div><h3>Dame-Training</h3><p>Aufgaben und Lernen</p></div></div><p class="v83-description">Schlagen, Kombinationen und Damen trainieren.</p><button class="v83-launch" type="button" data-page="dame-training">Zum Training <span>→</span></button></article>
+      <article class="v83-mode" data-game="schach" data-type="online"><div class="v83-card-top"><span class="v83-icon" aria-hidden="true">♟</span><div><h3>Online-Schach</h3><p>Gegen Menschen spielen</p></div></div><p class="v83-description">Mit Freunden oder anderen Spielern online spielen.</p><button class="v83-launch" type="button" id="v83OnlineChess">Online spielen <span>→</span></button></article>
+      <article class="v83-mode" data-game="dame" data-type="online"><div class="v83-card-top"><span class="v83-icon" aria-hidden="true">⛂</span><div><h3>Online-Dame</h3><p>Gegen Menschen spielen</p></div></div><p class="v83-description">Mit Freunden oder anderen Spielern online spielen.</p><button class="v83-launch" type="button" id="v83OnlineDame">Online spielen <span>→</span></button></article>
     </div>
-    <section class="premium-continue"><div class="premium-section-head"><h2>Weiter spielen</h2><button data-page="analyse" type="button">Alle Partien <span>›</span></button></div><div class="premium-continue-row"><span class="premium-mini-board" aria-hidden="true">♟</span><div><strong>Deine Partien</strong><small>Gespeicherte Spiele ansehen und fortsetzen, falls verfügbar.</small></div><button data-page="analyse" class="premium-continue-btn" type="button">Öffnen</button></div></section>
-    <div class="premium-quick-grid"><button type="button" data-open="openEugen"><span>♙</span><strong>Gegen Computer</strong><span>›</span></button><button type="button" data-page="freunde"><span>♧</span><strong>Freunde</strong><span>›</span></button><button type="button" data-open="openLive"><span>◉</span><strong>Live-Partien</strong><span>›</span></button></div>
+    <div class="v83-extras"><button type="button" data-page="analyse">♟ Meine Partien</button><button type="button" data-page="freunde">👥 Meine Freunde & Einladungen</button></div>
   </section>
 </div>
 <div class="arena-page" data-panel="schach" hidden="">
@@ -3995,6 +4004,59 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
      clearTimeout(hideTimer);hideTimer=setTimeout(()=>box.hidden=true,2600);
    }
  }).observe(log,{childList:true});
+})();
+</script>
+
+<style id="v83-home-style">
+.premium-v6-home .premium-hero{min-height:205px!important;padding-bottom:18px!important}
+.premium-v6-home .premium-hero-piece{display:none!important}
+.premium-v6-home .premium-welcome{margin-top:35px!important}
+.premium-v6-home .v83-menu{padding:25px clamp(16px,3vw,40px) 35px!important;background:#091929!important}
+.v83-menu-heading{text-align:center;margin:4px auto 25px;max-width:820px}
+.v83-menu-heading>span{font-weight:800;color:#e1b971;letter-spacing:.18em;font-size:11px}
+.v83-menu-heading h2{font:700 clamp(25px,3.5vw,41px)/1.2 Georgia,serif;color:#fff;margin:10px 0 7px}
+.v83-menu-heading p{color:#b9c8d7;font-size:14px;margin:0}
+.v83-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;max-width:1100px;margin:auto}
+.v83-mode{background:linear-gradient(126deg,#17263b,#091829 72%);border:1px solid #9b7748;border-radius:16px;padding:20px;box-shadow:0 8px 24px #0003;display:flex;flex-direction:column;gap:13px;min-width:0}
+.v83-card-top{display:flex;align-items:center;gap:17px;min-height:90px}.v83-icon{width:86px;min-width:86px;height:90px;display:grid;place-items:center;font:76px/1 Georgia,serif;color:#ebc078;text-shadow:0 5px 13px #090909,0 0 15px #e2ad5b44}
+.v83-card-top h3{font:700 clamp(21px,2.3vw,29px)/1.2 Georgia,serif;color:#fff;margin:0 0 6px}.v83-card-top p{font-size:14px;color:#e0e5eb;margin:0}
+.v83-mode[data-game="dame"] .v83-icon{color:#d79e65}.v83-mode[data-type="training"] .v83-icon{font-size:67px}.v83-mode[data-type="online"] .v83-icon{font-size:66px}
+.v83-description{color:#c2ced9;font-size:14px;line-height:1.45;min-height:42px;margin:0 0 1px 103px}
+.v83-levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid #435d79;border-radius:10px;overflow:hidden;padding:0;margin:0 0 1px 103px;min-width:0}
+.v83-levels legend{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.v83-levels label{display:flex;min-width:0}.v83-levels input{position:absolute;opacity:0;width:1px;height:1px}
+.v83-levels span{display:grid;place-items:center;text-align:center;min-height:48px;min-width:0;width:100%;color:#d5e2ed;font-size:clamp(10px,1.2vw,12px);padding:5px 2px;cursor:pointer;border-right:1px solid #435d79}
+.v83-levels label:last-child span{border-right:0}.v83-levels input:checked+span{background:linear-gradient(#ffdda1,#d9a054);color:#152335;font-weight:850}
+.v83-levels input:focus-visible+span{outline:3px solid #6fbaff;outline-offset:-3px}
+.v83-launch{display:flex!important;align-items:center;justify-content:center;gap:10px;border:1px solid #f4cb81!important;background:linear-gradient(120deg,#ffe0a0,#cf9850)!important;border-radius:12px!important;min-height:46px!important;color:#172535!important;font-weight:850!important;font-size:15px!important;cursor:pointer;margin-top:auto;margin-left:103px;padding:10px 12px!important;width:calc(100% - 103px)}
+.v83-launch:hover{filter:brightness(1.08)}.v83-extras{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:25px 0 2px}.v83-extras button{background:#182d44;border:1px solid #5c7590;color:#e2edf9;border-radius:10px;padding:12px 18px;font-size:14px;cursor:pointer}
+@media(max-width:900px){.v83-card-top{gap:10px}.v83-icon{width:60px;min-width:60px;font-size:60px}.v83-description,.v83-levels,.v83-launch{margin-left:0}.v83-launch{width:100%}}
+@media(max-width:660px){.premium-v6-home .premium-hero{min-height:210px!important}.premium-v6-home .premium-welcome{margin-top:40px!important}.v83-grid{grid-template-columns:1fr;gap:12px}.v83-mode{padding:16px}.v83-card-top{min-height:70px}.v83-icon{height:72px}.v83-menu-heading{margin-bottom:17px}.v83-menu-heading p{font-size:13px}.v83-mode .v83-description{min-height:0}}
+</style>
+
+<script id="v83-home-script">
+(function(){'use strict';
+ const byId=id=>document.getElementById(id);
+ function nav(page){const button=document.querySelector('#courseHome .arena-navitem[data-page="'+page+'"]');if(button){button.click();return true}return false}
+ function change(select,value){if(!select)return;select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}))}
+ const radio=name=>document.querySelector('input[name="'+name+'"]:checked')?.value;
+ byId('v83PlayChess')?.addEventListener('click',()=>{
+   const level=radio('v83chessLevel')||'beginner';
+   byId('openEugen')?.click();
+   const button=document.querySelector('#eugenMenu .eugen-level-card[data-level="'+level+'"]');
+   if(button)button.click();
+ });
+ byId('v83PlayDame')?.addEventListener('click',()=>{
+   nav('dame');
+   change(byId('dameMode'),'ai');
+   change(byId('dameLevel'),radio('v83dameLevel')||'easy');
+   byId('dameRestart')?.click();
+ });
+ byId('v83OnlineChess')?.addEventListener('click',()=>byId('openLive')?.click());
+ byId('v83OnlineDame')?.addEventListener('click',()=>{
+   nav('dame');change(byId('dameMode'),'online');
+   byId('dameOnlineBox')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+ });
 })();
 </script>
 </body></html>
