@@ -1101,7 +1101,9 @@ body{background:var(--arena62-bg)}
 <label for="dameLevel">Computerstärke</label><select id="dameLevel"><option value="easy">Anfänger</option><option selected="" value="medium">Fortgeschritten</option><option value="hard">Profi</option></select>
 <div hidden="" id="dameOnlineBox">
 <h3>🌐 Online-Dame</h3>
-<div class="dame-public-search"><strong>🎯 Allgemeiner Tisch · Dame</strong><p class="dame-note">Ein Klick: Wir suchen automatisch einen Gegner. Der erste Spieler wartet, der zweite wird verbunden.</p><button id="damePublicPlay" type="button">🌍 Gegner automatisch finden</button><span id="damePublicInfo" role="status" aria-live="polite">Bereit zur Gegnersuche.</span></div>
+<div class="dame-public-search"><strong>🎯 Allgemeiner Tisch · Dame</strong><p class="dame-note">Ein Klick: Wir suchen automatisch einen Gegner. Der erste Spieler wartet, der zweite wird verbunden.</p><label for="v76DameColorMenu" style="display:block;margin:8px 0;color:#f7dca2">Meine Farbe</label>
+<select id="v76DameColorMenu" style="background:#173954;color:white;border:1px solid #6388a4;padding:10px;border-radius:9px"><option value="random">🎲 Zufällig</option><option value="w">⚪ Weiß</option><option value="b">⚫ Schwarz</option></select>
+<button id="damePublicPlay" type="button">🌍 Gegner automatisch finden</button><span id="damePublicInfo" role="status" aria-live="polite">Bereit zur Gegnersuche.</span></div>
 <details class="dame-private-room"><summary>🔒 Privater Raum mit Freund</summary>
 <p class="dame-note">Wähle deine Farbe. Dein Freund bekommt automatisch die andere Farbe. Beide öffnen die Arena auf ihrer eigenen HTTPS-Webseite.</p>
 <label for="dameHostColor">Meine Farbe als Gastgeber</label><select id="dameHostColor"><option value="w">⚪ Weiß (erster Zug)</option><option value="b">⚫ Schwarz (zweiter Zug)</option></select><button id="dameCreate" type="button">🌐 Raum erstellen</button>
@@ -1222,6 +1224,9 @@ body{background:var(--arena62-bg)}
     <label class="v68-time-label" for="v68ChessTime">Schachuhr</label>
     <select id="v68ChessTime"><option value="0" selected>∞ Ohne Zeitlimit</option><option value="30">30 Minuten</option><option value="15">15 Minuten</option><option value="10">10 Minuten</option><option value="5">5 Minuten</option><option value="3">3 Minuten</option></select>
     <small class="v68-time-note">Beide Spieler wählen dieselbe Zeit, um zusammenzukommen.</small>
+    <label class="v68-time-label" for="v76ChessColor">Meine Farbe</label>
+    <select id="v76ChessColor"><option value="random">🎲 Zufällig</option><option value="w">⚪ Weiß</option><option value="b">⚫ Schwarz</option></select>
+    <small class="v68-time-note">Bei Weiß oder Schwarz wartet die Suche auf einen Gegner mit der anderen Farbe. Weiß beginnt immer.</small>
     <button id="v68JoinChess" class="v68-enter" type="button">Raum betreten <span>›</span></button>
     <span class="v68-room-status">♟ Wartet auf deinen Eintritt</span></div>
   </section>
@@ -1233,6 +1238,9 @@ body{background:var(--arena62-bg)}
     <div class="v68-entry-art v68-art-dame" role="img" aria-label="Goldene und schwarze Dame-Spielsteine vor einem Globus"></div>
     <div class="v68-entry-panel"><span class="v68-kicker">2 SPIELER · AUTOMATISCHER START</span><h3>Dame-<em>Raum</em></h3>
     <p>Wer diesen Raum betritt, spielt automatisch mit. Der erste Spieler wartet, beim zweiten beginnt die Partie.</p>
+    <label class="v68-time-label" for="v76DameColor">Meine Farbe</label>
+    <select id="v76DameColor"><option value="random">🎲 Zufällig</option><option value="w">⚪ Weiß</option><option value="b">⚫ Schwarz</option></select>
+    <small class="v68-time-note">Die Spieler werden nur bei passenden Farben verbunden. Weiß beginnt immer.</small>
     <button id="v68JoinDame" class="v68-enter" type="button">Raum betreten <span>›</span></button>
     <span class="v68-room-status">⛀ Wartet auf deinen Eintritt</span></div>
   </section>
@@ -1321,13 +1329,15 @@ body{background:var(--arena62-bg)}
 <div class="arena-public-search">
   <h2>🃏 Allgemeiner Tisch für zwei</h2>
   <p>Wie in „Тысяча Арена“: ein Klick — wir suchen einen Gegner. Der erste Spieler wartet, der zweite wird automatisch verbunden.</p>
+  <label for="v76ChessColorMenu" style="display:block;margin:8px 0;color:#f7dca2">Meine Farbe</label>
+  <select id="v76ChessColorMenu" style="color:#fff;background:#173954;border:1px solid #6388a4;padding:11px;border-radius:9px;margin-bottom:10px"><option value="random">🎲 Zufällig</option><option value="w">⚪ Weiß</option><option value="b">⚫ Schwarz</option></select>
   <button id="livePublicTwo" type="button">🌐 Allgemeiner Tisch · 2 Spieler</button>
   <p id="livePublicInfo" role="status">Automatische Suche benötigt die Server-Version dieser Arena.</p>
 </div>
 <h3>Oder privat mit einem Freund spielen</h3>
-<div class="live-actions"><button id="liveCreate" type="button">♔ Privaten Raum erstellen · Weiß</button></div>
+<div class="live-actions" style="align-items:center"><label for="v76PrivateChessColor">Meine Farbe als Gastgeber</label><select id="v76PrivateChessColor"><option value="w">⚪ Weiß</option><option value="b">⚫ Schwarz</option><option value="random">🎲 Zufällig</option></select><button id="liveCreate" type="button">♔ Privaten Raum erstellen</button></div>
 <p>Oder Raumcode von deinem Freund eingeben:</p>
-<div class="live-actions"><input aria-label="Raumcode" autocapitalize="characters" id="liveCodeInput" maxlength="36" placeholder="z. B. EUGEN-ABC123" type="text"/><button id="liveJoin" type="button">♚ Raum beitreten · Schwarz</button></div>
+<div class="live-actions"><input aria-label="Raumcode" autocapitalize="characters" id="liveCodeInput" maxlength="36" placeholder="z. B. EUGEN-ABC123" type="text"/><button id="liveJoin" type="button">♚ Raum beitreten</button></div>
 <p id="liveMenuStatus" role="status">Bereit zum Verbinden.</p>
 <p class="live-help">Für die Live-Verbindung wird Internet benötigt. Die Verbindung nutzt den kostenlosen öffentlichen PeerJS-Vermittlungsdienst und WebRTC. Verfügbarkeit ist nicht garantiert. Ein Einladungslink funktioniert nur, wenn du die Arena auf einer öffentlich erreichbaren HTTPS-Adresse veröffentlicht hast. Bei einer lokalen Datei kannst du stattdessen den Raumcode teilen; beide benötigen diese Arena-Datei.</p>
 </div>
@@ -2238,13 +2248,13 @@ rebuild();
 /* Live gegen Freunde v2: Gastgeber verwaltet Stellung, Zeit und Spielende. */
 (()=>{
  const $l=id=>document.getElementById(id);
- let peer=null,conn=null,room='',side='w',connected=false,token=0;
+ let peer=null,conn=null,room='',side='w',isHost=false,connected=false,token=0;
  let position=egInit(),white=true,ep=null,castle='KQkq',half=0,full=1,last=[],selected=null,moveNo=0;
  let timeControl=600000,remaining={w:600000,b:600000},clockAt=0,clockRunning=false;
  let outcome=null,drawOffer=null,rematchOffer=null,promotion=null,notice='',historyKeys=new Map();
  let snapshotReceivedAt=Date.now(),updateInterval=null,latencyTimer=null;
  let liveMoves=[],liveFrames=[],liveRecordId="";
- const asSide=()=>white?'w':'b',opponent=s=>s==='w'?'b':'w',host=()=>side==='w';
+ const asSide=()=>white?'w':'b',opponent=s=>s==='w'?'b':'w',host=()=>isHost;
 
  // Chat wird über dieselbe PeerJS-Verbindung wie die Züge übertragen.
  const ARENA_EMOJIS=['😂','😡','👏','👍','😭','🎉','😎','❤️'];
@@ -2328,10 +2338,11 @@ rebuild();
   }catch(e){no(e)}
  })}
  function send(d){if(connected&&conn?.open)try{conn.send(d)}catch(e){setStatus('Senden fehlgeschlagen – Verbindung prüfen.')}}
- function pack(){return {position:{...position},white,ep,castle,half,full,last:[...last],moveNo,remaining:{...remaining},clockRunning,clockAt:Date.now(),timeControl,outcome,drawOffer,rematchOffer,recordId:liveRecordId,recordMoves:[...liveMoves],recordFrames:[...liveFrames]}}
+ function pack(){return {hostColor:side,position:{...position},white,ep,castle,half,full,last:[...last],moveNo,remaining:{...remaining},clockRunning,clockAt:Date.now(),timeControl,outcome,drawOffer,rematchOffer,recordId:liveRecordId,recordMoves:[...liveMoves],recordFrames:[...liveFrames]}}
  function sync(){if(host())send({type:'sync',state:pack()});render()}
  function acceptState(s){
   if(!s||!s.position||typeof s.position!=='object'||typeof s.white!=='boolean'||!s.remaining||!Number.isFinite(s.remaining.w)||!Number.isFinite(s.remaining.b)||!Number.isFinite(s.timeControl))return false;
+  if(s.hostColor==='w'||s.hostColor==='b')side=opponent(s.hostColor);
   position={...s.position};white=s.white;ep=s.ep||null;castle=String(s.castle||'');half=s.half||0;full=s.full||1;last=Array.isArray(s.last)?[...s.last]:[];moveNo=s.moveNo||0;
   timeControl=s.timeControl;remaining={w:s.remaining.w,b:s.remaining.b};clockAt=Date.now();clockRunning=!!s.clockRunning;
   outcome=s.outcome||null;drawOffer=s.drawOffer||null;rematchOffer=s.rematchOffer||null;selected=null;promotion=null;$l('livePromotion').hidden=true;snapshotReceivedAt=Date.now();
@@ -2375,27 +2386,27 @@ rebuild();
   if(msg.type==='arena-chat-v1'){receiveChat(msg);return;}
   if(host()){
    if(msg.type==='join'){sync();return}
-   if(msg.type==='move'){if(!hostMove(msg.from,msg.to,msg.promotion,'b')){setStatus('Ungültigen Zug des Gastes abgewiesen.');sync()}}
-   else if(msg.type==='drawOffer'){offerDraw('b')}
-   else if(msg.type==='drawAnswer'){answerDraw('b',!!msg.accept)}
-   else if(msg.type==='resign'){resign('b')}
-   else if(msg.type==='rematchOffer'){offerRematch('b')}
-   else if(msg.type==='rematchAnswer'){answerRematch('b',!!msg.accept)}
+   if(msg.type==='move'){if(!hostMove(msg.from,msg.to,msg.promotion,opponent(side))){setStatus('Ungültigen Zug des Gastes abgewiesen.');sync()}}
+   else if(msg.type==='drawOffer'){offerDraw(opponent(side))}
+   else if(msg.type==='drawAnswer'){answerDraw(opponent(side),!!msg.accept)}
+   else if(msg.type==='resign'){resign(opponent(side))}
+   else if(msg.type==='rematchOffer'){offerRematch(opponent(side))}
+   else if(msg.type==='rematchAnswer'){answerRematch(opponent(side),!!msg.accept)}
   }else if(msg.type==='sync'){acceptState(msg.state)}
  }
  function connect(c){
   if(conn&&conn!==c&&conn.open){c.close();return}conn=c;const thisConn=c;
-  c.on('open',()=>{if(conn!==thisConn)return;connected=true;clockAt=Date.now();chatInfo('Verbunden – Nachrichten und Emojis sind bereit.');window.ArenaFriendV70?.attach('chess',d=>c.send(d),()=>connected&&c.open);if(host()){clockRunning=!outcome;setStatus('Freund verbunden. Weiß beginnt!');sync()}else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'})}render()});
+  c.on('open',()=>{if(conn!==thisConn)return;connected=true;clockAt=Date.now();chatInfo('Verbunden – Nachrichten und Emojis sind bereit.');window.ArenaFriendV70?.attach('chess',d=>c.send(d),()=>connected&&c.open);if(host()){clockRunning=!outcome;setStatus('Freund verbunden. Weiß beginnt! Du spielst '+(side==='w'?'Weiß.':'Schwarz.'));sync()}else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'})}render()});
   c.on('data',data);
   c.on('close',()=>{if(conn!==thisConn)return;if(host())tick();conn=null;connected=false;window.ArenaFriendV70?.detached('chess');chatInfo('Verbindung getrennt.');if(host())clockRunning=false;setStatus('Verbindung unterbrochen. Die Uhr wurde angehalten. Für eine neue Partie einen neuen Raum erstellen.');render()});
   c.on('error',e=>{if(conn===thisConn)setStatus('Verbindungsfehler: '+String(e?.message||e))});
  }
- async function create(publicRoom=null){closeSession();let myToken=token;side='w';room='HOST';show('liveGame');timeControl=Number($l('liveTimeSelect').value)*60000;baseReset(timeControl);setStatus('Raum wird erstellt …');
+ async function create(publicRoom=null,color='w'){closeSession();let myToken=token;isHost=true;side=color==='b'?'b':'w';room='HOST';show('liveGame');timeControl=Number($l('liveTimeSelect').value)*60000;baseReset(timeControl);setStatus('Raum wird erstellt …');
   try{let name=await peerReady(typeof publicRoom==='string' ? publicRoom : id(),myToken);if(token!==myToken)return;room=name;$l('liveRoomCode').textContent=name;peer.on('connection',connect);setStatus('Raum bereit. Teile den Einladungslink oder Raumcode.');linkHint();render();return name}
   catch(e){if(token===myToken)setStatus('Verbindung zum Vermittlungsserver fehlgeschlagen: '+String(e?.message||e));return null}
  }
- async function join(text){const code=String(text||'').trim().toUpperCase();if(!valid(code)){menuStatus('Ungültiger Raumcode. Er beginnt mit EUGEN- und hat 14 weitere Zeichen.');return}
-  closeSession();let myToken=token;side='b';room=code;show('liveGame');baseReset();$l('liveRoomCode').textContent=code;setStatus('Verbinde mit dem Gastgeber …');linkHint();
+ async function join(text){const raw=String(text||'').trim();const isPublic=/^[cd][0-9a-f]{28}$/.test(raw);const code=isPublic?raw:raw.toUpperCase();if(!isPublic&&!valid(code)){menuStatus('Ungültiger Raumcode. Er beginnt mit EUGEN- und hat 14 weitere Zeichen.');return}
+  closeSession();let myToken=token;isHost=false;side='b';room=code;show('liveGame');baseReset();$l('liveRoomCode').textContent=code;setStatus('Verbinde mit dem Gastgeber …');linkHint();
   try{await peerReady(undefined,myToken);if(token!==myToken)return;connect(peer.connect(code,{reliable:true}));latencyTimer=setTimeout(()=>{if(token===myToken&&!connected)setStatus('Keine Verbindung: Code prüfen und den Gastgeber bitten, die Seite geöffnet zu lassen.')},15000)}
   catch(e){if(token===myToken)setStatus('Verbindung fehlgeschlagen: '+String(e?.message||e))}
  }
@@ -2443,7 +2454,7 @@ rebuild();
    b.onclick=()=>{if(!promotion)return;const m={...promotion,promotion:sym};promotion=null;$l('livePromotion').hidden=true;localMove(m)};el.appendChild(b)
   }$l('livePromotion').hidden=false;return}localMove(move)
  }
- function localMove(m){if(!connected||outcome)return;if(host()){if(!hostMove(m.from,m.to,m.promotion,'w'))setStatus('Dieser Zug ist nicht erlaubt.')}else{
+ function localMove(m){if(!connected||outcome)return;if(host()){if(!hostMove(m.from,m.to,m.promotion,side))setStatus('Dieser Zug ist nicht erlaubt.')}else{
    // Gast wartet auf bestätigte Stellung vom Gastgeber; kein optimistisches lokales Vorrücken.
    selected=null;send({type:'move',from:m.from,to:m.to,promotion:m.promotion});setStatus('Zug an Gastgeber gesendet …');render()
   }}
@@ -2458,9 +2469,9 @@ rebuild();
   if(publicBusy)return;publicBusy=true;const button=$l('livePublicTwo');button.disabled=true;
   const info=$l('livePublicInfo');info.textContent='Suche einen freien Gegner …';
   try{
-   const result=await publicApi('join',{time:Number($l('liveTimeSelect').value)});
+   const result=await publicApi('join',{time:Number($l('liveTimeSelect').value),color:$l('v76ChessColorMenu')?.value||'random'});
    if(result.role==='host'){
-    const actual=await create(result.room);
+    const actual=await create(result.room,result.hostColor);
     if(!actual)throw Error('Raum konnte nicht geöffnet werden. Bitte versuche es erneut.');
     publicRoomInfo={room:result.room,role:'host'};
     await publicApi('heartbeat',{room:result.room,ready:true});
@@ -2478,7 +2489,7 @@ rebuild();
  setInterval(()=>{if(!publicRoomInfo||$l('liveGame').hidden)return;publicApi('heartbeat',{room:publicRoomInfo.room,ready:publicRoomInfo.role==='host'}).catch(()=>{});},12000);
  $l('openLive').addEventListener('click',()=>{closeSession();show('liveMenu');menuStatus('Bereit zum Verbinden.');const code=new URLSearchParams(location.hash.slice(1)).get('live');if(code){$l('liveCodeInput').value=code;menuStatus('Einladung gefunden – auf „Raum beitreten“ klicken.')}});
  $l('liveBackHome').onclick=()=>{closeSession();show('courseHome')};$l('liveBackMenu').onclick=()=>{closeSession();show('liveMenu')};
- $l('liveCreate').onclick=create;$l('liveJoin').onclick=()=>join($l('liveCodeInput').value);
+ $l('liveCreate').onclick=()=>{const c=$l('v76PrivateChessColor').value;create(null,c==='random'?(crypto.getRandomValues(new Uint8Array(1))[0]%2?'w':'b'):c);};$l('liveJoin').onclick=()=>join($l('liveCodeInput').value);
  $l('liveCopyCode').onclick=async()=>{try{await navigator.clipboard.writeText(room);setStatus('Raumcode kopiert.')}catch(e){setStatus('Bitte den Raumcode manuell markieren und kopieren.')}};
  $l('liveCopyLink').onclick=async()=>{if(!/^https?:$/.test(location.protocol)){setStatus('Link nur auf der veröffentlichten Webseite verfügbar.');return}try{await navigator.clipboard.writeText(link());setStatus('Einladungslink kopiert!')}catch(e){setStatus('Kopieren fehlgeschlagen. Bitte Raumcode teilen.')}};
  $l('livePromotionCancel').onclick=()=>{promotion=null;$l('livePromotion').hidden=true;render()};
@@ -3021,9 +3032,9 @@ for(const symbol of dameChatEmojis){const b=document.createElement('button');b.t
 document.getElementById('dameChatForm').addEventListener('submit',e=>{e.preventDefault();const x=document.getElementById('dameChatInput');if(dameChatSend('text',x.value))x.value=''});
 async function damePublicApi(action,data={}){let r;try{r=await fetch('/api/dame-match/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicDameClient,...data})})}catch(e){throw Error('Keine Verbindung zum Matchmaking-Server. Internet prüfen.')}if(!r.ok){let detail='';try{detail=(await r.json()).error||''}catch(e){}const err=Error(r.status===404?(detail==='Room expired or not yours'?'Spielraum abgelaufen. Bitte Gegner erneut suchen.':'Server-Anfrage nicht gefunden (404).'):'Matchmaking-Fehler ('+r.status+'): '+detail);err.status=r.status;throw err}return r.json()}
 async function damePublicPlay(){if(publicDameBusy)return;publicDameBusy=true;const btn=document.getElementById('damePublicPlay');btn.disabled=true;const label=document.getElementById('damePublicInfo');label.textContent='Suche freien Gegner …';try{
- const previousRoom=publicDameRoom;discardNetwork(true);if(previousRoom){try{await damePublicApi('leave',{room:previousRoom.room})}catch(e){console.warn('Previous matchmaking room could not be closed',e)}}const result=await damePublicApi('join');const gen=onlineGeneration;publicDameRoom={room:result.room,role:result.role};modeEl.value='online';
+ const previousRoom=publicDameRoom;discardNetwork(true);if(previousRoom){try{await damePublicApi('leave',{room:previousRoom.room})}catch(e){console.warn('Previous matchmaking room could not be closed',e)}}const result=await damePublicApi('join',{color:document.getElementById('v76DameColorMenu')?.value||'random'});const gen=onlineGeneration;publicDameRoom={room:result.room,role:result.role};modeEl.value='online';
  if(result.role==='host'){
-  onlineHost=true;onlineHostSide='w';onlineSide='w';onlineRoom=result.room;init();netStatus('Gegner wird gesucht …');await setupPeer(result.room);if(gen!==onlineGeneration)return;
+  onlineHost=true;onlineHostSide=result.hostColor==='b'?'b':'w';onlineSide=onlineHostSide;onlineRoom=result.room;init();netStatus('Gegner wird gesucht …');await setupPeer(result.room);if(gen!==onlineGeneration)return;
   onlinePeer.on('connection',attachConnection);await damePublicApi('heartbeat',{room:result.room,ready:true});
   label.textContent='🟢 Du wartest auf einen Gegner. Bitte diese Seite geöffnet lassen.';netStatus('Allgemeiner Dame-Tisch offen. Warte auf einen Gegner …');
  }else{
@@ -3708,6 +3719,7 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
   document.querySelectorAll('[data-v68-back]').forEach(el=>el.addEventListener('click',()=>page('freunde')));
   $('v68JoinChess')?.addEventListener('click',()=>{
     const time=$('v68ChessTime')?.value||'0';
+    if($('v76ChessColorMenu'))$('v76ChessColorMenu').value=$('v76ChessColor')?.value||'random';
     const target=$('liveTimeSelect');if(target)target.value=time;
     const open=$('openLive'), join=$('livePublicTwo');
     if(!open||!join){$('v68JoinChess').nextElementSibling.textContent='Schachraum nicht verfügbar.';return;}
@@ -3720,6 +3732,7 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
     nav?.click();
     const mode=$('dameMode');
     if(mode && mode.value!=='online'){mode.value='online';mode.dispatchEvent(new Event('change',{bubbles:true}));}
+    if($('v76DameColorMenu'))$('v76DameColorMenu').value=$('v76DameColor')?.value||'random';
     const start=$('damePublicPlay');
     if(start){start.click();}else{const status=$('dameOnlineStatus');if(status)status.textContent='Dame-Raum nicht verfügbar.';}
   });

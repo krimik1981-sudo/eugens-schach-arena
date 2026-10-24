@@ -108,17 +108,19 @@ async function matchAction(req,res,url) {
   if(action==='join') {
     // Prevent duplicate rooms after double taps; do not allow one client to match itself.
     for(const [room,item] of queue)if(item.host===data.clientId || item.guest===data.clientId)
-      return reply(res,200,{room,role:item.host===data.clientId?'host':'guest'});
+      return reply(res,200,{room,role:item.host===data.clientId?'host':'guest',hostColor:item.hostColor});
     const time=kind==='chess'?Number(data.time)||0:0;
-    const waiting=[...queue.entries()].find(([room,item])=>item.ready&&!item.guest && (kind==='dame'||item.time===time));
+    const preference=['w','b','random'].includes(data.color)?data.color:'random';
+    const waiting=[...queue.entries()].find(([room,item])=>item.ready&&!item.guest && (kind==='dame'||item.time===time) && (preference==='random'||preference!==item.hostColor));
     if(waiting) {
       const [room,item]=waiting;item.guest=data.clientId;item.updated=now;
-      return reply(res,200,{room,role:'guest'});
+      return reply(res,200,{room,role:'guest',hostColor:item.hostColor});
     }
     let room;
     do {room=(dame?'d':'c')+crypto.randomBytes(14).toString('hex')}while(queue.has(room));
-    queue.set(room,{host:data.clientId,guest:null,ready:false,time,updated:now});
-    return reply(res,200,{room,role:'host'});
+    const hostColor=preference==='random'?(crypto.randomInt(2)?'w':'b'):preference;
+    queue.set(room,{host:data.clientId,guest:null,ready:false,time,hostColor,updated:now});
+    return reply(res,200,{room,role:'host',hostColor});
   }
   if(!roomValid(data.room))return reply(res,400,{error:'Invalid room'});
   const item=queue.get(data.room);
@@ -204,6 +206,13 @@ async function handle(req,res) {
   if(req.method!=='GET'&&req.method!=='HEAD') {res.writeHead(405);return res.end();}
   const file=url.pathname==='/'?'/index.html':url.pathname;
   if(file==='/health')return reply(res,200,{status:'ok'});
+  if(file==='/raum-schach.webp'||file==='/raum-dame.webp'){
+    const art=path.join(__dirname,file.slice(1));
+    if(!fs.existsSync(art)){res.writeHead(404);return res.end('Image missing');}
+    res.writeHead(200,{'Content-Type':'image/webp','Cache-Control':'public, max-age=3600','X-Content-Type-Options':'nosniff'});
+    if(req.method==='HEAD')return res.end();
+    return fs.createReadStream(art).pipe(res);
+  }
   if(file!=='/index.html'){res.writeHead(404);return res.end('Not found');}
   res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff'});
   if(req.method==='HEAD')return res.end();
@@ -212,4 +221,4 @@ async function handle(req,res) {
 http.createServer((req,res)=>handle(req,res).catch(e=>{
   console.error('Request failed',e.status||'',e.message,e.details||'');
   if(!res.headersSent)reply(res,500,{error:'Serverfehler. Datenbankverbindung und Tabellen prüfen.'});else res.end();
-})).listen(PORT,'0.0.0.0',()=>console.log('Arena v75 / Supabase + Matchmaking on port '+PORT));
+})).listen(PORT,'0.0.0.0',()=>console.log('Arena v76 / Supabase + Matchmaking + Farbauswahl + Bilder on port '+PORT));
