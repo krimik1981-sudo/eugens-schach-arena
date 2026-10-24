@@ -1553,8 +1553,16 @@ body{background:var(--arena62-bg)}
 <div hidden="" id="historyReview">
 <h2 id="historyGameTitle">Partie ansehen</h2>
 <div class="history-layout">
+<div class="v96-board-area">
+<div class="v96-eval-wrap" aria-label="Stockfish Stellungsbewertung">
+ <div class="v96-eval-label v96-black-label" id="v96BlackLabel">Schwarz</div>
+ <div id="v96EvalBar" class="v96-eval-track" role="meter" aria-label="Stellungsvorteil Weiß" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><div id="v96EvalWhite" class="v96-eval-white"></div><div class="v96-eval-center"></div></div>
+ <div class="v96-eval-label v96-white-label" id="v96WhiteLabel">Weiß</div>
+</div>
 <div class="wood history-board"><div aria-label="Gespeicherte Schachstellung" class="board" id="historyBoard" role="img"></div></div>
+</div>
 <div class="history-side">
+<div id="v96EvaluationCaption" class="v96-eval-caption" aria-live="off">⚖️ Stockfish-Bewertung · Analyse starten, um den Vorteil zu sehen.</div>
 <div class="v95-review-head"><strong id="historyPly">Startstellung</strong><button id="v95FlipHistory" class="secondary" type="button" aria-label="Schachbrett drehen">↻ Brett drehen</button></div>
 <div class="history-actions"><button id="historyFirst" type="button">⏮</button><button id="historyPrev" type="button">◀ Zurück</button><button id="historyNext" type="button">Weiter ▶</button><button id="historyLast" type="button">⏭</button></div>
 <div aria-label="Zugliste" class="history-moves" id="historyMoves"></div>
@@ -4745,4 +4753,42 @@ document.addEventListener('DOMContentLoaded',()=>{
 #historyView #v95FlipHistory:hover{background:#31506b}
 @media(max-width:650px){#historyView .v95-review-head{gap:7px}#historyView #v95FlipHistory{font-size:14px}}
 </style>
+<style id="v96-evaluation-meter-style">
+#historyView .v96-board-area{display:flex;align-items:stretch;gap:10px;min-width:0;width:100%}
+#historyView .v96-board-area>.history-board{min-width:0;flex:1;width:auto}
+#historyView .v96-eval-wrap{flex:0 0 35px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;align-self:stretch}
+#historyView .v96-eval-label{font-size:10px;letter-spacing:.1px;font-weight:750;color:#e4d3bb;text-align:center;white-space:nowrap}
+#historyView .v96-eval-track{flex:1;min-height:180px;width:26px;position:relative;border:2px solid #b7975f;border-radius:10px;background:#111927;overflow:hidden;box-shadow:inset 0 2px 8px #0008,0 3px 12px #0005;transition:background .2s}
+#historyView .v96-eval-white{position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(90deg,#b8c9db 0%,#f3f8ff 35%,#fff 75%);border-top:2px solid #cdaa70;transition:height .35s ease}
+#historyView .v96-eval-center{position:absolute;inset:50% 0 auto;border-top:1px dashed #c9a769aa;pointer-events:none}
+#historyView .v96-eval-caption{border:1px solid #b4936055;border-radius:10px;background:#12273d;color:#f4e3c4;padding:11px 13px;margin-bottom:10px;font-size:14px;font-weight:700}
+#historyView .v96-eval-wrap[data-unknown="true"] .v96-eval-white{background:linear-gradient(90deg,#667688,#97a6b7 55%,#c3ceda)}
+@media(max-width:650px){#historyView .v96-board-area{gap:5px}#historyView .v96-eval-wrap{flex-basis:26px;gap:4px}#historyView .v96-eval-track{width:20px;border-radius:7px}#historyView .v96-eval-label{font-size:8px}}
+@media(prefers-reduced-motion:reduce){#historyView .v96-eval-white{transition:none}}
+</style>
+<script id="v96-evaluation-meter-code">
+(function(){
+ const oldPaint=hPaint,oldOpen=hOpen;
+ function update(){
+   const bar=document.getElementById('v96EvalBar'),white=document.getElementById('v96EvalWhite'),caption=document.getElementById('v96EvaluationCaption');
+   if(!bar||!white||!caption||!hReview)return;
+   // Evaluation entries are for the position AFTER their move. Index 0 is the starting FEN.
+   let a=hIndex>0?hAnalysis[hIndex-1]:null;
+   // The first position can use Stockfish's before-move evaluation when available, but not a later score.
+   let cp=a&&Number.isFinite(a.whiteScore)?a.whiteScore:null;
+   const known=cp!==null;
+   // Smooth, bounded visual score: 0 cp = 50/50; +200 cp favors white, -200 favors black.
+   const whiteShare=known?50+50*(2/Math.PI)*Math.atan(cp/180):50;
+   white.style.height=whiteShare.toFixed(2)+'%';
+   bar.parentElement.dataset.unknown=String(!known);
+   bar.setAttribute('aria-valuenow',String(Math.round(whiteShare)));
+   const score=known?(cp>0?'+':'')+(cp/100).toFixed(2):'–';
+   bar.setAttribute('aria-valuetext',known?'Stockfish '+score+', '+(Math.abs(cp)<35?'ungefähr ausgeglichen':cp>0?'Vorteil Weiß':'Vorteil Schwarz'):'Noch keine Bewertung');
+   let status=!known?'Noch keine Bewertung für diesen Zug':Math.abs(cp)<35?'Ungefähr ausgeglichen':cp>0?'Vorteil Weiß':'Vorteil Schwarz';
+   caption.textContent='⚖️ '+status+' · '+score+' Bauern';
+ }
+ hPaint=function(){oldPaint();update()};
+ hOpen=function(game){oldOpen(game);if(typeof hV91Load==='function'){const cached=hV91Load(hReview);if(cached.length){hAnalysis=cached;hPaint()}}};
+})();
+</script>
 </body></html>
