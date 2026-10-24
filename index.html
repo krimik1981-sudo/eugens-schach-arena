@@ -1357,7 +1357,28 @@ body{background:var(--arena62-bg)}
 <div class="stats-columns"><div class="stats-box"><h3>🏅 Lokale Rangliste</h3><p class="stats-muted" id="statsRankingHint">Punkte: Sieg 3 · Remis 1. Nur Partien auf diesem Gerät.</p><div id="statsLeaderboard"></div></div><div class="stats-box"><h3>📋 Letzte Ergebnisse</h3><div id="statsRecent"></div></div></div>
 <p class="stats-muted">Die Rangliste ist <b>lokal</b>, nicht weltweit. Bei Schach werden vorhandene beendete Computerpartien übernommen. Live-Schach-Partien ohne sicher zuordenbare Spielerfarbe werden nicht als persönlicher Sieg oder Niederlage gewertet. Bei Dame werden Ergebnisse ab dieser Version gespeichert. Partien zu zweit an einem Gerät erscheinen in der Rangliste als Weiß und Schwarz; sie zählen nicht zu deiner persönlichen Gewinnquote. Browserdaten nicht löschen, sonst gehen lokale Statistiken ohne Datensicherung verloren.</p>
 </div>
-<div class="arena-page" data-panel="profil" hidden=""><h2>♙ Mein Profil</h2><p>Spielernamen, Profilbild und Freunde verwalten.</p><div class="arena-optiongrid"><button class="arena-option" data-open="openProfiles"><b>🔐 Konto erstellen / Anmelden</b><small>Registrieren, einloggen und dein Spielerprofil verwalten</small></button><button class="arena-option" data-open="openHistoryHome"><b>📚 Gespeicherte Partien</b><small>Dein Partiearchiv</small></button><button class="arena-statslink" data-page="statistik" type="button">🏆 Statistik und Rangliste öffnen →</button></div></div>
+<div class="arena-page v87-profile" data-panel="profil" hidden>
+ <div class="v87-heading"><h2>♙ Mein Profil</h2><p>Konto, Freunde und Partien verwalten.</p></div>
+ <section class="v87-identity" aria-label="Dein Spielerprofil">
+  <div class="v87-avatar" id="v87Avatar" aria-hidden="true">♞</div>
+  <div class="v87-person"><h3><span id="v87Name">Spieler</span> <span class="v87-crown">♛</span></h3><p id="v87AccountState">Profil wird geladen …</p><p class="v87-code">Freundescode: <strong id="v87FriendCode">–</strong></p>
+   <div class="v87-actions"><button type="button" data-open="openProfiles" class="v87-gold">✎ Profil bearbeiten</button><button type="button" id="v87CopyCode" class="v87-outline">▢ Freundescode kopieren</button></div>
+  </div>
+  <div class="v87-metrics"><div><span>👥</span><strong id="v87FriendsCount">–</strong><small>Freunde</small></div><div><span>📚</span><strong>Archiv</strong><small>Gespeicherte Partien</small></div><div><span>♟</span><strong>Statistik</strong><small>Online-Partien</small></div></div>
+ </section>
+ <div class="v87-tiles">
+  <section class="v87-tile"><h3>👥 Freunde &amp; Einladungen</h3><p>Verwalte deine Freunde und fordere sie zu Schach oder Dame heraus.</p><button type="button" data-open="openProfiles" class="v87-gold">Freundesliste öffnen →</button><button type="button" id="v87OpenEmail" class="v87-outline">✉ Einladung per E-Mail</button></section>
+  <section class="v87-tile"><h3>📚 Gespeicherte Partien</h3><p>Sieh dir deine gespeicherten Partien an und analysiere deine Züge.</p><button type="button" data-open="openHistoryHome" class="v87-gold">Partien ansehen →</button></section>
+  <section class="v87-tile"><h3>🏆 Statistik &amp; Rangliste</h3><p>Deine Spielstatistik und die bisher verfügbaren Ranglisten.</p><button type="button" data-page="statistik" class="v87-gold">Statistik öffnen →</button></section>
+ </div>
+ <section class="v87-mail" id="v87Mail" hidden aria-labelledby="v87MailTitle"><div class="v87-mail-heading"><h3 id="v87MailTitle">✉ E-Mail-Spieleinladung</h3><button type="button" id="v87CloseEmail" aria-label="Schließen">✕</button></div>
+ <p>Wir erstellen zuerst einen privaten Spielraum und öffnen dann deine Mail-App mit einem fertigen Einladungstext. Das eigentliche Senden bestätigst du dort selbst.</p>
+ <label for="v87MailAddress">E-Mail des Freundes</label><input id="v87MailAddress" type="email" autocomplete="email" placeholder="freund@beispiel.de" required>
+ <label for="v87MailGame">Spiel wählen</label><select id="v87MailGame"><option value="chess">♟ Online-Schach</option><option value="dame">⛀ Online-Dame</option></select>
+ <button type="button" id="v87ComposeEmail" class="v87-gold">✉ Einladung vorbereiten</button><p id="v87MailStatus" role="status" aria-live="polite"></p><div id="v87MailFallback" hidden><label for="v87MailLink">Einladungslink (falls die Mail-App nicht öffnet)</label><input id="v87MailLink" readonly><button type="button" id="v87CopyMailLink" class="v87-outline">Link kopieren</button></div>
+ <p class="v87-mail-notice">Wichtig: Halte deine Spielseite geöffnet, während der Freund die Einladung annimmt. Ein automatischer E-Mail-Versand vom Server ist nicht eingerichtet.</p>
+ </section>
+ </div>
 </div>
 </div>
 <nav aria-label="Hauptnavigation" class="arena-bottomnav premium-bottomnav">
@@ -4271,6 +4292,80 @@ function goto(route){
  if(button)button.click();
 }
 page.querySelectorAll('[data-v86-route]').forEach(button=>button.addEventListener('click',()=>goto(button.dataset.v86Route)));
+})();
+</script>
+<style id="v87-profile-style">
+#courseHome .v87-profile{max-width:1160px!important;margin:auto;padding:clamp(13px,3vw,32px)!important;background:radial-gradient(ellipse at 85% 0%,#1e364e55,transparent 45%),#08192d!important;color:#f1f3f7}
+.v87-profile .v87-heading{margin:0 0 19px}.v87-profile .v87-heading h2{font-family:Georgia,serif;font-size:clamp(29px,5vw,45px);color:#fff4e0;margin:0 0 3px}.v87-profile .v87-heading p{color:#bccddf;margin:0}
+.v87-profile button{font-family:inherit;cursor:pointer}.v87-identity{display:grid;grid-template-columns:112px minmax(180px,1fr) minmax(240px,.95fr);gap:22px;align-items:center;padding:24px;border-radius:18px;border:1px solid #d5a75b;background:linear-gradient(110deg,#1b2e45,#0c2035 76%);box-shadow:0 18px 48px #0005}
+.v87-avatar{width:102px;height:102px;display:grid;place-items:center;font-size:63px;color:#e9b757;background:radial-gradient(circle,#234966,#06162a);border:3px solid #edb85a;border-radius:50%;text-shadow:0 3px 12px #000}
+.v87-person h3{margin:0 0 5px;color:white;font-size:clamp(22px,3.5vw,34px);overflow-wrap:anywhere}.v87-crown{color:#f3bb4e;font-size:18px}.v87-person p{color:#c7d6e7;line-height:1.45;margin:4px 0}.v87-person .v87-code{overflow-wrap:anywhere}.v87-person .v87-code strong{color:#f7cf8e}.v87-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}
+.v87-profile .v87-gold{display:inline-flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(#ffe29c,#dca448);color:#0b1c2e;border:1px solid #f2c779;border-radius:10px;padding:12px 14px;font-weight:850;min-height:44px}.v87-profile .v87-outline{display:inline-flex;align-items:center;justify-content:center;text-align:center;background:#142a43;color:#f5e8cd;border:1px solid #cba55f;border-radius:10px;padding:11px 13px;font-weight:750;min-height:44px}
+.v87-profile button:focus-visible{outline:3px solid #8dd0ff;outline-offset:2px}.v87-metrics{border-left:1px solid #67819a55;padding-left:19px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.v87-metrics>div{border:1px solid #426180;border-radius:13px;background:#102841;padding:12px 6px;text-align:center;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;min-height:105px}.v87-metrics span{font-size:23px}.v87-metrics strong{font-size:clamp(15px,2vw,24px);color:#fff}.v87-metrics small{font-size:11px;color:#cbd9ea}
+.v87-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-top:18px}.v87-tile{display:flex;flex-direction:column;gap:12px;padding:21px;background:linear-gradient(125deg,#142c46,#091d32);border:1px solid #876d49;border-radius:16px;min-height:226px}.v87-tile h3{color:#f8f2e5;font-size:20px;margin:0}.v87-tile p{color:#cad8e7;font-size:14px;line-height:1.5;margin:0;flex:1}.v87-tile button{width:100%}
+.v87-mail{margin:20px 0 5px;border:1px solid #d0a659;border-radius:18px;padding:21px;background:#132d46}.v87-mail[hidden],#v87MailFallback[hidden]{display:none!important}.v87-mail-heading{display:flex;justify-content:space-between;align-items:center}.v87-mail-heading h3{color:#ffe0a0;margin:0 0 7px}.v87-mail-heading button{border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer}.v87-mail label{display:block;margin:12px 0 5px;font-weight:750}.v87-mail input,.v87-mail select{width:100%;border:1px solid #6087a5;border-radius:9px;padding:12px;background:#0c2034;color:white;font-size:16px}.v87-mail>button{margin-top:14px}.v87-mail #v87MailStatus{color:#ffda93;min-height:1em}.v87-mail .v87-mail-notice{font-size:13px;color:#a7bad0}
+@media(max-width:900px){.v87-identity{grid-template-columns:85px minmax(0,1fr)}.v87-avatar{width:83px;height:83px;font-size:49px}.v87-metrics{grid-column:1/-1;border-left:0;padding-left:0;border-top:1px solid #60799377;padding-top:15px}.v87-tiles{grid-template-columns:1fr 1fr}.v87-tile:first-child{grid-row:span 2}}
+@media(max-width:580px){#courseHome .v87-profile{padding:14px!important}.v87-identity{grid-template-columns:72px minmax(0,1fr);gap:11px;padding:13px}.v87-avatar{width:70px;height:70px;font-size:42px}.v87-person h3{font-size:23px}.v87-actions{flex-direction:column}.v87-actions button{width:100%}.v87-metrics{gap:5px}.v87-metrics>div{min-height:88px;padding:8px 3px}.v87-metrics strong{font-size:14px}.v87-metrics small{font-size:10px}.v87-tiles{grid-template-columns:1fr;gap:11px}.v87-tile,.v87-tile:first-child{grid-row:auto;min-height:unset;padding:17px}.v87-mail{padding:14px}}
+</style>
+<script id="v87-profile-script">
+(function(){'use strict';
+const $=id=>document.getElementById(id);
+const page=document.querySelector('#courseHome .arena-page[data-panel="profil"]');if(!page)return;
+function refresh(){
+ let p={};try{p=JSON.parse(localStorage.getItem('eugens_arena_profil_v1')||'{}')||{}}catch(_){}
+ const who=($('arena71-who')?.textContent||'').trim();const logged=who.startsWith('Angemeldet als ');
+ const m=who.match(/^Angemeldet als (.+?)\s*[·•]\s*(EF-[A-Fa-f0-9]+)/);
+ const name=m?.[1]||p.name||'Gast';const code=m?.[2]||((logged||name!=='Gast')?p.code:'')||'';
+ $('v87Name').textContent=name;
+ $('v87FriendCode').textContent=code||'Nach Anmeldung sichtbar';
+ $('v87AccountState').textContent=logged?'✓ Mit Serverkonto angemeldet':'Zum synchronisierten Konto anmelden';
+ $('v87Avatar').textContent=(p.avatar&&String(p.avatar).length<=8)?p.avatar:'♞';
+ if(p.photo&&typeof p.photo==='string'&&p.photo.startsWith('data:image/')){$('v87Avatar').replaceChildren();const img=document.createElement('img');img.src=p.photo;img.alt='';img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%';$('v87Avatar').append(img)}
+ let fs=[];try{fs=JSON.parse(localStorage.getItem('eugens_arena_freunde_v1')||'[]')}catch(_){}
+ const count=(($('arena77-count')?.textContent||'').match(/\d+/)||[])[0];
+ $('v87FriendsCount').textContent=logged?(count||String(Array.isArray(fs)?fs.length:0)):'–';
+}
+$('v87CopyCode').onclick=async()=>{
+ const code=$('v87FriendCode').textContent.trim();if(!/^EF-[A-F0-9]+$/i.test(code)){alert('Bitte zuerst mit deinem Serverkonto anmelden.');return}
+ try{await navigator.clipboard.writeText(code);$('v87CopyCode').textContent='✓ Code kopiert'}catch(_){window.prompt('Freundescode kopieren:',code)}
+};
+const mail=$('v87Mail');$('v87OpenEmail').onclick=()=>{mail.hidden=false;mail.scrollIntoView({behavior:'smooth',block:'nearest'})};$('v87CloseEmail').onclick=()=>{mail.hidden=true};
+let busy=false;
+$('v87CopyMailLink').onclick=async()=>{const link=$('v87MailLink').value;try{await navigator.clipboard.writeText(link);$('v87MailStatus').textContent='✓ Link kopiert.'}catch(_){window.prompt('Einladungslink:',link)}};
+function gamePage(game){
+ if(game==='chess'){$('openLive')?.click();return}
+ const nav=document.querySelector('#courseHome [data-page="dame"]');nav?.click();
+ const mode=$('dameMode');if(mode&&mode.value!=='online'){mode.value='online';mode.dispatchEvent(new Event('change',{bubbles:true}))}
+}
+function createRoom(game){
+ gamePage(game);
+ const btn=$(game==='chess'?'liveCreate':'dameCreate');if(!btn)return Promise.reject(new Error('Spielraum nicht verfügbar.'));
+ return new Promise((resolve,reject)=>{
+  let finished=false;
+  const ready=e=>{if(e.detail?.game!==game||finished)return;finished=true;clearTimeout(timer);document.removeEventListener('arena80-room-ready',ready);resolve(e.detail.room)};
+  const timer=setTimeout(()=>{if(finished)return;finished=true;document.removeEventListener('arena80-room-ready',ready);reject(new Error('Raumerstellung fehlgeschlagen. Bitte Internetverbindung prüfen.'))},20000);
+  document.addEventListener('arena80-room-ready',ready);btn.click();
+ });
+}
+$('v87ComposeEmail').onclick=async()=>{
+ if(busy)return;
+ const address=$('v87MailAddress').value.trim(),game=$('v87MailGame').value;
+ if(!address||!$('v87MailAddress').checkValidity()){$('v87MailStatus').textContent='Bitte eine gültige E-Mail-Adresse eingeben.';return}
+ busy=true;$('v87ComposeEmail').disabled=true;$('v87MailStatus').textContent='Spielraum wird erstellt …';
+ try{
+  const room=await createRoom(game);const u=new URL(location.origin+location.pathname);u.hash=(game==='chess'?'live':'dame')+'='+encodeURIComponent(room);
+  const text='Hallo!\n\nIch lade dich zu einer Partie '+(game==='chess'?'Schach':'Dame')+' in Eugens Schach Arena ein.\n\nÖffne den Link und tippe auf „Raum beitreten“:\n'+u.href+'\n\nBis gleich!';
+  const subject='Spieleinladung: '+(game==='chess'?'Schach':'Dame')+' – Eugens Schach Arena';
+  const mailto='mailto:'+encodeURIComponent(address)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(text);
+  $('v87MailLink').value=u.href;$('v87MailFallback').hidden=false;
+  $('v87MailStatus').textContent='✓ Raum bereit. Die Mail-App wird geöffnet. Lass diese Seite geöffnet und bestätige das Senden in deiner Mail-App.';
+  window.location.href=mailto;
+ }catch(e){$('v87MailStatus').textContent='⚠ '+(e?.message||String(e))}
+ finally{busy=false;$('v87ComposeEmail').disabled=false}
+};
+refresh();
+window.addEventListener('pageshow',refresh);
+document.querySelectorAll('#courseHome [data-page="profil"]').forEach(b=>b.addEventListener('click',()=>setTimeout(refresh,0)));
 })();
 </script>
 </body></html>
