@@ -913,7 +913,7 @@ body{background:var(--arena62-bg)}
   if(latest?.outgoing?.length){const p=document.createElement('p');p.textContent='Gesendete Anfragen: '+latest.outgoing.map(r=>r.to.name).join(', ');out.appendChild(p)}
   const serverList=$('arena77-friends');if(serverList){serverList.replaceChildren();const fs=latest?.friends||[];
     if(!fs.length){const p=document.createElement('p');p.textContent='Noch keine bestätigten Freunde. Sende unten eine Freundschaftsanfrage.';serverList.append(p)}
-    fs.forEach(f=>{const r=document.createElement('div');r.className='arena77-friend';const name=document.createElement('div');const bold=document.createElement('strong');bold.textContent='♟ '+f.name;const code=document.createElement('small');code.textContent=f.code;name.append(bold,code);const b=document.createElement('button');b.type='button';b.textContent='Entfernen';b.onclick=async()=>{if(!confirm(f.name+' wirklich aus der Freundesliste entfernen?'))return;b.disabled=true;try{await remove(f.code)}catch(e){msg(e.message)}finally{b.disabled=false}};r.append(name,b);serverList.append(r)})
+    fs.forEach(f=>{const r=document.createElement('div');r.className='arena77-friend';const name=document.createElement('div');const bold=document.createElement('strong');bold.textContent='♟ '+f.name;const code=document.createElement('small');code.textContent=f.code;name.append(bold,code);const b=document.createElement('button');b.type='button';b.textContent='Entfernen';b.onclick=async()=>{if(!confirm(f.name+' wirklich aus der Freundesliste entfernen?'))return;b.disabled=true;try{await remove(f.code)}catch(e){msg(e.message)}finally{b.disabled=false}};const inviteChess=document.createElement('button');inviteChess.type='button';inviteChess.textContent='♟ Schach';inviteChess.title='Zum Schach einladen';inviteChess.onclick=()=>window.ArenaInvitesV80?.invite(f,'chess');const inviteDame=document.createElement('button');inviteDame.type='button';inviteDame.textContent='⛀ Dame';inviteDame.title='Zu Dame einladen';inviteDame.onclick=()=>window.ArenaInvitesV80?.invite(f,'dame');r.append(name,inviteChess,inviteDame,b);serverList.append(r)})
   }
  }
  function init(){
@@ -2453,7 +2453,7 @@ rebuild();
   c.on('error',e=>{if(conn===thisConn)setStatus('Verbindungsfehler: '+String(e?.message||e))});
  }
  async function create(publicRoom=null,color='w'){closeSession();let myToken=token;isHost=true;side=color==='b'?'b':'w';room='HOST';show('liveGame');timeControl=Number($l('liveTimeSelect').value)*60000;baseReset(timeControl);setStatus('Raum wird erstellt …');
-  try{let name=await peerReady(typeof publicRoom==='string' ? publicRoom : id(),myToken);if(token!==myToken)return;room=name;$l('liveRoomCode').textContent=name;peer.on('connection',connect);setStatus('Raum bereit. Teile den Einladungslink oder Raumcode.');linkHint();render();return name}
+  try{let name=await peerReady(typeof publicRoom==='string' ? publicRoom : id(),myToken);if(token!==myToken)return;room=name;$l('liveRoomCode').textContent=name;peer.on('connection',connect);setStatus('Raum bereit. Teile den Einladungslink oder Raumcode.');linkHint();render();document.dispatchEvent(new CustomEvent('arena80-room-ready',{detail:{game:'chess',room:name}}));return name}
   catch(e){if(token===myToken)setStatus('Verbindung zum Vermittlungsserver fehlgeschlagen: '+String(e?.message||e));return null}
  }
  async function join(text){const raw=String(text||'').trim();const isPublic=/^[cd][0-9a-f]{28}$/.test(raw);const code=isPublic?raw:raw.toUpperCase();if(!isPublic&&!valid(code)){menuStatus('Ungültiger Raumcode. Er beginnt mit EUGEN- und hat 14 weitere Zeichen.');return}
@@ -3136,7 +3136,7 @@ setInterval(()=>{
 },2500);
 function loadPeerDame(){if(typeof window.Peer==='function')return Promise.resolve();return new Promise((resolve,reject)=>{const existing=document.querySelector('script[data-peerjs]');if(existing){existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',()=>reject(Error('PeerJS konnte nicht geladen werden.')),{once:true});if(typeof window.Peer==='function')resolve();return;}const sc=document.createElement('script');sc.dataset.peerjs='true';sc.src='https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';sc.onload=resolve;sc.onerror=()=>reject(Error('PeerJS konnte nicht geladen werden.'));document.head.append(sc)});}
 async function setupPeer(room){const generation=onlineGeneration;await loadPeerDame();if(generation!==onlineGeneration)return null;return new Promise((resolve,reject)=>{let settled=false;const p=new Peer(room,{debug:0});onlinePeer=p;const ok=id=>{if(!settled){settled=true;resolve(id)}};const fail=e=>{if(!settled){settled=true;reject(e)}};p.on('open',ok);p.on('error',e=>{if(generation===onlineGeneration){netStatus('Verbindungsfehler: '+(e?.message||'Server nicht erreichbar'));fail(e)}});setTimeout(()=>{if(!settled&&generation===onlineGeneration)fail(Error('Zeitüberschreitung beim Verbindungsaufbau'))},14000);});}
-async function onlineCreate(){discardNetwork();modeEl.value='online';onlineHost=true;onlineHostSide=document.getElementById('dameHostColor').value;onlineSide=onlineHostSide;init();netStatus('Raum wird erstellt … Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.'));const gen=onlineGeneration;try{const id='DAME-'+Math.random().toString(36).slice(2,10).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();await setupPeer(id);if(gen!==onlineGeneration)return;onlineRoom=id;document.getElementById('dameRoomCode').textContent=id;document.getElementById('dameInvite').hidden=false;onlinePeer.on('connection',attachConnection);netStatus('Raum bereit. Teile den Link mit deinem Freund und lass die Arena geöffnet.');}catch(e){if(gen===onlineGeneration)netStatus('Raum konnte nicht erstellt werden: '+e.message)}}
+async function onlineCreate(){discardNetwork();modeEl.value='online';onlineHost=true;onlineHostSide=document.getElementById('dameHostColor').value;onlineSide=onlineHostSide;init();netStatus('Raum wird erstellt … Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.'));const gen=onlineGeneration;try{const id='DAME-'+Math.random().toString(36).slice(2,10).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();await setupPeer(id);if(gen!==onlineGeneration)return;onlineRoom=id;document.getElementById('dameRoomCode').textContent=id;document.getElementById('dameInvite').hidden=false;onlinePeer.on('connection',attachConnection);netStatus('Raum bereit. Teile den Link mit deinem Freund und lass die Arena geöffnet.');document.dispatchEvent(new CustomEvent('arena80-room-ready',{detail:{game:'dame',room:id}}));}catch(e){if(gen===onlineGeneration)netStatus('Raum konnte nicht erstellt werden: '+e.message)}}
 async function onlineJoin(){const code=document.getElementById('dameJoinCode').value.trim().toUpperCase();if(!/^DAME-[A-Z0-9]{8}-[A-Z0-9]{4}$/.test(code)){netStatus('Ungültiger Raumcode. Bitte den ganzen Code eingeben.');return;}discardNetwork();modeEl.value='online';onlineHost=false;onlineSide=null;onlineRoom=code;init();netStatus('Verbinde mit dem Gastgeber …');const gen=onlineGeneration;try{await setupPeer(undefined);if(gen!==onlineGeneration)return;attachConnection(onlinePeer.connect(code,{reliable:true}));setTimeout(()=>{if(gen===onlineGeneration&&!onlineConnected)netStatus('Noch keine Verbindung. Code prüfen und Gastgeberseite geöffnet lassen.')},15000);}catch(e){if(gen===onlineGeneration)netStatus('Verbindung fehlgeschlagen: '+e.message)}}
 function inviteUrl(){const u=new URL(location.href);u.hash='dame='+encodeURIComponent(onlineRoom);return u.href;}
 async function copyDame(txt){try{await navigator.clipboard.writeText(txt);netStatus('✅ Kopiert. Jetzt mit deinem Freund teilen.')}catch(e){netStatus('Kopieren nicht möglich – bitte Raumcode markieren und manuell kopieren.')}}
@@ -3853,4 +3853,84 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
  paint();
 })();
 </script>
-</body></html>
+<style id="arena80-invitations-style">
+#arena80-invite-dialog[hidden],#arena80-invite-toast[hidden]{display:none!important}
+#arena80-invite-dialog{position:fixed;inset:0;z-index:20040;background:#000b;display:flex;align-items:center;justify-content:center;padding:16px}
+#arena80-invite-card{width:min(100%,430px);background:#123456;border:2px solid #6faadb;border-radius:18px;padding:23px;color:#fff;box-shadow:0 22px 60px #000c}
+#arena80-invite-card h3{margin:0 0 10px;font-size:23px;color:#ffdb87}#arena80-invite-card p{color:#e8f3ff;font-size:17px}
+#arena80-invite-card .buttons{display:flex;gap:10px;flex-wrap:wrap}
+#arena80-invite-card button{border:0;border-radius:9px;background:#2382c4;color:#fff;padding:12px 17px;font-weight:750;cursor:pointer}#arena80-invite-card button.decline{background:#70485b}
+#arena80-invite-toast{position:fixed;left:12px;right:12px;bottom:calc(85px + env(safe-area-inset-bottom));margin:auto;max-width:480px;background:#16476a;color:white;z-index:20030;padding:12px;border:1px solid #76b5da;border-radius:12px;box-shadow:0 12px 25px #0009}
+#arena77-friends .arena77-friend button{margin:2px}
+</style><script id="arena80-invitations-script">
+(function(){'use strict';
+const token=()=>{try{return localStorage.getItem('arena71_token')||''}catch(_){return ''}};
+let busy=false,lastNotified=new Set(),active=null,polling=false,watch=null;
+const $=id=>document.getElementById(id);
+const dialog=document.createElement('div');dialog.id='arena80-invite-dialog';dialog.hidden=true;dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.innerHTML='<div id="arena80-invite-card"><h3>🎮 Spieleinladung</h3><p id="arena80-invite-text"></p><div class="buttons"><button type="button" id="arena80-accept">✓ Annehmen</button><button type="button" id="arena80-decline" class="decline">✕ Ablehnen</button></div><small id="arena80-invite-note"></small></div>';
+const toast=document.createElement('div');toast.id='arena80-invite-toast';toast.hidden=true;toast.setAttribute('role','status');document.body.append(dialog,toast);
+function note(s){toast.textContent=s;toast.hidden=!s;clearTimeout(watch);if(s)watch=setTimeout(()=>toast.hidden=true,7000)}
+async function api(action,payload={}){
+ const t=token();if(!t)throw Error('Bitte zuerst mit deinem Serverkonto anmelden.');
+ const resp=await fetch('/api/invites/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify(payload),cache:'no-store'});
+ let json={};try{json=await resp.json()}catch(_){}if(!resp.ok)throw Error(json.error||'Serverfehler '+resp.status);return json;
+}
+function gamePage(game){
+ const root=$('courseHome');if(root)root.hidden=false;
+ if(game==='chess'){$('openLive')?.click();return;}
+ const nav=document.querySelector('#courseHome [data-page="dame"]');nav?.click();
+ const mode=$('dameMode');if(mode&&mode.value!=='online'){mode.value='online';mode.dispatchEvent(new Event('change',{bubbles:true}));}
+}
+async function createRoom(game){
+ gamePage(game);
+ const btn=game==='chess'?$('liveCreate'):$('dameCreate');
+ if(!btn)throw Error('Spielraum nicht verfügbar.');
+ return new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>{document.removeEventListener('arena80-room-ready',ready);reject(Error('Raum konnte nicht erstellt werden. Bitte erneut versuchen.'));},18000);
+  const ready=e=>{if(e.detail?.game!==game)return;clearTimeout(timer);document.removeEventListener('arena80-room-ready',ready);resolve(e.detail.room)};
+  document.addEventListener('arena80-room-ready',ready);btn.click();
+ });
+}
+async function invite(friend,game){
+ if(busy)return;busy=true;
+ try{
+  note('Raum für '+friend.name+' wird erstellt …');
+  const room=await createRoom(game);
+  const saved=await api('send',{code:friend.code,room,game});
+  note('✅ Einladung an '+friend.name+' verschickt. Halte die Spielseite geöffnet.');
+  return saved;
+ }catch(e){note('⚠️ '+e.message)}finally{busy=false}
+}
+window.ArenaInvitesV80={invite};
+async function answer(accept){
+ if(!active)return;const item=active;active=null;dialog.hidden=true;
+ try{
+  const result=await api('respond',{id:item.id,accept});
+  if(!accept){note('Einladung abgelehnt.');return;}
+  if(result.game==='chess'){
+   gamePage('chess');const field=$('liveCodeInput');if(field)field.value=result.room;$('liveJoin')?.click();
+  }else{
+   gamePage('dame');const field=$('dameJoinCode');if(field)field.value=result.room;$('dameJoin')?.click();
+  }
+  note('Verbinde mit '+result.from_name+' …');
+ }catch(e){note('⚠️ '+e.message)}
+}
+$('arena80-accept').onclick=()=>answer(true);$('arena80-decline').onclick=()=>answer(false);
+async function check(){
+ if(polling||!token()||document.hidden)return;polling=true;
+ try{
+  const list=await api('list');
+  const incoming=list.incoming||[];
+  if(!active&&incoming.length){
+   const item=incoming[0];active=item;lastNotified.add(item.id);
+   $('arena80-invite-text').textContent=item.from_name+' lädt dich zu '+(item.game==='chess'?'Schach':'Dame')+' ein. Möchtest du mitspielen?';
+   $('arena80-invite-note').textContent='Die Einladung gilt etwa 5 Minuten. Das Spiel startet, sobald du annimmst.';
+   dialog.hidden=false;
+  }
+ }catch(e){/* Avoid intrusive repeated errors on a background poll. */}
+ finally{polling=false}
+}
+window.addEventListener('pageshow',check);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});
+setInterval(check,5000);setTimeout(check,1200);
+})();
+</script></body></html>

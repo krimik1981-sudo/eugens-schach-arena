@@ -59,6 +59,7 @@ async function db(table, method='GET', params={}, body) {
 }
 const accounts = (params, method='GET', body) => db('arena_accounts',method,params,body);
 const relationships = (params, method='GET', body) => db('arena_friendships',method,params,body);
+const invitations = (params, method='GET', body) => db('arena_invites',method,params,body);
 async function findName(name) { return (await accounts({nick_key:'eq.'+key(name),select:'*',limit:1}))[0] || null; }
 async function findCode(code) { return (await accounts({code:'eq.'+String(code || '').trim().toUpperCase(),select:'*',limit:1}))[0] || null; }
 async function findId(id) { return (await accounts({id:'eq.'+id,select:'*',limit:1}))[0] || null; }
@@ -136,6 +137,52 @@ async function matchAction(req,res,url) {
 async function handle(req,res) {
   const url=new URL(req.url,'http://localhost');
   if(url.pathname.startsWith('/api/match/') || url.pathname.startsWith('/api/dame-match/'))return matchAction(req,res,url);
+  if(url.pathname.startsWith('/api/invites/')){
+    if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
+    let raw='';try{for await(const chunk of req){raw+=chunk;if(raw.length>4096)return reply(res,413,{error:'Anfrage zu groß'});}}catch{return reply(res,400,{error:'Ungültige Anfrage'});}
+    let v;try{v=JSON.parse(raw||'{}');if(!v||typeof v!=='object'||Array.isArray(v))throw Error();}catch{return reply(res,400,{error:'Ungültiges JSON'});}
+    const id=authId(req),me=id?await findId(id):null;
+    if(!me)return reply(res,401,{error:'Bitte zuerst anmelden.'});
+    const action=url.pathname.slice('/api/invites/'.length);
+    const fields='id,from_id,to_id,game,room,status,created_at,expires_at';
+    if(action==='list'){
+      const rows=await invitations({or:'(from_id.eq.'+me.id+',to_id.eq.'+me.id+')',select:fields,order:'created_at.desc',limit:60});
+      const active=rows.filter(x=>new Date(x.expires_at).getTime()>Date.now());
+      const ids=[...new Set(active.map(x=>x.from_id).concat(active.map(x=>x.to_id)))];
+      const people=ids.length?await accounts({id:'in.('+ids.join(',')+')',select:'id,name,code'}):[];
+      const names=Object.fromEntries(people.map(x=>[x.id,x.name]));
+      return reply(res,200,{incoming:active.filter(x=>x.to_id===me.id&&x.status==='pending').map(x=>({...x,from_name:names[x.from_id]||'Spieler'})),outgoing:active.filter(x=>x.from_id===me.id&&x.status==='pending').map(x=>({...x,to_name:names[x.to_id]||'Spieler'})),accepted:active.filter(x=>x.from_id===me.id&&x.status==='accepted').map(x=>({...x,to_name:names[x.to_id]||'Spieler'}))});
+    }
+    if(action==='send'){
+      if(!['chess','dame'].includes(v.game)||typeof v.room!=='string'||v.room.length>80||!(v.game==='chess'?/^EUGEN-[A-F0-9]{14}$/.test(v.room):/^DAME-[A-Z0-9]{8}-[A-Z0-9]{4}$/.test(v.room)))return reply(res,400,{error:'Ungültiger Spielraum.'});
+      const other=await findCode(v.code);
+      if(!other||other.id===me.id)return reply(res,404,{error:'Spieler nicht gefunden.'});
+      const friend=await relation(me.id,other.id);
+      if(!friend||friend.status!=='accepted')return reply(res,403,{error:'Einladungen sind nur für bestätigte Freunde möglich.'});
+      const recent=await invitations({from_id:'eq.'+me.id,to_id:'eq.'+other.id,status:'eq.pending',select:'id,created_at',order:'created_at.desc',limit:10});
+      if(recent.some(x=>Date.now()-new Date(x.created_at).getTime()<15000))return reply(res,429,{error:'Bitte 15 Sekunden vor der nächsten Einladung warten.'});
+      const expires_at=new Date(Date.now()+5*60000).toISOString();
+      const saved=await invitations({select:fields},'POST',{from_id:me.id,to_id:other.id,game:v.game,room:v.room,status:'pending',expires_at});
+      return reply(res,200,{ok:true,id:saved[0]?.id,expires_at});
+    }
+    if(action==='respond'){
+      if(typeof v.id!=='string'||!/^[0-9a-f-]{36}$/i.test(v.id)||typeof v.accept!=='boolean')return reply(res,400,{error:'Ungültige Antwort.'});
+      const item=(await invitations({id:'eq.'+v.id,to_id:'eq.'+me.id,status:'eq.pending',select:fields,limit:1}))[0];
+      if(!item||Date.now()>new Date(item.expires_at).getTime())return reply(res,404,{error:'Einladung abgelaufen oder bereits beantwortet.'});
+      const sender=await findId(item.from_id);const friendship=sender?await relation(sender.id,me.id):null;
+      if(!friendship||friendship.status!=='accepted')return reply(res,403,{error:'Die Freundschaft ist nicht mehr bestätigt.'});
+      const updated=await invitations({id:'eq.'+v.id,to_id:'eq.'+me.id,status:'eq.pending',select:fields},'PATCH',{status:v.accept?'accepted':'declined'});
+      if(!updated.length)return reply(res,409,{error:'Einladung wurde schon beantwortet.'});
+      return reply(res,200,{ok:true,game:item.game,room:item.room,from_name:sender.name,accepted:v.accept});
+    }
+    if(action==='cancel'){
+      if(typeof v.id!=='string'||!/^[0-9a-f-]{36}$/i.test(v.id))return reply(res,400,{error:'Ungültige Einladung.'});
+      await invitations({id:'eq.'+v.id,from_id:'eq.'+me.id,status:'eq.pending'},'PATCH',{status:'cancelled'});
+      return reply(res,200,{ok:true});
+    }
+    return reply(res,404,{error:'Nicht gefunden'});
+  }
+
   if(url.pathname.startsWith('/api/friends/')) {
     if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
     let raw='';try {for await (const chunk of req) {raw+=chunk;if(raw.length>5000)throw Error('Too long');}}
@@ -221,4 +268,4 @@ async function handle(req,res) {
 http.createServer((req,res)=>handle(req,res).catch(e=>{
   console.error('Request failed',e.status||'',e.message,e.details||'');
   if(!res.headersSent)reply(res,500,{error:'Serverfehler. Datenbankverbindung und Tabellen prüfen.'});else res.end();
-})).listen(PORT,'0.0.0.0',()=>console.log('Arena v76 / Supabase + Matchmaking + Farbauswahl + Bilder on port '+PORT));
+})).listen(PORT,'0.0.0.0',()=>console.log('Arena v80 / Supabase + Matchmaking + Einladungen on port '+PORT));
