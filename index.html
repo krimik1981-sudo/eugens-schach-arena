@@ -962,7 +962,7 @@ body{background:var(--arena62-bg)}
   }
   render();
  }
- window.ArenaFriendsV71={logged,request,respondByCode,refresh};
+ window.ArenaFriendsV71={logged,request,respondByCode,refresh,profile:()=>logged()?(latest?.profile||(()=>{try{return JSON.parse(localStorage.getItem(PROFILE))}catch(_){return null}})()):null};
  document.addEventListener('DOMContentLoaded',init);
 })();
 </script><style id="arena77-unified-style">
@@ -976,6 +976,10 @@ body{background:var(--arena62-bg)}
 #arena77-add{display:grid;gap:8px;margin:18px 0;padding:13px;border:1px solid #42698a;border-radius:10px}
 #arena77-add input{padding:11px;border:1px solid #618bb1;border-radius:8px;background:#09223a;color:#fff;width:100%;font:inherit}
 #arena77-add button,.arena77-friend button{background:#297bc1;color:#fff;border:0;border-radius:8px;padding:10px 13px;font-weight:700;cursor:pointer}
+</style><style id="arena78-mode-cleanup">
+.dame-panel:has(#dameMode option:checked:not([value="ai"])) label[for="dameLevel"],
+.dame-panel:has(#dameMode option:checked:not([value="ai"])) #dameLevel,
+.dame-panel:has(#dameMode option:checked:not([value="ai"])) #dameComputerColorBox {display:none!important}
 </style></head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
@@ -985,8 +989,13 @@ body{background:var(--arena62-bg)}
  const $=id=>document.getElementById(id);
  const read=(key,otherwise)=>{try{return JSON.parse(localStorage.getItem(key))??otherwise}catch(_){return otherwise}};
  const clean=s=>String(s||'').trim().replace(/[<>\r\n]/g,'').slice(0,28);
- const isCode=c=>/^EF-[A-Z0-9]{6}$/.test(String(c||''));
- function identity(){const p=read(PROFILE,{});return {code:isCode(p.code)?p.code:'',name:clean(p.name)||'Schachspieler',avatar:typeof p.avatar==='string'&&p.avatar.length<12?p.avatar:'♟️'}}
+ const isCode=c=>/^EF-(?:[A-Z0-9]{6}|[A-F0-9]{18})$/.test(String(c||'').toUpperCase());
+ function identity(){
+  // Für Online-Gegner nach Möglichkeit die bestätigte Server-Identität verwenden.
+  const server=window.ArenaFriendsV71?.profile?.();
+  const p=server&&isCode(server.code)?server:read(PROFILE,{});
+  return {code:isCode(p.code)?String(p.code).toUpperCase():'',name:clean(p.name)||'Schachspieler',avatar:typeof p.avatar==='string'&&p.avatar.length<12?p.avatar:'♟️'};
+ }
  function store(other){const self=identity();if(!isCode(other?.code)||other.code===self.code)return false;
   const current=read(FRIENDS,[]);if(!Array.isArray(current))return false;
   if(current.some(f=>f.code===other.code))return true;
@@ -1032,7 +1041,7 @@ body{background:var(--arena62-bg)}
  function receive(game,msg){if(!msg||typeof msg!=='object'||!String(msg.type||'').startsWith('arena70-'))return false;
   const p=peers[game];if(!p?.connected?.())return true;
   if(msg.type==='arena70-player-hello'){
-   const x=msg.identity;if(!isCode(x?.code)||x.code===identity().code){say(game,'Spielerprofil des Gegners nicht eindeutig.');return true}
+   const x=msg.identity;if(!isCode(x?.code)){say(game,'Spielerprofil des Gegners fehlt. Beide Spieler müssen sich im Serverkonto anmelden.');return true}if(x.code===identity().code){say(game,'Beide Geräte verwenden denselben Spieleraccount. Bitte mit zwei unterschiedlichen Konten anmelden.');return true}
    p.remote={code:x.code,name:clean(x.name)||'Schachspieler'};p.incoming=false;p.outgoing=false;paint(game);return true;
   }
   if(!p.remote)return true;
@@ -1118,7 +1127,7 @@ body{background:var(--arena62-bg)}
   </div>
 </div>
 <div class="arena-page" data-panel="dame" hidden=""><button class="arena-back" data-page="start" type="button">← Spiele auswählen</button><h2>🔴 Dame</h2><p>Schlagpflicht · Mehrfachschläge · fliegende Damen · Umwandlung während eines Schlagzugs.</p>
-<button class="dame-training-link" data-page="dame-training" type="button">🎯 Dame-Training öffnen – 27 Aufgaben →</button>
+<!-- Dame-Training ist ausschließlich über Lernen zugänglich. -->
 <div class="dame-layout"><div class="dame-board-area"><div aria-label="Damebrett" class="dame-board" id="dameBoard"></div><div class="dame-note">Tippe auf einen Stein und danach auf einen grünen Punkt. Beim Mehrfachschlag weiterziehen.</div></div>
 <div class="dame-panel"><h3>Spielmodus</h3><label for="dameMode">Gegner</label><select id="dameMode"><option value="ai">Gegen Computer</option><option value="local">Zwei Spieler am Gerät</option><option value="online">🌐 Online gegen Freunde</option></select>
 <div id="dameComputerColorBox"><label for="dameComputerColor">Meine Farbe gegen Computer</label><select id="dameComputerColor"><option value="w">⚪ Weiß – du beginnst</option><option value="b">⚫ Schwarz – Computer beginnt</option></select></div>
