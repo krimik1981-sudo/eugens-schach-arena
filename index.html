@@ -1555,7 +1555,7 @@ body{background:var(--arena62-bg)}
 <div class="history-layout">
 <div class="wood history-board"><div aria-label="Gespeicherte Schachstellung" class="board" id="historyBoard" role="img"></div></div>
 <div class="history-side">
-<strong id="historyPly">Startstellung</strong>
+<div class="v95-review-head"><strong id="historyPly">Startstellung</strong><button id="v95FlipHistory" class="secondary" type="button" aria-label="Schachbrett drehen">↻ Brett drehen</button></div>
 <div class="history-actions"><button id="historyFirst" type="button">⏮</button><button id="historyPrev" type="button">◀ Zurück</button><button id="historyNext" type="button">Weiter ▶</button><button id="historyLast" type="button">⏭</button></div>
 <div aria-label="Zugliste" class="history-moves" id="historyMoves"></div>
 <label class="v92-arrow-toggle" for="v92ShowArrows"><input type="checkbox" id="v92ShowArrows" checked> <span>🟢 Beste Züge als Pfeile zeigen</span></label>
@@ -2680,6 +2680,9 @@ const HISTORY_KEY='eugens_arena_partien_v1';
 const HISTORY_CURRENT='eugens_arena_laufend_v1';
 const H=id=>document.getElementById(id);
 let hGames=[],hCurrent=null,hLive=null,hReview=null,hIndex=0,hAnalysis=[],hWorker=null,hWorkerUrl=null,hCancel=0;
+let hReviewSide="w";
+function hV95SideKey(g){return "eugens_arena_review_side_v95_"+String(g?.id||"unknown")}
+function hV95SavedSide(g){try{const value=localStorage.getItem(hV95SideKey(g));return value==="w"||value==="b"?value:null}catch(_){return null}}
 function hRead(k,fallback){try{return JSON.parse(localStorage.getItem(k))||fallback}catch(e){return fallback}}
 function hWrite(k,obj){try{localStorage.setItem(k,JSON.stringify(obj));return true}catch(e){H('historyProgress').textContent='Speicherung im Browser nicht möglich (Speicher voll oder deaktiviert). Bitte JSON herunterladen.';return false}}
 function hLoad(){hGames=hRead(HISTORY_KEY,[]).filter(g=>g&&Array.isArray(g.moves)&&Array.isArray(g.frames));hCurrent=hRead(HISTORY_CURRENT,null);hLive=hRead('eugens_arena_livecurrent_v1',null)}
@@ -2687,22 +2690,26 @@ function hUniqueId(){return 'eugen-'+Date.now().toString(36)+'-'+Math.random().t
 function hFenFrom(board,white,castle,ep,half,full){let ranks=[];for(let rank=8;rank>=1;rank--){let row='',empty=0;for(let f=0;f<8;f++){let pc=board['abcdefgh'[f]+rank];if(pc){if(empty){row+=empty;empty=0}row+=pc}else empty++}if(empty)row+=empty;ranks.push(row)}return ranks.join('/')+' '+(white?'w':'b')+' '+(castle||'-')+' '+(ep||'-')+' '+half+' '+full}
 function hFenCurrent(){return hFenFrom(egBoard,egWhite,egCastle,egEP,egHalf,egFull)}
 function hLabel(g){return new Date(g.date).toLocaleString('de-DE')+' · '+({beginner:'Anfänger',intermediate:'Fortgeschrittene',expert:'Profi',live:'Live gegen Freund'})[g.mode||'beginner']}
-function historyLiveReset(id){if(hLive&&hLive.moves.length)hArchive(hLive);hLive={id,date:Date.now(),mode:'live',moves:[],frames:[],result:'Laufend'};hWrite('eugens_arena_livecurrent_v1',hLive)}
-function historyLiveSync(id,moves,frames,result){if(!Array.isArray(moves)||!Array.isArray(frames)||frames.length!==moves.length+1)return;if(!hLive||hLive.id!==id){if(hLive&&hLive.moves.length)hArchive(hLive);hLive={id,date:Date.now(),mode:'live',moves:[],frames:[],result:'Laufend'}}hLive.moves=[...moves];hLive.frames=[...frames];hLive.result=result||'Laufend';hWrite('eugens_arena_livecurrent_v1',hLive);if(result)hArchive(hLive)}
+function historyLiveReset(id){if(hLive&&hLive.moves.length)hArchive(hLive);hLive={id,date:Date.now(),mode:'live',playerSide:typeof side!=='undefined'?side:'w',moves:[],frames:[],result:'Laufend'};hWrite('eugens_arena_livecurrent_v1',hLive)}
+function historyLiveSync(id,moves,frames,result){if(!Array.isArray(moves)||!Array.isArray(frames)||frames.length!==moves.length+1)return;if(!hLive||hLive.id!==id){if(hLive&&hLive.moves.length)hArchive(hLive);hLive={id,date:Date.now(),mode:'live',playerSide:typeof side!=='undefined'?side:'w',moves:[],frames:[],result:'Laufend'}}hLive.moves=[...moves];hLive.frames=[...frames];hLive.result=result||'Laufend';hWrite('eugens_arena_livecurrent_v1',hLive);if(result)hArchive(hLive)}
 function hArchive(g){if(!g||!g.moves||!g.moves.length)return;hGames=hGames.filter(x=>x.id!==g.id);hGames.unshift(JSON.parse(JSON.stringify(g)));hGames=hGames.slice(0,40);hWrite(HISTORY_KEY,hGames)}
 function historyBeforeEugenReset(){if(hCurrent&&hCurrent.moves.length){hArchive(hCurrent)}hCurrent=null}
-function historyEugenReset(){hCurrent={id:hUniqueId(),date:Date.now(),mode:egMode,moves:[],frames:[hFenCurrent()],result:'Laufend'};hWrite(HISTORY_CURRENT,hCurrent)}
-function historyAfterEugenMove(m){if(!hCurrent)historyEugenReset();hCurrent.mode=egMode;hCurrent.moves.push(m.from+m.to+(m.promotion||''));hCurrent.frames.push(hFenCurrent());if(egGameOver){hCurrent.result=H('eugenStatus').textContent;hArchive(hCurrent)}hWrite(HISTORY_CURRENT,hCurrent)}
+function historyEugenReset(){hCurrent={id:hUniqueId(),date:Date.now(),mode:egMode,playerSide:egHuman,moves:[],frames:[hFenCurrent()],result:'Laufend'};hWrite(HISTORY_CURRENT,hCurrent)}
+function historyAfterEugenMove(m){if(!hCurrent)historyEugenReset();hCurrent.mode=egMode;hCurrent.playerSide=hCurrent.playerSide||egHuman;hCurrent.moves.push(m.from+m.to+(m.promotion||''));hCurrent.frames.push(hFenCurrent());if(egGameOver){hCurrent.result=H('eugenStatus').textContent;hArchive(hCurrent)}hWrite(HISTORY_CURRENT,hCurrent)}
 function historyEugenUndo(){if(!hCurrent)return;hCurrent.moves=hCurrent.moves.slice(0,egHistory.length);hCurrent.frames=hCurrent.frames.slice(0,hCurrent.moves.length+1);hCurrent.result='Laufend';hWrite(HISTORY_CURRENT,hCurrent);hGames=hGames.filter(g=>g.id!==hCurrent.id);hWrite(HISTORY_KEY,hGames)}
 function hShow(){for(let id of ['courseHome','heavyMenu','trainingView','rookGame','eugenMenu','eugenGame','liveMenu','liveGame']){let e=H(id);if(e)e.hidden=true}H('historyView').hidden=false;hRenderList();window.scrollTo(0,0)}
 function hRenderList(){const list=H('historyList');list.replaceChildren();const games=hGames.slice();if(hCurrent&&hCurrent.moves.length&&!games.some(g=>g.id===hCurrent.id))games.unshift(hCurrent);if(hLive&&hLive.moves.length&&!games.some(g=>g.id===hLive.id))games.unshift(hLive);if(!games.length){let p=document.createElement('p');p.textContent='Noch keine Partien vorhanden. Spiele zuerst gegen Eugen!';list.appendChild(p)}
  for(const g of games){let row=document.createElement('div');row.className='history-entry';let info=document.createElement('div');let head=document.createElement('strong');head.textContent=hLabel(g);let sm=document.createElement('small');sm.textContent=g.moves.length+' Halbzüge · '+(g.result||'Laufend');info.append(head,sm);let btn=document.createElement('button');btn.textContent='Partie ansehen →';btn.addEventListener('click',()=>hOpen(g));let analyze=document.createElement('button');analyze.type='button';analyze.textContent='🔎 Partie analysieren';analyze.addEventListener('click',()=>{hOpen(g);hAnalyze()});row.append(info,btn,analyze);list.appendChild(row)} }
-function hOpen(g){hCancelAnalysis();hReview=JSON.parse(JSON.stringify(g));hAnalysis=[];H('historyGraph').replaceChildren();hIndex=hReview.moves.length;H('historyReview').hidden=false;H('historyGameTitle').textContent=hLabel(g)+' · '+(g.result||'Laufend');H('historyProgress').textContent='Analyse noch nicht gestartet.';hPaint();H('historyReview').scrollIntoView({behavior:'smooth',block:'start'})}
+function hOpen(g){hCancelAnalysis();hReview=JSON.parse(JSON.stringify(g));hAnalysis=[];H('historyGraph').replaceChildren();
+ // Prefer the recorded player color. Old saves can be corrected manually.
+ hReviewSide=hV95SavedSide(hReview)||((hReview.playerSide==='b'||hReview.playerSide==='w')?hReview.playerSide:'w');
+ hIndex=hReview.moves.length;H('historyReview').hidden=false;H('historyGameTitle').textContent=hLabel(g)+' · '+(g.result||'Laufend');H('historyProgress').textContent='Analyse noch nicht gestartet.';hPaint();H('historyReview').scrollIntoView({behavior:'smooth',block:'start'})}
 function hBoardAt(index){let fen=hReview.frames[index]||hReview.frames[0],board={};let rows=fen.split(' ')[0].split('/');for(let i=0;i<8;i++){let f=0;for(let c of rows[i]){if(/[1-8]/.test(c))f+=Number(c);else{board['abcdefgh'[f]+(8-i)]=c;f++}}}return board}
 function hPrettyMove(uci){return uci.slice(0,2)+'–'+uci.slice(2,4)+(uci.length>4?'='+({q:'D',r:'T',b:'L',n:'S'}[uci[4]]||uci[4]):'')}
-function hPaint(){if(!hReview)return;hIndex=Math.max(0,Math.min(hIndex,hReview.moves.length));let b=hBoardAt(hIndex),el=H('historyBoard');el.replaceChildren();let last=hIndex?hReview.moves[hIndex-1]:'';for(let r=8;r>=1;r--)for(let f=0;f<8;f++){let sq='abcdefgh'[f]+r,cell=document.createElement('span');cell.className='sq '+((f+r)%2?'light':'dark');cell.setAttribute('aria-label',sq);if(last&&(sq===last.slice(0,2)||sq===last.slice(2,4)))cell.style.boxShadow='inset 0 0 0 3px #f5cc59a6';if(b[sq])cell.innerHTML=figure(b[sq]);el.appendChild(cell)}
+function hPaint(){if(!hReview)return;hIndex=Math.max(0,Math.min(hIndex,hReview.moves.length));let b=hBoardAt(hIndex),el=H('historyBoard');el.replaceChildren();let last=hIndex?hReview.moves[hIndex-1]:'';for(let vr=8;vr>=1;vr--)for(let vf=0;vf<8;vf++){let r=hReviewSide==='b'?9-vr:vr,f=hReviewSide==='b'?7-vf:vf,sq='abcdefgh'[f]+r,cell=document.createElement('span');cell.className='sq '+((f+r)%2?'light':'dark');cell.setAttribute('aria-label',sq);if(last&&(sq===last.slice(0,2)||sq===last.slice(2,4)))cell.style.boxShadow='inset 0 0 0 3px #f5cc59a6';if(b[sq])cell.innerHTML=figure(b[sq]);el.appendChild(cell)}
  H('historyPly').textContent=hIndex?'Zug '+Math.ceil(hIndex/2)+(hIndex%2?' · Weiß':' · Schwarz')+' · '+hPrettyMove(last):'Startstellung';let moves=H('historyMoves');moves.replaceChildren();hReview.moves.forEach((m,i)=>{let button=document.createElement('button');button.type='button';button.className=hIndex===i+1?'active':'';button.textContent=(i%2===0?(Math.floor(i/2)+1)+'. ':'')+hPrettyMove(m);button.onclick=()=>{hIndex=i+1;hPaint()};moves.appendChild(button)});let note=H('historyMoveNote');if(!hIndex)note.textContent='Startstellung – wähle einen Zug, um ihn zu prüfen.';else if(hAnalysis[hIndex-1]){let a=hAnalysis[hIndex-1];note.textContent=a.text+(a.best?' · Empfehlung: '+hPrettyMove(a.best):'')}else note.textContent='Für diesen Zug liegt noch keine Analyse vor.';
  H('historyAnalysis').textContent=hIndex&&hAnalysis[hIndex-1]&&hAnalysis[hIndex-1].whiteScore!=null?'Bewertung nach dem Zug: '+(hAnalysis[hIndex-1].whiteScore/100).toFixed(2)+' Bauerneinheiten (positiv = besser für Weiß).':'' }
+document.getElementById('v95FlipHistory')?.addEventListener('click',()=>{if(!hReview)return;hReviewSide=hReviewSide==='w'?'b':'w';try{localStorage.setItem(hV95SideKey(hReview),hReviewSide)}catch(_){}hPaint()});
 function hDownload(name,contents,mime){const url=URL.createObjectURL(new Blob([contents],{type:mime}));let a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function hSAN(g,i){
  const uci=g.moves[i],startFen=g.frames[i],nextFen=g.frames[i+1];
@@ -2883,7 +2890,7 @@ async function hAnalyze(){
   const from=best.slice(0,2),to=best.slice(2,4);
   if(from===to)return;
   const files='abcdefgh';
-  const xy=sq=>({x:files.indexOf(sq[0])*100+50,y:(8-Number(sq[1]))*100+50});
+  const xy=sq=>({x:(hReviewSide==='b'?7-files.indexOf(sq[0]):files.indexOf(sq[0]))*100+50,y:(hReviewSide==='b'?Number(sq[1])-1:8-Number(sq[1]))*100+50});
   const p1=xy(from),p2=xy(to);
   if(p1.x<0||p2.x<0)return;
   const dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.hypot(dx,dy);
@@ -4731,5 +4738,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 .v93-colors input:focus-visible+span{outline:3px solid #8bd0ff;outline-offset:3px}
 #historyBoard .v92-best-arrow{opacity:.9;filter:drop-shadow(0 2px 2px rgba(2,14,20,.3))}
 @media(max-width:650px){.v93-colors span{font-size:14px}}
+</style>
+<style id="v95-history-rotation-style">
+#historyView .v95-review-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+#historyView #v95FlipHistory{font-weight:750;border:1px solid #c79d59;color:#fbe1ac;background:linear-gradient(130deg,#173149,#254057);padding:9px 14px;border-radius:11px;min-height:42px;cursor:pointer}
+#historyView #v95FlipHistory:hover{background:#31506b}
+@media(max-width:650px){#historyView .v95-review-head{gap:7px}#historyView #v95FlipHistory{font-size:14px}}
 </style>
 </body></html>
