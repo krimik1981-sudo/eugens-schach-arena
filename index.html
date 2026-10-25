@@ -5630,4 +5630,46 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
  },true);
 })();
 </script>
+
+<style id="v130-one-profile-style">
+/* Main profile is the only user-facing profile; old local-only page is retained for compatibility. */
+#courseHome .v87-profile{max-width:980px!important;margin-inline:auto!important}
+#courseHome .v87-profile .v87-tiles{display:none!important}
+#courseHome .v87-profile .v87-heading p{display:none!important}
+#courseHome .v87-profile #arena71-panel{display:block!important;max-width:100%;box-sizing:border-box;margin:18px 0!important;background:linear-gradient(145deg,#142e48,#0d2136)!important;border:1px solid #b18b50!important;border-radius:18px!important;padding:clamp(15px,3vw,24px)!important}
+#courseHome .v87-profile #arena71-panel h3{font-family:Georgia,serif;color:#f6d59b;font-size:clamp(21px,4vw,30px);margin:0 0 12px}
+#courseHome .v87-profile #arena71-panel h4{color:#f4ce8c;font-size:18px;margin:20px 0 10px}
+#courseHome .v87-profile #arena71-panel input{min-width:0;max-width:100%;box-sizing:border-box}
+#courseHome .v87-profile #v127Bilanz{width:100%!important;max-width:none!important;margin:16px 0 24px!important}
+#courseHome .v87-profile .v87-person .v87-actions button:first-child{display:none!important}
+#courseHome .v87-profile .v87-metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#courseHome .v87-profile #v118Friends{order:0}
+#courseHome .v87-profile #v118Archive{order:1}
+#courseHome .v87-profile #v118Stats{order:2}
+@media(max-width:600px){#courseHome .v87-profile .v87-identity{grid-template-columns:58px minmax(0,1fr)!important}#courseHome .v87-profile .v87-avatar{width:55px!important;height:55px!important;font-size:30px!important}#courseHome .v87-profile .v87-metrics>.v118-tile{min-height:83px!important;padding:9px 2px!important}#courseHome .v87-profile .v87-metrics .v118-tile strong{font-size:12px!important}#courseHome .v87-profile #arena71-panel{padding:13px!important}}
+</style>
+<script id="v130-one-profile-script">
+(function(){'use strict';
+ const $=id=>document.getElementById(id);
+ const page=document.querySelector('#courseHome .arena-page[data-panel="profil"]');
+ if(!page)return;
+ function mount(){
+  const account=$('arena71-panel'),bilanz=$('v127Bilanz');
+  if(account && account.parentElement!==page){page.insertBefore(account,$('v87Mail')||null)}
+  if(bilanz && bilanz.parentElement!==page){page.insertBefore(bilanz,$('v87Mail')||null)}
+ }
+ function openProfile(){const btn=document.querySelector('#courseHome .arena-bottomnav [data-page="profil"]');btn?.click();setTimeout(mount,0)}
+ function focusAccount(){openProfile();setTimeout(()=>{$('arena71-panel')?.scrollIntoView({behavior:'smooth',block:'start'});},60)}
+ function focusFriends(){openProfile();setTimeout(()=>{$('arena77-friends')?.scrollIntoView({behavior:'smooth',block:'center'});},60)}
+ function focusBilanz(){openProfile();setTimeout(()=>{$('v127Bilanz')?.scrollIntoView({behavior:'smooth',block:'start'});$('v127Refresh')?.click();},60)}
+ // Existing event handlers remain intact; these extra listeners take precedence at capture.
+ for(const b of document.querySelectorAll('#courseHome .v87-profile [data-open="openProfiles"], #v118Friends')){
+  b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();if(b.id==='v118Friends')focusFriends();else focusAccount()},true)
+ }
+ const stat=$('v118Stats');stat?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();focusBilanz()},true);
+ const old=$('openProfiles');old?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();focusAccount()},true);
+ mount();
+ document.querySelectorAll('#courseHome [data-page="profil"]').forEach(b=>b.addEventListener('click',()=>setTimeout(mount,20)));
+})();
+</script>
 </body></html>
