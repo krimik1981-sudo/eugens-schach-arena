@@ -6168,4 +6168,16 @@ font-family:system-ui,-apple-system,sans-serif
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadServer,{once:true});else loadServer();
 })();
 </script>
+<style id="v148-dame-action-visibility">
+/* The compact connected-Dame layout hides all #dameOnlineBox children except chat.
+   Keep v147 match controls visible while preserving the other collapsed controls. */
+body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) .arena-page[data-panel="dame"] #dameOnlineBox > #v147DameActions:not([hidden]) {
+  display:flex!important;
+  visibility:visible!important;
+}
+body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) .arena-page[data-panel="dame"] #dameOnlineBox > #v147DameOfferBox:not([hidden]) {
+  display:block!important;
+  visibility:visible!important;
+}
+</style>
 </body></html>
