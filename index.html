@@ -1653,7 +1653,8 @@ body{background:var(--arena62-bg)}
 <div class="live-answer" hidden="" id="liveRematchAnswer"><strong>Dein Freund möchte ein Rückspiel.</strong><div class="live-actions"><button id="liveRematchAccept" type="button">Rückspiel starten</button><button id="liveRematchDecline" type="button">Ablehnen</button></div></div>
 </div>
 <div class="rook-game-layout">
-<div class="wood rook-board-frame" id="liveBoardFrame"><div aria-label="Live-Schachbrett" class="board rook-board" id="liveBoard" role="group"></div></div>
+<div class="v121-clocks" aria-label="Schachuhren"><div aria-label="Schachuhren" class="live-clock-panel"><div class="live-clock-row"><span>⚪ Weiß</span><strong id="liveClockWhite">10:00</strong></div><div class="live-clock-row"><span>⚫ Schwarz</span><strong id="liveClockBlack">10:00</strong></div></div></div><div class="wood rook-board-frame" id="liveBoardFrame"><div aria-label="Live-Schachbrett" class="board rook-board" id="liveBoard" role="group"></div></div>
+<div class="v121-captured" id="v121Captured" aria-label="Geschlagene Schachfiguren"><div class="v121-captured-line" id="v121TakenBlack" aria-label="Geschlagene schwarze Figuren"></div><div class="v121-captured-line" id="v121TakenWhite" aria-label="Geschlagene weiße Figuren"></div></div>
 <aside class="rook-panel">
 <h2 id="liveHeadline">Warte auf Freund …</h2>
 <p aria-live="polite" id="liveStatus" role="status">Verbinde …</p>
@@ -1666,7 +1667,7 @@ body{background:var(--arena62-bg)}
 <form id="arenaChatForm" class="arena-chat-form"><input id="arenaChatInput" type="text" maxlength="200" autocomplete="off" placeholder="Nachricht schreiben (max. 200 Zeichen)" aria-label="Nachricht schreiben"><button type="submit" id="arenaChatSend">Senden ➤</button></form>
 <p id="arenaChatInfo" class="arena-chat-hint" role="status">Chat ist verfügbar, sobald dein Gegner verbunden ist.</p>
 </div></section><div id="arenaEmojiToast" class="arena-emoji-toast" hidden aria-live="polite"></div>
-<div aria-label="Schachuhren" class="live-clock-panel"><div class="live-clock-row"><span>⚪ Weiß</span><strong id="liveClockWhite">10:00</strong></div><div class="live-clock-row"><span>⚫ Schwarz</span><strong id="liveClockBlack">10:00</strong></div></div><p class="live-help"><span id="liveTimeLabel">Zeit: 10 Minuten pro Spieler</span> · <span id="liveMoveLabel">Züge: 0</span></p>
+<p class="live-help"><span id="liveTimeLabel">Zeit: 10 Minuten pro Spieler</span> · <span id="liveMoveLabel">Züge: 0</span></p>
 <p>Dein Raumcode:</p><span class="live-code" id="liveRoomCode">–</span>
 <div class="live-actions"><button id="liveCopyCode" type="button">Code kopieren</button><button id="liveCopyLink" type="button">Einladungslink kopieren</button></div>
 <p class="live-help" id="liveLinkHint"></p><div class="live-actions"><button id="liveAnalyzePartie" style="background:#1676a8" type="button">🔎 Partie analysieren</button></div><p class="live-help">Die Analyse startet nur auf deinen Klick und öffnet deine gespeicherte Partie.</p>
@@ -2792,6 +2793,7 @@ rebuild();
    if(row===7){let c=document.createElement('span');c.className='coord file';c.textContent=egFiles[f];cell.appendChild(c)}
    cell.addEventListener('click',()=>click(sq));el.appendChild(cell)
   }
+  window.arena121Captured?.(position);
   $l('liveHeadline').textContent=outcome?'🏁 '+outText():!connected?'Warte auf Verbindung …':side===turn?'♔ Du bist am Zug':'♚ Dein Freund ist am Zug';
   $l('liveTimeLabel').textContent=timeControl===0?'Ohne Zeitlimit – keine Schachuhr':'Zeit: '+(timeControl/60000)+' Minuten pro Spieler';$l('liveMoveLabel').textContent='Züge: '+moveNo;
   const answerDrawVisible=connected&&!outcome&&drawOffer===side;
@@ -5309,4 +5311,47 @@ document.addEventListener('DOMContentLoaded',()=>{
  });
 })();
 </script>
-</body></html>
+<style>
+/* v121 - live board: visible clocks, unobtrusive captured pieces */
+#liveGame .rook-game-layout{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important}
+#liveGame .v121-clocks{order:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 8px;max-width:100%}
+#liveGame #liveBoardFrame{order:1;margin:0 auto;width:min(100%,720px)}
+#liveGame #v121Captured{order:2;display:grid;gap:5px;width:min(100%,720px);margin:0 auto 8px}
+#liveGame .rook-panel{order:3;width:100%;max-width:none!important}
+#liveGame .live-clock-panel{display:contents!important}
+#liveGame .live-clock-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;padding:10px 12px;border:1px solid #6e829a;background:#132a40;border-radius:13px;color:#e5ebf3}
+#liveGame .live-clock-row:has(.active){border-color:#dfb86c;background:#233d50;box-shadow:0 0 0 1px #b18a52 inset}
+#liveGame .live-clock-row strong{font-variant-numeric:tabular-nums;font-size:clamp(18px,5vw,28px);white-space:nowrap;color:#f0ce8f}
+#liveGame .live-clock-row strong.low{color:#ff9c92}
+#liveGame .v121-captured-line{min-height:24px;display:flex;flex-wrap:wrap;align-items:center;gap:3px;padding:3px 6px;border:1px solid rgba(188,152,91,.25);border-radius:9px;background:rgba(15,33,51,.7)}
+#liveGame .v121-captured-piece{font-family:system-ui,'Apple Symbols',sans-serif;font-size:clamp(18px,4vw,25px);line-height:1.15;min-width:16px;text-align:center}
+#liveGame .v121-captured-piece.black{color:#060b13;-webkit-text-stroke:.6px #c69b65;text-shadow:0 1px 1px #e4c490}
+#liveGame .v121-captured-piece.white{color:#fffefa;text-shadow:0 1px 2px #050911}
+#liveGame .v121-captured-empty{font-size:12px;color:#8192a4}
+@media(min-width:850px){#liveGame .rook-game-layout{max-width:900px;margin-inline:auto}}
+@media(max-width:520px){#liveGame .v121-clocks{gap:7px}#liveGame .live-clock-row{padding:7px 8px}#liveGame .live-clock-row span{font-size:13px}}
+</style>
+<script>
+(function(){
+ const initial={p:8,n:2,b:2,r:2,q:1};
+ const blackSymbols={p:'♟',n:'♞',b:'♝',r:'♜',q:'♛'};
+ const whiteSymbols={p:'♙',n:'♘',b:'♗',r:'♖',q:'♕'};
+ window.arena121Captured=function(position){
+   if(!position||typeof position!=='object')return;
+   for(const color of ['black','white']){
+     const box=document.getElementById(color==='black'?'v121TakenBlack':'v121TakenWhite');if(!box)return;
+     const live={p:0,n:0,b:0,r:0,q:0};
+     Object.values(position).forEach(piece=>{if(typeof piece!=='string'||piece.length!==1)return;const isWhite=piece===piece.toUpperCase();if((color==='white')!==isWhite)return;const k=piece.toLowerCase();if(k in live)live[k]++});
+     box.replaceChildren();let total=0;
+     for(const piece of ['q','r','b','n','p']){
+       const missing=Math.max(0,initial[piece]-live[piece]);
+       for(let i=0;i<missing;i++){
+         const span=document.createElement('span');span.className='v121-captured-piece '+color;
+         span.textContent=(color==='black'?blackSymbols:whiteSymbols)[piece];box.appendChild(span);total++;
+       }
+     }
+     if(!total){const empty=document.createElement('span');empty.className='v121-captured-empty';empty.textContent='–';box.appendChild(empty)}
+   }
+ };
+})();
+</script></body></html>
