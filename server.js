@@ -331,8 +331,46 @@ async function resumeEndpoint(req,res,url){
  return reply(res,200,{ok:true});
 }
 
+
+// v144: separate Dame match recovery per account; chess recovery is unaffected.
+async function dameResumeEndpoint(req,res,url){
+ if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
+ let raw='';try{for await(const x of req){raw+=x;if(raw.length>10000)return reply(res,413,{error:'Too large'})}}catch{return reply(res,400,{error:'Invalid body'})}
+ let v={};try{v=JSON.parse(raw||'{}')}catch{return reply(res,400,{error:'Invalid JSON'})}
+ const id=authId(req);if(!id)return reply(res,401,{error:'Bitte anmelden'});
+ const action=url.pathname.slice('/api/dame-resume/'.length);
+ const table='arena_saved_dame';
+ const prior=(await db(table,'GET',{player_id:'eq.'+id,select:'payload',limit:1}))[0]?.payload||null;
+ if(action==='get')return reply(res,200,{saved:prior?.done?null:prior});
+ if(action==='clear'){
+  const room=v?.room;
+  if(typeof room!=='string'||!/^(DAME-[A-Z0-9]{8}-[A-Z0-9]{4}|d[a-f0-9]{28})$/.test(room))return reply(res,400,{error:'Invalid room'});
+  if(prior?.room===room){
+   await db(table,'POST',{on_conflict:'player_id'},{player_id:id,payload:{v:2,done:true,room,at:Date.now()}});
+  }
+  return reply(res,200,{ok:true});
+ }
+ if(action!=='save')return reply(res,404,{error:'Not found'});
+ const p=v?.saved;
+ if(!p||p.v!==1||typeof p.room!=='string'||!/^(DAME-[A-Z0-9]{8}-[A-Z0-9]{4}|d[a-f0-9]{28})$/.test(p.room)||
+ !['w','b'].includes(p.side)||typeof p.host!=='boolean'||!p.state||
+ !Array.isArray(p.state.board)||p.state.board.length!==64||
+ !p.state.board.every(x=>x===null||['w','W','b','B'].includes(x))||
+ !['w','b'].includes(p.state.turn)||p.state.gameOver||
+ !Number.isSafeInteger(p.state.seq)||typeof p.state.matchId!=='string'||p.state.matchId.length>100||
+ !Number.isFinite(p.at)||Date.now()-p.at>86400000||p.at>Date.now()+10000)
+ return reply(res,400,{error:'Invalid Dame save'});
+ // Tombstone prevents delayed network autosaves from resurrecting a finished match.
+ if(prior?.done&&prior.room===p.room)return reply(res,409,{error:'Partie bereits beendet'});
+ if(prior&&!prior.done&&prior.room===p.room&&Number(prior.at)>p.at)
+  return reply(res,409,{error:'Old save'});
+ await db(table,'POST',{on_conflict:'player_id'},{player_id:id,payload:p});
+ return reply(res,200,{ok:true});
+}
+
 async function handle(req,res) {
   const url=new URL(req.url,'http://localhost');
+  if(url.pathname.startsWith('/api/dame-resume/'))return dameResumeEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/resume/'))return resumeEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/bilanz/'))return bilanzEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/live-clock/'))return clockEndpoint(req,res,url);
