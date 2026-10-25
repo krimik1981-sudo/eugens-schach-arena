@@ -1198,7 +1198,7 @@ body{background:var(--arena62-bg)}
   return true;
  }
  function detached(game){peers[game]=null;paint(game)}
- window.ArenaFriendV70={mount,attach,receive,detached};
+ window.ArenaFriendV70={mount,attach,receive,detached,opponentName:game=>peers[game]?.remote?.name||''};
  document.addEventListener('arena70-friends-updated',()=>{paint('chess');paint('dame')});
 })();
 </script><body>
@@ -5706,16 +5706,40 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
  const who=()=>{const x=document.getElementById('arena71-who')?.textContent||'';return x.startsWith('Angemeldet als ')};
  const opponent=(game='chess')=>{const x=document.querySelector('#arena70-'+(game==='dame'?'dame':'chess')+' .arena70-opponent')?.textContent||'';return x.replace(/^👤\s*/,'').replace(/\s*▾\s*$/,'').trim()};
  async function api(action,payload){const resp=await fetch('/api/bilanz/'+action,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token()},body:JSON.stringify(payload||{})});let d={};try{d=await resp.json()}catch(_){}if(!resp.ok)throw Error(d.error||'Serverfehler');return d}
+ // v146: durable, at-most-once per device submission queue for NEW finished matches.
+ // Every confirmed server report is de-duplicated by (match_id, player_id).
+ const queueKey='arena_v146_bilanz_pending';
  const submitted=new Set();
- async function report(data,attempt=0){
+ const player=()=>document.getElementById('arena71-who')?.textContent?.trim()||'';
+ function readQueue(){try{const v=JSON.parse(localStorage.getItem(queueKey)||'[]');return Array.isArray(v)?v.filter(x=>x&&Date.now()-x.at<7*86400000).slice(-30):[]}catch(_){return []}}
+ function writeQueue(v){try{localStorage.setItem(queueKey,JSON.stringify(v.slice(-30)))}catch(_){}}
+ function validOpponent(n){return !!n&&!/Gegner|nicht verbunden|wird erkannt|Schachspieler|Spielerprofil/i.test(n)}
+ function report(data){
   if(!data||!/^live-[a-z0-9-]{10,75}$/.test(data.matchId||'')||!token()||!['w','b'].includes(data.side)||!['w','b','draw'].includes(data.winner))return;
-  const name=opponent(data.game);if(!name||/Gegner|nicht verbunden|wird erkannt/i.test(name)){if(attempt<8)setTimeout(()=>report(data,attempt+1),1800);return}
-  const key=data.matchId+'|'+data.side;if(submitted.has(key))return;
-  try{await api('report',{...data,opponent:name});submitted.add(key)}catch(e){if(attempt<8)setTimeout(()=>report(data,attempt+1),3000)}
+  const name=window.ArenaFriendV70?.opponentName?.(data.game)||opponent(data.game);
+  if(!validOpponent(name)){console.warn('Bilanz: Gegnername fehlt. Ergebnis kann nicht sicher zugeordnet werden.');return}
+  const key=data.matchId+'|'+data.side;
+  if(submitted.has(key))return;
+  const q=readQueue();if(!q.some(x=>x.key===key&&x.player===player()))q.push({key,player:player(),at:Date.now(),data:{...data,opponent:name}});
+  writeQueue(q);flushReports();
  }
- window.ArenaBilanzV127={report};
- // v128: Russian draughts online results use the host's shared match ID.
- // Both peers report independently; backend counts only matching reports.
+ let sending=false;
+ async function flushReports(){
+  if(sending||!token())return;sending=true;
+  try{
+   for(const item of readQueue().slice()){
+    // Never send an old account's result after switching login.
+    if(item.player!==player())continue;
+    try{await api('report',item.data);submitted.add(item.key);writeQueue(readQueue().filter(x=>!(x.key===item.key&&x.player===item.player)))}
+    catch(e){console.warn('Bilanz-Meldung wird später wiederholt:',e.message)}
+   }
+  }finally{sending=false}
+ }
+ window.ArenaBilanzV127={report,retry:flushReports};
+ window.addEventListener('online',flushReports);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)flushReports()});
+ setInterval(flushReports,12000);
+ setTimeout(flushReports,1000);
  window.addEventListener('arena:dame-finished',event=>{
   const d=event.detail||{};
   if(d.mode!=='online'||!['w','b'].includes(d.playerSide)||!['w','b'].includes(d.winner))return;
@@ -5733,7 +5757,7 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
     for(const r of items){const section=document.createElement('section');section.className='v127-result';const title=document.createElement('strong');title.textContent=r.name+' · '+(r.game==='chess'?'Schach':'Dame');section.append(title);const line=document.createElement('div');for(const [value,label] of [[r.wins,'Siege'],[r.losses,'Niederlagen'],[r.draws,'Remis']]){const cell=document.createElement('span');const num=document.createElement('b');num.textContent=value;cell.append(num,document.createTextNode(label));line.append(cell)}section.append(line);list.append(section)}
    }catch(e){list.textContent='Freunde-Bilanz konnte nicht geladen werden: '+e.message+'. Prüfe in Supabase → Table Editor die Tabelle arena_match_reports und danach die Render-Logs. Solange die Verbindung nicht funktioniert, können keine Ergebnisse angezeigt werden.'}
   }
-  panel.querySelector('#v127Refresh').onclick=refresh;
+  panel.querySelector('#v127Refresh').onclick=async()=>{await flushReports();await refresh()};
   document.querySelectorAll('[data-page="profil"], [data-panel="profil"], #v118Stats').forEach(el=>el.addEventListener('click',()=>setTimeout(refresh,150)));
   setTimeout(refresh,1000);
  }
