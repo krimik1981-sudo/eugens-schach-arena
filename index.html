@@ -4914,4 +4914,68 @@ document.addEventListener('DOMContentLoaded',()=>{
  new MutationObserver(update).observe(black,{subtree:true,childList:true,characterData:true});
  color?.addEventListener('change',update);mode?.addEventListener('change',update);update();
 })();
-</script></body></html>
+</script>
+<style id="v109-mobile-analysis">
+/* v109: mobile analysis uses a single reading flow: evaluation, board, controls, detail. */
+@media (max-width: 700px) {
+ #historyView #historyReview .history-layout {
+   display:flex!important; flex-direction:column!important; gap:0!important;
+   width:100%!important; min-width:0!important;
+ }
+ #historyView #historyReview .history-side {
+   display:contents!important;
+ }
+ #historyView #historyReview .history-layout>.v96-board-area {
+   order:2!important; width:100%!important; min-width:0!important; margin:0 0 9px!important;
+ }
+ #historyView #historyReview #v96EvaluationCaption {
+   order:1!important; margin:0 0 8px!important; border-radius:9px!important;
+   padding:9px 11px!important; font-size:12px!important; line-height:1.3!important;
+   background:#152b42!important; color:#f1d196!important;
+ }
+ #historyView #historyReview .history-side>.v95-review-head {
+   order:4!important; display:flex!important;align-items:center!important;justify-content:space-between!important;
+   gap:8px!important;margin:5px 0 7px!important;padding:0!important;
+ }
+ #historyView #historyReview .history-side>.v95-review-head strong {
+   font-size:13px!important;line-height:1.25!important;min-width:0!important;
+ }
+ #historyView #historyReview #v95FlipHistory {
+   font-size:12px!important;line-height:1.2!important;min-height:35px!important;
+   padding:7px 9px!important;flex-shrink:0!important;
+ }
+ #historyView #historyReview .history-side>.history-actions:has(#historyFirst) {
+   order:3!important; display:grid!important; grid-template-columns:repeat(4,minmax(0,1fr))!important;
+   gap:7px!important; width:100%!important;margin:0!important;
+ }
+ #historyView #historyReview .history-side>.history-actions:has(#historyFirst) button {
+   min-width:0!important; width:100%!important; padding:10px 1px!important;
+   font-size:0!important; line-height:1!important; height:43px!important;
+   background:#254867!important; border:1px solid #c49b57!important;
+   border-radius:10px!important;touch-action:manipulation;
+ }
+ #historyView #historyReview #historyFirst::after{content:'⏮';font-size:19px}
+ #historyView #historyReview #historyPrev::after{content:'◀';font-size:19px}
+ #historyView #historyReview #historyNext::after{content:'▶';font-size:19px}
+ #historyView #historyReview #historyLast::after{content:'⏭';font-size:19px}
+ #historyView #historyReview #historyMoveNote {
+   order:5!important; margin:1px 0 6px!important; font-size:12px!important;
+   padding:7px 9px!important;line-height:1.35!important;
+   background:#172d43!important;border-radius:8px!important;
+ }
+ #historyView #historyReview #historyMoves {
+   order:6!important; max-height:105px!important; padding:3px!important; margin:4px 0 10px!important;
+   overflow:auto!important; gap:5px!important;
+ }
+ #historyView #historyReview .v92-arrow-toggle{order:7!important;margin:5px 0 10px!important}
+ #historyView #historyReview .history-side>.history-actions:has(#historyRunAnalysis){order:8!important}
+ #historyView #historyReview #historyProgress{order:9!important}
+ #historyView #historyReview #historyAnalysis{order:10!important}
+ #historyView #historyReview .v91-analysis-help{order:11!important;font-size:12px!important;line-height:1.4!important}
+ #historyView #historyReview #historyGraph{order:12!important}
+ #historyView #historyReview #historyGameTitle{font-size:17px!important;line-height:1.25!important;margin:6px 0 10px!important}
+ #historyView #historyReview .v96-board-area .history-board{max-width:100%!important}
+ #historyView #historyReview .v96-board-area .board{max-width:100%!important}
+}
+</style>
+</body></html>
