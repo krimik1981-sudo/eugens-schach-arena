@@ -6180,4 +6180,35 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
   visibility:visible!important;
 }
 </style>
+<style id="v149-history-style">
+#v149History{max-width:900px;width:calc(100% - 20px);box-sizing:border-box;margin:14px auto;padding:17px;border:1px solid rgba(179,146,77,.35);border-radius:16px;background:rgba(16,32,58,.08)}
+#v149History h3{margin:0 0 7px}#v149History .v149-filters{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}#v149History button{border-radius:9px;padding:9px 13px;cursor:pointer}#v149History .v149-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(130,130,130,.25);padding:10px 2px}#v149History .v149-row:last-child{border-bottom:0}#v149History .v149-small{font-size:12px;opacity:.75}#v149History .v149-result{font-weight:750;white-space:nowrap}#v149History .v149-empty{padding:12px 0;opacity:.85}
+@media(max-width:620px){#v149History{width:calc(100% - 12px);padding:12px}#v149History .v149-row{font-size:13px}}
+</style>
+<script id="v149-history-script">
+(function(){'use strict';
+ const session=()=>{try{return localStorage.getItem('arena71_token')||''}catch(_){return ''}};
+ function start(){
+  const profile=document.getElementById('profilesView');if(!profile||document.getElementById('v149History'))return;
+  const panel=document.createElement('section');panel.id='v149History';
+  panel.innerHTML='<h3>📜 Partienverlauf</h3><p>Abgeschlossene, von beiden Spielern bestätigte Online-Partien. Schach und Dame getrennt.</p><div class="v149-filters"><button type="button" data-game="all">Alle</button><button type="button" data-game="chess">♟ Schach</button><button type="button" data-game="dame">⚫ Dame</button><button type="button" id="v149Reload">↻ Aktualisieren</button></div><div id="v149Items" aria-live="polite"></div><p class="v149-small">Die bisherige Ergebnisdatenbank enthält Datum, Gegner und Ergebnis, aber keine vollständigen Zugfolgen. Frühere nicht bestätigte Partien werden nicht ergänzt.</p>';
+  profile.append(panel);
+  const list=panel.querySelector('#v149Items');let data=[],filter='all',loaded=false;
+  const dateStr=s=>{const d=new Date(s);return Number.isFinite(d.getTime())?d.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Datum unbekannt'};
+  function render(){list.replaceChildren();const items=data.filter(x=>filter==='all'||x.game===filter);
+   if(!items.length){const e=document.createElement('p');e.className='v149-empty';e.textContent=loaded?'Keine bestätigten Partien in dieser Ansicht.':'Noch keine Daten geladen.';list.append(e);return}
+   for(const p of items){const row=document.createElement('div');row.className='v149-row';const left=document.createElement('div');const title=document.createElement('strong');title.textContent=(p.game==='chess'?'♟ Schach':'⚫ Dame')+' · '+String(p.opponent||'Spieler');const small=document.createElement('div');small.className='v149-small';small.textContent=dateStr(p.date);left.append(title,small);const right=document.createElement('span');right.className='v149-result';right.textContent=p.result==='win'?'✓ Sieg':p.result==='loss'?'✕ Niederlage':'½ Remis';row.append(left,right);list.append(row)}
+  }
+  async function refresh(){if(!session()){list.textContent='Bitte unter Profil anmelden.';return}list.textContent='Partien werden geladen …';
+   try{const res=await fetch('/api/bilanz/history',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session()},body:'{}'});const json=await res.json();if(!res.ok)throw Error(json.error||'Serverfehler');data=Array.isArray(json.items)?json.items:[];loaded=true;render()}
+   catch(e){list.textContent='Partienverlauf konnte nicht geladen werden: '+e.message}
+  }
+  panel.querySelectorAll('[data-game]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.game;render()}));panel.querySelector('#v149Reload').addEventListener('click',refresh);
+  document.querySelectorAll('[data-page="profil"],[data-panel="profil"],#v118Stats').forEach(e=>e.addEventListener('click',()=>setTimeout(refresh,200)));
+  document.getElementById('v127Refresh')?.addEventListener('click',()=>setTimeout(refresh,150));
+  setTimeout(refresh,1000);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
 </body></html>
