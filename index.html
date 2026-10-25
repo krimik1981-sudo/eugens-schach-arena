@@ -5528,4 +5528,21 @@ document.addEventListener('DOMContentLoaded',()=>{
  }
 })();
 </script>
+
+<style id="v126-online-cleanup">
+/* Hide the legacy settings/info side panel during a live chess game.
+   Chat remains in the separate v125 popup (moved out of this panel). */
+body:has(#liveGame:not([hidden])) #liveGame .rook-game-layout > aside.rook-panel,
+body:has(#liveGame:not([hidden])) #liveGame .rook-game-layout > .rook-panel,
+body:has(#liveGame:not([hidden])) #liveGame .rook-panel {display:none!important;visibility:hidden!important;}
+/* Player lookup is available in the account UI, not as an extra game panel. */
+body:has(#liveGame:not([hidden])) #liveGame [id^="arena70-chess"]{display:none!important}
+/* Keep the useful compact controls visible and stacked below the board. */
+body:has(#liveGame:not([hidden])) #liveGame .rook-game-layout{display:flex!important;flex-direction:column!important;gap:7px!important;}
+body:has(#liveGame:not([hidden])) #liveGame #v125ActionBar{display:grid!important;order:3!important}
+body:has(#liveGame:not([hidden])) #liveGame #v125ChatOpen{display:flex!important;order:5!important}
+/* No oversized intro/header: retain small live status and exit action. */
+body:has(#liveGame:not([hidden])) #liveGame > h1,
+body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
+</style>
 </body></html>
