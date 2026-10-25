@@ -1496,14 +1496,15 @@ body{background:var(--arena62-bg)}
   </section>
 </div>
 <div class="arena-page" data-panel="statistik" hidden="">
-<h2>🏆 Spielerstatistik &amp; Rangliste</h2>
-<p>Deine Ergebnisse bei Schach und Dame – gespeichert auf diesem Gerät.</p>
-<div class="stats-toolbar"><button id="statsRefresh" type="button">↻ Aktualisieren</button><button id="statsExport" type="button">⬇ Daten sichern</button><button id="statsImport" type="button">⬆ Daten importieren</button><input accept="application/json,.json" hidden="" id="statsImportFile" type="file"/></div>
-<div aria-label="Spiel auswählen" class="stats-switch" role="group"><button class="active" data-stats-game="chess" type="button">♟️ Schach</button><button data-stats-game="dame" type="button">🔴 Dame</button></div>
-<div class="stats-cards"><div class="stats-tile"><small>Partien</small><strong id="statsTotal">0</strong></div><div class="stats-tile"><small>Siege</small><strong id="statsWins">0</strong></div><div class="stats-tile"><small>Niederlagen</small><strong id="statsLosses">0</strong></div><div class="stats-tile"><small>Remis</small><strong id="statsDraws">0</strong></div><div class="stats-tile"><small>Gewinnquote</small><strong id="statsRate">0 %</strong></div></div>
-<div class="stats-columns"><div class="stats-box"><h3>🏅 Lokale Rangliste</h3><p class="stats-muted" id="statsRankingHint">Punkte: Sieg 3 · Remis 1. Nur Partien auf diesem Gerät.</p><div id="statsLeaderboard"></div></div><div class="stats-box"><h3>📋 Letzte Ergebnisse</h3><div id="statsRecent"></div></div></div>
-<p class="stats-muted">Die Rangliste ist <b>lokal</b>, nicht weltweit. Bei Schach werden vorhandene beendete Computerpartien übernommen. Live-Schach-Partien ohne sicher zuordenbare Spielerfarbe werden nicht als persönlicher Sieg oder Niederlage gewertet. Bei Dame werden Ergebnisse ab dieser Version gespeichert. Partien zu zweit an einem Gerät erscheinen in der Rangliste als Weiß und Schwarz; sie zählen nicht zu deiner persönlichen Gewinnquote. Browserdaten nicht löschen, sonst gehen lokale Statistiken ohne Datensicherung verloren.</p>
-</div>
+<section id="v150OnlineStats" style="max-width:1000px;margin:18px auto;padding:14px;color:#eaf1ff">
+<h2>🏆 Online-Statistik &amp; Partienverlauf</h2>
+<p>Nur bestätigte Partien gegen echte Spieler · Supabase · keine Computerpartien.</p>
+<div class="v150-actions"><button type="button" id="v150Chess" class="v150-selected">♟ Schach</button><button type="button" id="v150Dame">⚫ Dame</button><button type="button" id="v150Refresh">↻ Aktualisieren</button></div>
+<div id="v150Message" role="status" aria-live="polite">Online-Ergebnisse werden geladen …</div>
+<div class="v150-summary"><div>Partien<strong id="v150Total">–</strong></div><div>Siege<strong id="v150Wins">–</strong></div><div>Niederlagen<strong id="v150Losses">–</strong></div><div>Remis<strong id="v150Draws">–</strong></div><div>Gewinnquote<strong id="v150Rate">–</strong></div></div>
+<div class="v150-panels"><section><h3>👥 Bilanz gegen Freunde</h3><div id="v150Friends"></div></section><section><h3>📜 Abgeschlossene Partien</h3><div id="v150History"></div></section></div>
+<p style="opacity:.75;font-size:13px">Ergebnisse erscheinen, wenn beide angemeldeten Spieler die abgeschlossene Online-Partie bestätigt haben. Frühere Computerpartien werden hier nicht angezeigt.</p>
+</section></div>
 <div class="arena-page v87-profile" data-panel="profil" hidden>
  <div class="v87-heading"><h2>♙ Mein Profil</h2><p>Konto, Freunde und Partien verwalten.</p></div>
  <section class="v87-identity" aria-label="Dein Spielerprofil">
@@ -3832,68 +3833,6 @@ const dameInvitation=new URLSearchParams(location.hash.slice(1)).get('dame');if(
 document.getElementById('dameRestart').addEventListener('click',()=>{if(modeEl.value==='online'&&!onlineHost)return;init();});document.getElementById('dameUndo').addEventListener('click',undo);modeEl.addEventListener('change',()=>{discardNetwork();box.hidden=modeEl.value!=='online';init();});levelEl.addEventListener('change',init);computerColorEl.addEventListener('change',()=>{computerColor=other(computerColorEl.value);init();});init();
 })();
 </script><script>
-/* Eugens Schach Arena 3.2: lokale Statistik, keine erfundenen globalen Rankings */
-(function(){'use strict';
- const KEY='eugens_arena_dame_results_v1';
- const el=id=>document.getElementById(id);
- const read=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key));return v===null?fallback:v}catch(_){return fallback}};
- const safe=x=>String(x||'').slice(0,80);
- const nickname=()=>{const p=read('eugens_arena_profil_v1',null);return p&&typeof p.name==='string'?p.name.slice(0,32):'Du'};
- let current='chess';
- function dameRecords(){const arr=read(KEY,[]);return Array.isArray(arr)?arr.filter(r=>r&&typeof r.id==='string'&&['win','loss','draw'].includes(r.result)).slice(-500):[]}
- function chessRecords(){
-   const all=read('eugens_arena_partien_v1',[]),running=read('eugens_arena_laufend_v1',null),live=read('eugens_arena_livecurrent_v1',null);
-   const rows=Array.isArray(all)?all.slice():[];
-   if(running)rows.push(running);
-   if(live)rows.push(live);
-   const ids=new Set(),output=[];
-   for(const g of rows){
-    if(!g||!g.id||ids.has(g.id)||!Array.isArray(g.moves)||!g.moves.length)continue;
-    ids.add(g.id);
-    const result=String(g.result||'');
-    if(result==='Laufend'||!result)continue;
-    // The old archive has no reliable mapping of online color to profile; do not fabricate scores.
-    if(g.mode==='live')continue;
-    let score=null;
-    if(/Du hast Eugen besiegt|Du hast gewonnen/i.test(result))score='win';
-    else if(/Eugen hat gewonnen|Eugen gewinnt/i.test(result))score='loss';
-    else if(/remis|patt|unentschieden/i.test(result))score='draw';
-    if(score)output.push({id:g.id,date:Number(g.date)||0,result:score,opponent:'Eugen (Computer)',mode:({beginner:'Anfänger',intermediate:'Fortgeschritten',expert:'Profi'})[g.mode]||'Computer'});
-   }
-   return output.sort((a,b)=>a.date-b.date);
- }
- function records(){return current==='chess'?chessRecords():dameRecords()}
- function statsFor(rows){return {wins:rows.filter(r=>r.result==='win').length,losses:rows.filter(r=>r.result==='loss').length,draws:rows.filter(r=>r.result==='draw').length}}
- function makeRow(parent,left,right,subtitle){let row=document.createElement('div');row.className='stats-row';let l=document.createElement('div'),name=document.createElement('span');name.textContent=left;l.appendChild(name);if(subtitle){let small=document.createElement('small');small.textContent=subtitle;l.appendChild(small)}let r=document.createElement('strong');r.textContent=right;row.append(l,r);parent.appendChild(row)}
- function render(){const rows=records();const personal=rows.filter(r=>r.mode!=='Zwei Spieler');const v=statsFor(personal),n=personal.length;el('statsTotal').textContent=n;el('statsWins').textContent=v.wins;el('statsLosses').textContent=v.losses;el('statsDraws').textContent=v.draws;el('statsRate').textContent=n?Math.round((v.wins+.5*v.draws)/n*100)+' %':'–';
-   const rank=el('statsLeaderboard'),recent=el('statsRecent');rank.replaceChildren();recent.replaceChildren();
-   if(!rows.length){let empty=document.createElement('p');empty.className='stats-empty';empty.textContent=current==='chess'?'Noch keine abgeschlossene Partie gegen Eugen gefunden.':'Noch keine abgeschlossene Dame-Partie gespeichert. Spiele eine Partie bis zum Ende.';rank.appendChild(empty);recent.appendChild(empty.cloneNode(true));return}
-   const name=nickname();const scores=new Map();
-   function add(p,points,win,draw){let a=scores.get(p)||{points:0,wins:0,draws:0,games:0};a.points+=points;a.wins+=win;a.draws+=draw;a.games++;scores.set(p,a)}
-   for(const r of rows){let opp=r.opponent||'Gegner';let player=r.name||name;add(player,r.result==='win'?3:r.result==='draw'?1:0,r.result==='win'?1:0,r.result==='draw'?1:0);add(opp,r.result==='loss'?3:r.result==='draw'?1:0,r.result==='loss'?1:0,r.result==='draw'?1:0)}
-   const sorted=[...scores.entries()].sort((a,b)=>b[1].points-a[1].points||b[1].wins-a[1].wins||a[0].localeCompare(b[0]));
-   sorted.forEach(([n,s],i)=>makeRow(rank,(i+1)+'. '+n,s.points+' Pkt.',s.games+' Partien · '+s.wins+' Siege'));
-   for(const r of rows.slice().reverse().slice(0,12)){const result=r.result==='win'?'🏆 Sieg':r.result==='loss'?'❌ Niederlage':'🤝 Remis';let date=r.date?new Date(r.date).toLocaleDateString('de-DE'):'–';makeRow(recent,result,'gegen '+(r.opponent||'Gegner'),date+' · '+safe(r.mode))}
- }
- window.addEventListener('arena:dame-finished',e=>{
-   const d=e.detail||{};if(typeof d.id!=='string'||!['w','b','draw'].includes(d.winner))return;
-   const list=dameRecords();if(list.some(x=>x.id===d.id))return; // prevent double counting network updates
-   const side=d.playerSide;
-   if(d.mode!=='local'&&!['w','b'].includes(side))return;
-   const result=d.winner==='draw'?'draw':d.mode==='local'?'win':d.winner===side?'win':'loss';
-   list.push({id:d.id,date:Date.now(),result,name:d.mode==='local'?(d.winner==='w'?'Weiß':'Schwarz'):nickname(),mode:d.mode==='ai'?'Computer':d.mode==='online'?'Online':'Zwei Spieler',opponent:d.mode==='ai'?'Dame-Computer':d.mode==='online'?'Online-Freund':(d.winner==='w'?'Schwarz':'Weiß')});
-   try{localStorage.setItem(KEY,JSON.stringify(list.slice(-500)))}catch(_){}
-   if(current==='dame')render();
- });
- document.querySelectorAll('[data-stats-game]').forEach(b=>b.addEventListener('click',()=>{current=b.dataset.statsGame;document.querySelectorAll('[data-stats-game]').forEach(x=>x.classList.toggle('active',x===b));render()}));
- document.querySelectorAll('#courseHome [data-page="statistik"]').forEach(b=>b.addEventListener('click',()=>{render()}));
- el('statsRefresh').addEventListener('click',render);
- el('statsExport').addEventListener('click',()=>{const payload={kind:'EugensSchachArenaStatistik',version:1,dame:dameRecords(),schach:chessRecords()};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='eugens-arena-statistik.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)});
- el('statsImport').addEventListener('click',()=>el('statsImportFile').click());
- el('statsImportFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.kind!=='EugensSchachArenaStatistik'||!Array.isArray(data.dame))throw Error('Ungültige Statistik-Datei');const merged=new Map(dameRecords().map(r=>[r.id,r]));for(const r of data.dame){if(r&&typeof r.id==='string'&&r.id.length<100&&['win','loss','draw'].includes(r.result)&&typeof r.opponent==='string')merged.set(r.id,{id:r.id,date:Number(r.date)||0,result:r.result,name:safe(r.name),opponent:safe(r.opponent),mode:safe(r.mode)})}localStorage.setItem(KEY,JSON.stringify([...merged.values()].slice(-500)));render();alert('Dame-Statistik importiert. Schachpartien bitte separat über das Partiearchiv importieren.')}catch(err){alert('Import fehlgeschlagen: '+err.message)}e.target.value=''});
- render();
-})();
-</script><script>
 (function(){'use strict';
 const boardEl=document.getElementById('dtBoard');if(!boardEl)return;
 const el=id=>document.getElementById(id),id=(r,c)=>r*8+c,rc=i=>[Math.floor(i/8),i%8],inside=(r,c)=>r>=0&&r<8&&c>=0&&c<8;
@@ -6209,6 +6148,29 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
   setTimeout(refresh,1000);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
+<style id="v150-stats-style">
+#v150OnlineStats .v150-actions{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0}#v150OnlineStats button{padding:11px 16px;background:#193752;color:#eaf2ff;border:1px solid #6585a0;border-radius:10px;cursor:pointer;font-weight:700}#v150OnlineStats button.v150-selected{background:#ddb36d;color:#0a2239;border-color:#f1d19b}
+#v150OnlineStats .v150-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:16px 0}#v150OnlineStats .v150-summary>div{min-width:0;text-align:center;background:#163451;border:1px solid #486b8b;border-radius:12px;padding:12px 5px;font-size:13px}#v150OnlineStats .v150-summary strong{display:block;font-size:25px;color:#f0cd90;margin:5px 0}#v150OnlineStats .v150-panels{display:grid;grid-template-columns:1fr 1fr;gap:14px}#v150OnlineStats .v150-panels>section{background:#102a44;border:1px solid #416283;border-radius:13px;padding:14px;min-width:0}#v150OnlineStats h3{color:#f4d39c}#v150OnlineStats .v150-item{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #35516f;padding:11px 0}#v150OnlineStats .v150-item:last-child{border-bottom:none}#v150OnlineStats .v150-item strong{color:#eed1a2}#v150OnlineStats .v150-sub{opacity:.8;font-size:12px;margin-top:3px}#v150Message{min-height:1.2em;color:#e5c58c}
+@media(max-width:700px){#v150OnlineStats .v150-summary{grid-template-columns:repeat(3,minmax(0,1fr))}#v150OnlineStats .v150-panels{grid-template-columns:1fr}}
+</style>
+<script id="v150-stats-script">
+(function(){'use strict';
+const root=document.getElementById('v150OnlineStats');if(!root)return;
+const el=x=>document.getElementById(x);let game='chess',history=[],balance=[];
+const token=()=>{try{return localStorage.getItem('arena71_token')||''}catch(_){return ''}};
+function line(target,name,detail,right){const wrap=document.createElement('div');wrap.className='v150-item';const left=document.createElement('div');const label=document.createElement('div');label.textContent=name;const sub=document.createElement('div');sub.className='v150-sub';sub.textContent=detail;left.append(label,sub);const result=document.createElement('strong');result.textContent=right;wrap.append(left,result);target.append(wrap)}
+function render(){el('v150Chess').classList.toggle('v150-selected',game==='chess');el('v150Dame').classList.toggle('v150-selected',game==='dame');const hs=history.filter(x=>x.game===game);const bs=balance.filter(x=>x.game===game);const wins=hs.filter(x=>x.result==='win').length,losses=hs.filter(x=>x.result==='loss').length,draws=hs.filter(x=>x.result==='draw').length;
+const totals=[hs.length,wins,losses,draws,hs.length?Math.round((wins+draws/2)/hs.length*100)+' %':'–'];['Total','Wins','Losses','Draws','Rate'].forEach((k,i)=>el('v150'+k).textContent=totals[i]);
+const friends=el('v150Friends'),hist=el('v150History');friends.replaceChildren();hist.replaceChildren();if(!bs.length)friends.textContent='Noch keine bestätigten Ergebnisse gegen Freunde.';else for(const r of bs)line(friends,String(r.name||'Spieler'),`${r.wins||0} Siege · ${r.losses||0} Niederlagen · ${r.draws||0} Remis`,String((r.wins||0)+(r.losses||0)+(r.draws||0))+' Partien');
+if(!hs.length)hist.textContent='Noch keine beidseitig bestätigten Online-Partien.';else for(const r of hs){const date=new Date(r.date);line(hist,String(r.opponent||'Spieler'),Number.isFinite(date.getTime())?date.toLocaleString('de-DE'):'Datum unbekannt',r.result==='win'?'🏆 Sieg':r.result==='loss'?'Niederlage':'🤝 Remis')}
+}
+async function api(path){const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token()},body:'{}'});const body=await response.json();if(!response.ok)throw Error(body.error||'HTTP '+response.status);return body}
+async function refresh(){if(!token()){el('v150Message').textContent='Bitte zuerst unter Profil mit deinem Serverkonto anmelden.';history=[];balance=[];render();return}el('v150Message').textContent='Online-Ergebnisse werden geladen …';try{const [h,b]=await Promise.all([api('/api/bilanz/history'),api('/api/bilanz/list')]);history=Array.isArray(h.items)?h.items:[];balance=Array.isArray(b.items)?b.items:[];el('v150Message').textContent='Nur Online-Partien gegen Menschen · gespeichert in Supabase';render()}catch(e){el('v150Message').textContent='Online-Statistik konnte nicht geladen werden: '+e.message;history=[];balance=[];render()}}
+el('v150Chess').addEventListener('click',()=>{game='chess';render()});el('v150Dame').addEventListener('click',()=>{game='dame';render()});el('v150Refresh').addEventListener('click',refresh);
+const observer=new MutationObserver(()=>{if(!root.closest('[data-panel="statistik"]').hidden)refresh()});observer.observe(root.closest('[data-panel="statistik"]'),{attributes:true,attributeFilter:['hidden']});
+refresh();
 })();
 </script>
 </body></html>
