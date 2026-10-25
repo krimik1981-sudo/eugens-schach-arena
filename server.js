@@ -218,8 +218,40 @@ async function bilanzEndpoint(req,res,url){
  return reply(res,404,{error:'Not found'});
 }
 
+
+// v138: authenticated per-player unfinished match recovery via Supabase.
+// Match data is never written for a different account.
+async function resumeEndpoint(req,res,url){
+ if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
+ let raw='';try{for await(const part of req){raw+=part;if(raw.length>60000)return reply(res,413,{error:'Saved game too large'})}}catch{return reply(res,400,{error:'Invalid request'})}
+ let v;try{v=JSON.parse(raw||'{}')}catch{return reply(res,400,{error:'Invalid JSON'})}
+ const id=authId(req);if(!id)return reply(res,401,{error:'Bitte zuerst anmelden'});
+ const action=url.pathname.slice('/api/resume/'.length);
+ if(action==='get'){
+  const rows=await db('arena_saved_matches','GET',{player_id:'eq.'+id,select:'payload,updated_at',limit:1});
+  return reply(res,200,{saved:rows[0]?.payload||null,updated_at:rows[0]?.updated_at||null});
+ }
+ if(action==='clear'){
+  await db('arena_saved_matches','DELETE',{player_id:'eq.'+id});
+  return reply(res,200,{ok:true});
+ }
+ if(action!=='save')return reply(res,404,{error:'Not found'});
+ const p=v?.saved;
+ if(!p||p.v!==1||!/^EUGEN-[A-F0-9]{14}$|^[cd][a-f0-9]{28}$/.test(p.room||'')||
+    !['w','b'].includes(p.side)||typeof p.host!=='boolean'||!p.state||typeof p.state!=='object'||
+    !Array.isArray(p.state.recordMoves)||!Array.isArray(p.state.recordFrames)||
+    p.state.recordFrames.length!==p.state.recordMoves.length+1||p.state.recordMoves.length>800||
+    p.state.outcome||!Number.isFinite(p.at)||Date.now()-p.at>86400000)
+    return reply(res,400,{error:'Ungültiger Spielstand'});
+ // No client may submit another player's account ID.
+ await db('arena_saved_matches','POST',{on_conflict:'player_id'},
+    {player_id:id,payload:{v:1,at:p.at,room:p.room,host:p.host,side:p.side,state:p.state,clockKey:p.clockKey||null}});
+ return reply(res,200,{ok:true});
+}
+
 async function handle(req,res) {
   const url=new URL(req.url,'http://localhost');
+  if(url.pathname.startsWith('/api/resume/'))return resumeEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/bilanz/'))return bilanzEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/live-clock/'))return clockEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/match/') || url.pathname.startsWith('/api/dame-match/'))return matchAction(req,res,url);
