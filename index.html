@@ -1092,7 +1092,12 @@ body{background:var(--arena62-bg)}
 #liveMenu .v112-help p{margin:11px 0 0!important;line-height:1.6!important;color:#bdcbd8!important}
 @media(max-width:650px){#liveMenu.v112-live{padding:14px 10px 40px!important}#liveMenu .v112-live-grid{grid-template-columns:1fr!important;gap:12px!important}#liveMenu .v112-card{padding:17px!important;border-radius:16px!important}#liveMenu .v112-setup{padding:14px 16px!important;display:block!important}#liveMenu .v112-setup select{margin-top:9px!important;max-width:none!important}#liveMenu .v112-back{margin-bottom:18px!important}#liveMenu .v112-head{margin-bottom:17px!important}#liveMenu .v112-card-heading{margin-bottom:16px}}
 </style>
-</head><script>
+<style id="v115-live-controls">
+#v115Analyse{background:linear-gradient(120deg,#e9c98a,#c49a50)!important;color:#14253a!important;font-weight:800;border:1px solid #f7d99e;border-radius:12px;padding:12px 16px;cursor:pointer;min-height:44px}
+#v115Analyse[hidden]{display:none!important}
+#arenaChatEmojis button:disabled{opacity:.32!important;cursor:not-allowed;filter:grayscale(.75)}
+@media(max-width:600px){#v115Analyse{width:100%;font-size:15px}}
+</style></head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
  'use strict';
@@ -1630,7 +1635,7 @@ body{background:var(--arena62-bg)}
 <p id="arenaChatInfo" class="arena-chat-hint" role="status">Chat ist verfügbar, sobald dein Gegner verbunden ist.</p>
 </div></section><div id="arenaEmojiToast" class="arena-emoji-toast" hidden aria-live="polite"></div>
 <div aria-label="Schachuhren" class="live-clock-panel"><div class="live-clock-row"><span>⚪ Weiß</span><strong id="liveClockWhite">10:00</strong></div><div class="live-clock-row"><span>⚫ Schwarz</span><strong id="liveClockBlack">10:00</strong></div></div><p class="live-help"><span id="liveTimeLabel">Zeit: 10 Minuten pro Spieler</span> · <span id="liveMoveLabel">Züge: 0</span></p>
-<div class="live-actions" style="margin:12px 0"><button id="liveOfferDraw" type="button">🤝 Remis anbieten</button><button class="live-danger" id="liveResign" type="button">🏳 Aufgeben</button><button hidden="" id="liveRematch" type="button">🔄 Rückspiel anbieten</button></div>
+<div class="live-actions" style="margin:12px 0"><button id="liveOfferDraw" type="button">🤝 Remis anbieten</button><button class="live-danger" id="liveResign" type="button">🏳 Aufgeben</button><button hidden="" id="liveRematch" type="button">🔄 Rückspiel anbieten</button><button type="button" id="v115Analyse" hidden>🔎 Partie analysieren</button></div>
 <div class="live-answer" hidden="" id="liveDrawAnswer"><strong>Dein Freund bietet Remis an.</strong><div class="live-actions"><button id="liveDrawAccept" type="button">Remis annehmen</button><button id="liveDrawDecline" type="button">Ablehnen</button></div></div>
 <div class="live-answer" hidden="" id="liveRematchAnswer"><strong>Dein Freund möchte ein Rückspiel.</strong><div class="live-actions"><button id="liveRematchAccept" type="button">Rückspiel starten</button><button id="liveRematchDecline" type="button">Ablehnen</button></div></div>
 <p>Dein Raumcode:</p><span class="live-code" id="liveRoomCode">–</span>
@@ -2549,7 +2554,7 @@ rebuild();
  function sendChat(kind,value){
   if(!chatConnected()){chatInfo('Bitte zuerst mit einem Gegner verbinden.');return false}
   const now=Date.now();if(now-lastChatSent<700){chatInfo('Bitte nicht so schnell senden.');return false}
-  if(kind==='emoji') {if(!ARENA_EMOJIS.includes(value))return false;}
+  if(kind==='emoji') {if(!ARENA_EMOJIS.includes(value))return false; if(outcome||asSide()!==side){chatInfo('Emojis nur, wenn du am Zug bist.');return false;}}
   else if(kind==='text') {value=String(value||'').trim().slice(0,200);if(!value)return false;}
   else return false;
   lastChatSent=now;
@@ -2561,7 +2566,7 @@ rebuild();
   if(!chatConnected()||msg?.type!=='arena-chat-v1')return false;
   const kind=msg.kind,value=msg.value;
   if(typeof value!=='string')return true;
-  if(kind==='emoji'&&ARENA_EMOJIS.includes(value)){showEmoji(value,'Gegner');return true}
+  if(kind==='emoji'&&ARENA_EMOJIS.includes(value)){if(outcome||asSide()===side)return true;showEmoji(value,'Gegner');return true}
   if(kind==='text'&&value.length<=200&&value.trim()){addChatLine('Gegner',value,false);return true}
   return true;
  }
@@ -2578,6 +2583,7 @@ rebuild();
  const emojiEl=$l('arenaChatEmojis');
  for(const symbol of ARENA_EMOJIS){const b=document.createElement('button');b.type='button';b.textContent=symbol;b.title=symbol;b.addEventListener('click',()=>sendChat('emoji',symbol));emojiEl.appendChild(b)}
  $l('arenaChatForm').addEventListener('submit',e=>{e.preventDefault();const input=$l('arenaChatInput');if(sendChat('text',input.value))input.value=''});
+ $l('v115Analyse').addEventListener('click',()=>{if(!outcome||!liveMoves.length)return;const game={id:liveRecordId||'live-'+Date.now(),date:Date.now(),mode:'live',playerSide:side,moves:[...liveMoves],frames:[...liveFrames],result:outText()};historyLiveSync(game.id,game.moves,game.frames,game.result);hShow();hOpen(game);});
  const setStatus=s=>{notice=s;$l('liveStatus').textContent=s};
  const menuStatus=s=>$l('liveMenuStatus').textContent=s;
  const show=id=>{for(const name of ['courseHome','heavyMenu','trainingView','rookGame','eugenMenu','eugenGame','liveMenu','liveGame']){let el=$l(name);if(el)el.hidden=name!==id}};
@@ -2747,6 +2753,8 @@ rebuild();
   $l('liveOfferDraw').disabled=!connected||!!outcome||!!drawOffer;
   $l('liveResign').disabled=!connected||!!outcome;
   $l('liveRematch').hidden=!outcome;$l('liveRematch').disabled=!connected||!!rematchOffer;
+  $l('v115Analyse').hidden=!outcome||!liveMoves.length;
+  for(const button of emojiEl.querySelectorAll('button'))button.disabled=!connected||!!outcome||asSide()!==side;
   drawClocks()
  }
  function click(sq){if(outcome||!connected||promotion||asSide()!==side)return;
