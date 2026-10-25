@@ -999,7 +999,30 @@ body{background:var(--arena62-bg)}
 }
 </style>
 
-</head><script>
+<style id="v104-premium-match-ui">
+/* v104: Same navy / gold design language as main screen. Styling only, existing game controls retained. */
+#eugenGame, #courseHome .v104-dame-page {--v104-navy:#0b172a;--v104-panel:#132741;--v104-gold:#d6b16c;--v104-text:#f4f0e6;color:var(--v104-text)!important;background:linear-gradient(160deg,#101e35 0%,#091424 100%)!important;border:1px solid rgba(214,177,108,.23)!important;border-radius:22px!important;padding:clamp(14px,3vw,30px)!important;box-shadow:0 18px 42px rgba(0,0,0,.24)!important;box-sizing:border-box}
+#eugenGame *, #courseHome .v104-dame-page * {box-sizing:border-box}
+#eugenGame .v104-head, #courseHome .v104-dame-page .v104-head {background:linear-gradient(110deg,rgba(38,63,94,.8),rgba(13,28,47,.92));border:1px solid rgba(214,177,108,.25);border-radius:18px;padding:clamp(15px,2.5vw,25px);margin-bottom:20px;box-shadow:0 8px 25px rgba(0,0,0,.14)}
+#eugenGame .v104-eyebrow, #courseHome .v104-dame-page .v104-eyebrow {display:block;color:#dec48d;letter-spacing:.15em;text-transform:uppercase;font-size:11px;font-weight:800;margin:0 0 14px}
+#eugenGame .v104-actions, #courseHome .v104-dame-page .v104-actions {display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 16px}
+#eugenGame .v104-actions .course-return,#courseHome .v104-dame-page .v104-actions .arena-back {background:#162e4d!important;color:#f5ead8!important;border:1px solid rgba(218,182,108,.54)!important;min-height:43px;display:inline-flex;align-items:center;border-radius:12px;padding:10px 17px!important;font-size:14px!important;line-height:1.3;text-decoration:none!important;margin:0!important;cursor:pointer;box-shadow:none!important}
+#eugenGame .arena-v103-quick-actions, #courseHome .v104-dame-page .arena-v103-quick-actions {margin:0!important;display:flex;align-items:center;gap:0}
+#eugenGame #v103ChessUndo,#courseHome #v103DameUndo {background:linear-gradient(135deg,#e6c783,#b88c46)!important;color:#152339!important;border:1px solid #e9ce98!important;min-height:43px;border-radius:12px;padding:10px 17px!important;font-size:14px!important;font-weight:800!important;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+#eugenGame .v104-head h1,#courseHome .v104-dame-page .v104-head h2 {color:#f8efd9!important;font-size:clamp(23px,3.2vw,33px)!important;line-height:1.2!important;letter-spacing:.01em!important;margin:0 0 10px!important;text-shadow:none!important}
+#eugenGame .v104-head p, #courseHome .v104-dame-page .v104-head p {color:#bdd0e4!important;font-size:14px!important;line-height:1.6!important;margin:0!important}
+#eugenGame .rook-game-layout,#courseHome .v104-dame-page .dame-layout {gap:18px!important;align-items:start}
+#eugenGame .rook-panel,#courseHome .v104-dame-page .dame-panel {background:linear-gradient(145deg,#1a3453,#10233c)!important;border:1px solid rgba(214,177,108,.37)!important;border-radius:18px!important;padding:clamp(13px,2.2vw,23px)!important;color:#f3eada!important;box-shadow:0 12px 29px rgba(0,0,0,.18)!important}
+#eugenGame .rook-panel h2,#courseHome .v104-dame-page .dame-panel h3 {color:#e8c783!important;font-weight:800}
+#eugenGame .rook-panel p,#courseHome .v104-dame-page .dame-panel p,#courseHome .v104-dame-page .dame-note {color:#c6d4e6!important;line-height:1.55}
+#eugenGame .rook-controls {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px!important}
+#eugenGame .rook-controls button,#courseHome .v104-dame-page .dame-panel button {background:#203e60!important;color:#fff3d8!important;border:1px solid rgba(218,182,108,.53)!important;border-radius:11px!important;padding:11px 8px!important;font-weight:700!important;min-height:43px;cursor:pointer}
+#eugenGame .rook-controls button:hover,#courseHome .v104-dame-page .dame-panel button:hover {background:#315578!important}
+#eugenGame .rook-stats span {background:#132b46;color:#f4dfa7;border-radius:9px;border:1px solid rgba(214,177,108,.25);padding:5px 10px}
+#courseHome .v104-dame-page .dame-panel input,#courseHome .v104-dame-page .dame-panel select {background:#0c1c31!important;color:#f9f0df!important;border:1px solid #54708e!important;border-radius:9px!important;min-height:41px}
+#courseHome .v104-dame-page .dame-board-area {min-width:0}
+@media(max-width:650px){#eugenGame,#courseHome .v104-dame-page{padding:12px!important;border-radius:15px!important}#eugenGame .v104-head,#courseHome .v104-dame-page .v104-head{padding:15px!important}#eugenGame .v104-actions,#courseHome .v104-dame-page .v104-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}#eugenGame .v104-actions a,#courseHome .v104-dame-page .v104-actions button {justify-content:center;width:100%!important;font-size:13px!important;padding:9px 7px!important}#eugenGame .v104-actions .arena-v103-quick-actions button,#courseHome .v104-dame-page .v104-actions .arena-v103-quick-actions button{width:100%;font-size:13px!important;padding:9px 7px!important}#eugenGame .rook-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style></head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
  'use strict';
@@ -1174,7 +1197,7 @@ body{background:var(--arena62-bg)}
   </div>
   <p class="v85-extra">Gegen andere Menschen spielst du im Bereich <strong>Online</strong>.</p>
 </div>
-<div class="arena-page" data-panel="dame" hidden=""><button class="arena-back" data-page="start" type="button">← Spiele auswählen</button><h2>🔴 Dame</h2><p>Schlagpflicht · Mehrfachschläge · fliegende Damen · Umwandlung während eines Schlagzugs.</p>
+<div class="arena-page v104-dame-page" data-panel="dame" hidden=""><div class="v104-head"><span class="v104-eyebrow">EUGENS SCHACH ARENA · GEGEN COMPUTER</span><div class="v104-actions"><button class="arena-back" data-page="spielen" type="button">← Zurück</button><div class="arena-v103-quick-actions arena-v103-dame-action"><button type="button" id="v103DameUndo" aria-label="Letzten Damezug zurücknehmen">↶ Zug zurück</button></div></div><h2>⛀ Dame gegen Computer</h2><p>Schlagpflicht · Mehrfachschläge · fliegende Damen.</p></div>
 <!-- Dame-Training ist ausschließlich über Lernen zugänglich. -->
 <div class="dame-layout"><div class="dame-board-area"><div aria-label="Damebrett" class="dame-board" id="dameBoard"></div><div class="dame-note">Tippe auf einen Stein und danach auf einen grünen Punkt. Beim Mehrfachschlag weiterziehen.</div></div>
 <div class="dame-panel"><h3>Spielmodus</h3><label for="dameMode">Gegner</label><select id="dameMode"><option value="ai">Gegen Computer</option><option value="local">Zwei Spieler am Gerät</option><option value="online">🌐 Online gegen Freunde</option></select>
@@ -1585,9 +1608,7 @@ body{background:var(--arena62-bg)}
 </div>
 </div>
 <section class="rook-game" hidden="" id="eugenGame">
-<a class="course-return arena-native-back" id="backEugenLevels" href="?arenaReturn=spielen" role="button">← Zurück</a>
-<h1 id="eugenTitle">♟️ Spiel gegen Eugen</h1>
-<p class="intro" id="v93EugenIntro">Du spielst mit Weiß. Eugen spielt Schwarz. Tippe auf eine Figur und dann auf ihr Zielfeld.</p>
+<div class="v104-head"><span class="v104-eyebrow">EUGENS SCHACH ARENA · GEGEN COMPUTER</span><div class="v104-actions"><a class="course-return arena-native-back" id="backEugenLevels" href="?arenaReturn=spielen" role="button">← Zurück</a><div class="arena-v103-quick-actions"><button type="button" id="v103ChessUndo" aria-label="Letzten Zug gegen Computer zurücknehmen">↶ Zug zurück</button></div></div><h1 id="eugenTitle">♟️ Schach gegen Computer</h1><p class="intro" id="v93EugenIntro">Du spielst mit Weiß. Eugen spielt Schwarz. Tippe auf eine Figur und dann auf ihr Zielfeld.</p></div>
 <div class="rook-game-layout">
 <div class="wood rook-board-frame"><div aria-label="Schachpartie gegen Eugen" class="board rook-board" id="eugenBoard" role="group"></div></div>
 <aside class="rook-panel">
@@ -4815,6 +4836,28 @@ document.addEventListener('DOMContentLoaded',()=>{
     window.scrollTo(0,0);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',selectPlaying,{once:true});else selectPlaying();
+})();
+</script>
+
+<style>
+.arena-v103-quick-actions{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin:8px 0 14px}
+.arena-v103-quick-actions button{min-height:45px;border:1px solid #cb9f56;border-radius:11px;padding:10px 19px;background:linear-gradient(160deg,#273e58,#15273b);color:#ffe6b3;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.17);touch-action:manipulation}
+.arena-v103-quick-actions button:focus-visible{outline:3px solid #efc778;outline-offset:2px}
+.arena-v103-quick-actions button:disabled{opacity:.45;cursor:not-allowed}
+.arena-v103-quick-actions span{color:#b8c5d1;font-size:13px}
+.arena-v103-dame-action{margin:0 0 10px}
+@media(max-width:600px){.arena-v103-quick-actions button{font-size:15px;min-height:48px}.arena-v103-quick-actions span{display:none}}
+</style>
+<script>
+/* v103: use the original, tested game-history undo actions; avoid duplicating game state. */
+(()=>{
+ const link=(newId,originalId,allowed)=>{
+  const b=document.getElementById(newId),original=document.getElementById(originalId);
+  if(!b||!original)return;
+  b.addEventListener('click',()=>{if(allowed()&&!original.disabled)original.click();});
+ };
+ link('v103ChessUndo','eugenUndo',()=>!document.getElementById('eugenGame').hidden);
+ link('v103DameUndo','dameUndo',()=>document.getElementById('dameMode')?.value==='ai');
 })();
 </script>
 </body></html>
