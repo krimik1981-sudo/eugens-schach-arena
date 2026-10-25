@@ -5825,4 +5825,76 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
  .premium-v6-home .v83-mode[data-type="computer"] .v83-levels label span {text-overflow:clip!important}
 }
 </style>
-<style id="v135-recovery-style">#v135Resume:not([hidden]){display:block;width:100%;max-width:620px;margin:12px auto;padding:14px 18px;background:linear-gradient(130deg,#e9cb8a,#b78342);color:#11243b;border:1px solid #f5e0b2;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer}#v135Resume[hidden],#v136ResumeOnline[hidden]{display:none!important}#v136ResumeOnline{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin:12px 0 0!important;padding:12px 10px!important;background:linear-gradient(130deg,#e9cb8a,#b78342)!important;border:1px solid #f5e0b2!important;border-radius:12px!important;color:#11243b!important;font-weight:800!important;cursor:pointer!important;white-space:normal!important;overflow-wrap:anywhere!important}</style></body></html>
+<style id="v135-recovery-style">#v135Resume:not([hidden]){display:block;width:100%;max-width:620px;margin:12px auto;padding:14px 18px;background:linear-gradient(130deg,#e9cb8a,#b78342);color:#11243b;border:1px solid #f5e0b2;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer}#v135Resume[hidden],#v136ResumeOnline[hidden]{display:none!important}#v136ResumeOnline{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin:12px 0 0!important;padding:12px 10px!important;background:linear-gradient(130deg,#e9cb8a,#b78342)!important;border:1px solid #f5e0b2!important;border-radius:12px!important;color:#11243b!important;font-weight:800!important;cursor:pointer!important;white-space:normal!important;overflow-wrap:anywhere!important}</style>
+<style id="v137-resume-modal-css">
+#v137ResumeOverlay[hidden]{display:none!important}
+#v137ResumeOverlay{
+position:fixed;inset:0;z-index:2147483000;background:rgba(3,12,25,.82);
+display:flex;align-items:center;justify-content:center;padding:18px;
+padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(18px,env(safe-area-inset-bottom));
+box-sizing:border-box;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)
+}
+#v137ResumeBox{
+width:min(100%,440px);max-height:90dvh;overflow:auto;box-sizing:border-box;
+padding:clamp(22px,5vw,32px);border-radius:22px;background:linear-gradient(145deg,#193450,#0c2037);
+border:1px solid #c9a366;box-shadow:0 20px 60px #000b;color:#f7f0e7;text-align:center;
+font-family:system-ui,-apple-system,sans-serif
+}
+#v137ResumeBox .v137-icon{font-size:40px;line-height:1;margin-bottom:12px}
+#v137ResumeBox h2{font-size:clamp(22px,6vw,29px);color:#efd0a0;margin:0 0 10px}
+#v137ResumeBox p{font-size:15px;line-height:1.5;color:#cbd9e7;margin:0 0 20px}
+#v137ResumeBox .v137-count{color:#f6daa8;font-weight:800}
+#v137ResumeBox button{display:block;width:100%;min-height:48px;border-radius:12px;font-size:16px;font-weight:800;margin-top:10px;cursor:pointer}
+#v137ResumeYes{border:1px solid #ffecbd;background:linear-gradient(125deg,#f4d99c,#b98a4a);color:#102238}
+#v137ResumeLater{border:1px solid #59718b;background:#1e3c59;color:#f1f4f8}
+</style>
+<div id="v137ResumeOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="v137ResumeTitle" aria-describedby="v137ResumeDesc">
+  <div id="v137ResumeBox">
+    <div class="v137-icon" aria-hidden="true">♟️</div>
+    <h2 id="v137ResumeTitle">Partie fortsetzen?</h2>
+    <p id="v137ResumeDesc">Du hast eine laufende Online-Partie. <span id="v137MoveCount" class="v137-count"></span><br>Willst du zur Partie zurückkehren?</p>
+    <button id="v137ResumeYes" type="button">↻ Partie fortsetzen</button>
+    <button id="v137ResumeLater" type="button">Nicht jetzt</button>
+  </div>
+</div>
+<script id="v137-resume-modal-js">
+(function(){
+ 'use strict';
+ const KEY='arena_v135_chess_pending';
+ const overlay=document.getElementById('v137ResumeOverlay');
+ const yes=document.getElementById('v137ResumeYes');
+ const later=document.getElementById('v137ResumeLater');
+ if(!overlay||!yes||!later)return;
+ function candidate(){
+  try{
+   const x=JSON.parse(localStorage.getItem(KEY)||'null');
+   if(!x||x.v!==1||!x.room||x.room==='HOST'||!x.state||
+      Date.now()-x.at>86400000||x.state.outcome||
+      !Array.isArray(x.state.recordMoves)||!Array.isArray(x.state.recordFrames)||
+      x.state.recordFrames.length!==x.state.recordMoves.length+1||
+      x.state.recordMoves.length===0)return null;
+   return x;
+  }catch(_){return null}
+ }
+ function present(){
+  const x=candidate();
+  if(!x)return;
+  document.getElementById('v137MoveCount').textContent=x.state.recordMoves.length+' Züge gespeichert.';
+  overlay.hidden=false;
+  later.focus({preventScroll:true});
+ }
+ later.addEventListener('click',()=>{overlay.hidden=true;});
+ yes.addEventListener('click',()=>{
+  const x=candidate();if(!x){overlay.hidden=true;return;}
+  const resume=document.getElementById('v135Resume');
+  if(!resume||resume.hidden){overlay.hidden=true;alert('Wiederherstellung ist noch nicht bereit. Bitte Online-Schach öffnen.');return;}
+  overlay.hidden=true;
+  resume.click();
+ });
+ // Existing recovery bootstrap initializes before this script.
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',present,{once:true});
+ else present();
+})();
+</script>
+
+</body></html>
