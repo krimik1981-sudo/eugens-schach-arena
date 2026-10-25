@@ -146,7 +146,7 @@ function clockSnapshot(item){
  if(timedOut){item.remaining=r;item.at=now;item.running=false;item.finished=true;item.timeout=item.turn}
  return {remaining:r,turn:item.turn,moveNo:item.moveNo,running:item.running,finished:item.finished,timeout:item.timeout||null,minutes:item.minutes,serverAt:now};
 }
-async function clockEndpoint(req,res,url){
+async function clockEndpointMemory(req,res,url){
  if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
  let raw='';try{for await(const chunk of req){raw+=chunk;if(raw.length>1024)return reply(res,413,{error:'Too large'})}}catch{return reply(res,400,{error:'Invalid request'})}
  let d;try{d=JSON.parse(raw)}catch{return reply(res,400,{error:'Invalid JSON'})}
@@ -172,6 +172,73 @@ async function clockEndpoint(req,res,url){
  }
  if(action==='finish'){clockSnapshot(item);item.running=false;item.finished=true;return reply(res,200,{...clockSnapshot(item),ok:true})}
  return reply(res,404,{error:'Not found'});
+}
+
+
+// v141: Persist live clock state in Supabase so a Render restart cannot reset it.
+// Each state transition uses compare-and-swap on a monotonically increasing revision.
+const clockRows = (params, method='GET', body) => db('arena_live_clocks', method, params, body);
+async function durableClockEndpoint(req,res,url){
+ if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
+ let raw='';try{for await(const chunk of req){raw+=chunk;if(raw.length>1024)return reply(res,413,{error:'Too large'})}}catch{return reply(res,400,{error:'Invalid request'})}
+ let d;try{d=JSON.parse(raw||'{}')}catch{return reply(res,400,{error:'Invalid JSON'})}
+ if(!d||!clockRoomValid(d.room))return reply(res,400,{error:'Invalid room'});
+ const action=url.pathname.slice('/api/live-clock/'.length);
+ if(!['start','state','move','finish'].includes(action))return reply(res,404,{error:'Not found'});
+ if(action==='start'&&(!Number.isInteger(d.minutes)||d.minutes<0||d.minutes>180||typeof d.key!=='string'||!/^[-_a-zA-Z0-9]{30,100}$/.test(d.key)))return reply(res,400,{error:'Invalid clock settings'});
+ for(let attempt=0;attempt<6;attempt++){
+  const rows=await clockRows({room:'eq.'+d.room,select:'room,host_key,state,revision',limit:1});
+  const row=rows[0]||null;
+  if(!row){
+   if(action!=='start')return reply(res,404,{error:'Clock not found'});
+   const now=Date.now(),ms=d.minutes*60000;
+   const item={minutes:d.minutes,remaining:{w:ms,b:ms},turn:'w',moveNo:0,running:true,finished:false,at:now,updated:now,timeout:null};
+   try{
+    await clockRows({},'POST',{room:d.room,host_key:d.key,state:item,revision:0});
+    return reply(res,200,{...clockSnapshot(item),ok:true});
+   }catch(e){if(e.status===409)continue;throw e}
+  }
+  const item=row.state;
+  if(!item||!item.remaining||typeof item.at!=='number')return reply(res,503,{error:'Clock data invalid'});
+  if(action==='start'&&row.host_key!==d.key)return reply(res,409,{error:'Clock already owned by another host'});
+  if((action==='move'||action==='finish')&&row.host_key!==d.key)return reply(res,403,{error:'Host required'});
+  const beforeFinished=!!item.finished;
+  const snap=clockSnapshot(item); // checks elapsed server time, including time spent disconnected
+  let mutate=!beforeFinished&&item.finished;
+  if(action==='start'&&d.reset){
+   const now=Date.now(),ms=d.minutes*60000;
+   Object.assign(item,{minutes:d.minutes,remaining:{w:ms,b:ms},turn:'w',moveNo:0,running:true,finished:false,at:now,updated:now,timeout:null});
+   mutate=true;
+  }else if(action==='move'){
+   if(!Number.isSafeInteger(d.moveNo)||d.moveNo!==item.moveNo+1||!['w','b'].includes(d.turn)||d.turn===item.turn)
+    return reply(res,409,{error:'Clock move out of order',...snap});
+   if(item.finished)return reply(res,409,{error:'Time has expired',...snap});
+   item.remaining=snap.remaining;item.moveNo=d.moveNo;item.turn=d.turn;item.at=Date.now();mutate=true;
+  }else if(action==='finish'){
+   item.running=false;item.finished=true;mutate=true;
+  }
+  if(mutate){
+   item.updated=Date.now();
+   const written=await clockRows({room:'eq.'+d.room,revision:'eq.'+row.revision,select:'revision'},'PATCH',{state:item,revision:row.revision+1});
+   if(!written.length)continue; // concurrent transition: reread and retry
+  }
+  return reply(res,200,{...clockSnapshot(item),ok:true});
+ }
+ return reply(res,409,{error:'Clock was updated concurrently; bitte erneut versuchen'});
+}
+// Until the v141 SQL is installed, the pre-existing in-memory clock stays
+// available to avoid breaking active games during deployment.
+async function clockEndpoint(req,res,url){
+ if(!globalThis.__v141ClockReady){
+  try{await clockRows({select:'room',limit:1});globalThis.__v141ClockReady=true}
+  catch(e){
+   if(e.status===404 && (e.details?.code==='42P01'||e.details?.code==='PGRST205'||e.details?.code==='PGRST116')){
+    return clockEndpointMemory(req,res,url);
+   }
+   throw e;
+  }
+ }
+ return durableClockEndpoint(req,res,url);
 }
 
 
