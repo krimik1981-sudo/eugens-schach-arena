@@ -2661,10 +2661,10 @@ rebuild();
  /* v135 local recovery of in-progress live chess after an accidental page reload. */
  const V135_KEY='arena_v135_chess_pending';
  function savedSession(){try{const x=JSON.parse(localStorage.getItem(V135_KEY)||'null');if(!x||x.v!==1||Date.now()-x.at>24*3600000||!x.room||!x.state||x.state.outcome||!Array.isArray(x.state.recordMoves)||!Array.isArray(x.state.recordFrames)||x.state.recordFrames.length!==x.state.recordMoves.length+1)return null;return x}catch(e){return null}}
- function clearSavedSession(){try{localStorage.removeItem(V135_KEY)}catch(e){}}
+ function clearSavedSession(){try{localStorage.removeItem(V135_KEY)}catch(e){}const b=document.getElementById('v135Resume'),m=document.getElementById('v136ResumeOnline');if(b)b.hidden=true;if(m)m.hidden=true;}
  function preserveSession(){
   if(!room||room==='HOST'||outcome||!liveMoves.length)return;
-  try{localStorage.setItem(V135_KEY,JSON.stringify({v:1,at:Date.now(),room,host:isHost,side,state:pack(),clockKey:isHost?serverClockKey:null}))}catch(e){}
+  try{localStorage.setItem(V135_KEY,JSON.stringify({v:1,at:Date.now(),room,host:isHost,side,state:pack(),clockKey:isHost?serverClockKey:null}));recoveryButton()}catch(e){}
  }
  function recoveryButton(){
   let b=document.getElementById('v135Resume');const x=savedSession();
@@ -2672,6 +2672,13 @@ rebuild();
    b.addEventListener('click',async()=>{const x=savedSession();if(!x)return recoveryButton();b.disabled=true;try{if(x.host)await create(x.room,x.side,x);else await join(x.room); }finally{b.disabled=false;}});
   }
   b.hidden=!x;b.textContent=x?'↻ Partie fortsetzen · '+x.state.recordMoves.length+' Züge':'';
+  // Also offer recovery on the modern Online-Schach card (entry point on phones).
+  let modern=document.getElementById('v136ResumeOnline');
+  if(!modern){
+   const online=document.getElementById('v83OnlineChess');
+   if(online){modern=document.createElement('button');modern.type='button';modern.id='v136ResumeOnline';modern.className='v135-resume';modern.addEventListener('click',()=>{const old=document.getElementById('v135Resume');if(old&&!old.hidden)old.click();});online.insertAdjacentElement('afterend',modern);}
+  }
+  if(modern){modern.hidden=!x;modern.textContent=x?'↻ Partie fortsetzen · '+x.state.recordMoves.length+' Züge':'';}
  }
  function recoverHost(x){
   const s=x.state;if(!s||!s.position||typeof s.position!=='object'||typeof s.white!=='boolean'||!Array.isArray(s.recordMoves)||!Array.isArray(s.recordFrames)||s.recordFrames.length!==s.recordMoves.length+1||s.outcome)return false;
@@ -2925,6 +2932,10 @@ rebuild();
  $l('liveRematch').onclick=()=>offerRematch(side);
  $l('liveRematchAccept').onclick=()=>answerRematch(side,true);$l('liveRematchDecline').onclick=()=>answerRematch(side,false);
  updateInterval=setInterval(()=>{if($l('liveGame').hidden)return;pollServerClock();if(host()&&connected&&clockRunning&&!outcome){tick();if(!outcome&&Date.now()-snapshotReceivedAt>2500){snapshotReceivedAt=Date.now();sync()}}drawClocks()},250);
+ // Capture the last in-progress position when Safari backgrounds or unloads.
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')preserveSession();else recoveryButton()});
+ window.addEventListener('pagehide',preserveSession);
+ window.addEventListener('pageshow',recoveryButton);
  recoveryButton();if(new URLSearchParams(location.hash.slice(1)).has('live'))$l('openLive').click();
 })();
 </script>
@@ -5814,4 +5825,4 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
  .premium-v6-home .v83-mode[data-type="computer"] .v83-levels label span {text-overflow:clip!important}
 }
 </style>
-<style id="v135-recovery-style">#v135Resume:not([hidden]){display:block;width:100%;max-width:620px;margin:12px auto;padding:14px 18px;background:linear-gradient(130deg,#e9cb8a,#b78342);color:#11243b;border:1px solid #f5e0b2;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer}#v135Resume[hidden]{display:none!important}</style></body></html>
+<style id="v135-recovery-style">#v135Resume:not([hidden]){display:block;width:100%;max-width:620px;margin:12px auto;padding:14px 18px;background:linear-gradient(130deg,#e9cb8a,#b78342);color:#11243b;border:1px solid #f5e0b2;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer}#v135Resume[hidden],#v136ResumeOnline[hidden]{display:none!important}#v136ResumeOnline{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin:12px 0 0!important;padding:12px 10px!important;background:linear-gradient(130deg,#e9cb8a,#b78342)!important;border:1px solid #f5e0b2!important;border-radius:12px!important;color:#11243b!important;font-weight:800!important;cursor:pointer!important;white-space:normal!important;overflow-wrap:anywhere!important}</style></body></html>
