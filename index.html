@@ -2557,6 +2557,41 @@ rebuild();
  let peer=null,conn=null,room='',side='w',isHost=false,connected=false,token=0;
  let position=egInit(),white=true,ep=null,castle='KQkq',half=0,full=1,last=[],selected=null,moveNo=0;
  let timeControl=600000,remaining={w:600000,b:600000},clockAt=0,clockRunning=false;
+
+ // v122 Render clock: host only changes turn; both clients poll the same server clock.
+ let serverClockKey=null,serverClockKnown=false,serverClockServerAt=0,serverClockLocalAt=0,serverClockMoveNo=-1,serverClockBusy=false,serverClockPollAt=0;
+ function newClockKey(){const b=new Uint8Array(32);crypto.getRandomValues(b);return Array.from(b,x=>x.toString(16).padStart(2,'0')).join('')}
+ async function clockRequest(action,payload={}){
+  const r=await fetch('/api/live-clock/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room,...payload})});
+  const d=await r.json();if(!r.ok)throw Error(d.error||'Serveruhr nicht erreichbar');return d
+ }
+ function takeServerClock(d){
+  if(!d||!d.remaining||!Number.isFinite(d.remaining.w)||!Number.isFinite(d.remaining.b))return;
+  if(d.moveNo<serverClockMoveNo)return;
+  serverClockMoveNo=d.moveNo;serverClockKnown=true;serverClockLocalAt=Date.now();serverClockServerAt=Number(d.serverAt)||Date.now();
+  remaining={w:d.remaining.w,b:d.remaining.b};clockAt=Date.now();clockRunning=!!d.running;
+  if(d.finished && d.timeout && !outcome){finish({reason:'timeout',winner:opponent(d.timeout),loser:d.timeout});if(host())sync()}
+  drawClocks();
+ }
+ async function startServerClock(reset=false){
+  if(!host()||!room||room==='HOST')return;
+  if(!serverClockKey)serverClockKey=newClockKey();
+  try{takeServerClock(await clockRequest('start',{key:serverClockKey,minutes:timeControl/60000,reset}))}
+  catch(e){setStatus('Serveruhr: '+e.message)}
+ }
+ async function advanceServerClock(){
+  if(!host()||!serverClockKnown)return;
+  try{takeServerClock(await clockRequest('move',{key:serverClockKey,moveNo,turn:asSide()}))}
+  catch(e){serverClockKnown=false;setStatus('Serveruhr: '+e.message);}
+ }
+ async function pollServerClock(){
+  if(!room||room==='HOST'||!connected||serverClockBusy||Date.now()-serverClockPollAt<950)return;
+  serverClockBusy=true;serverClockPollAt=Date.now();
+  try{takeServerClock(await clockRequest('state'))}catch(e){/* keep last displayed snapshot */}
+  finally{serverClockBusy=false}
+ }
+ function finishServerClock(){if(host()&&serverClockKey&&serverClockKnown)clockRequest('finish',{key:serverClockKey}).catch(()=>{})}
+
  let outcome=null,drawOffer=null,rematchOffer=null,promotion=null,notice='',historyKeys=new Map();
  let snapshotReceivedAt=Date.now(),updateInterval=null,latencyTimer=null;
  let liveMoves=[],liveFrames=[],liveRecordId="";
@@ -2644,7 +2679,7 @@ rebuild();
  })}
  let liveReconnectTimer=null;
  function stopLiveReconnect(){if(liveReconnectTimer){clearInterval(liveReconnectTimer);liveReconnectTimer=null}}
- function closeSession(){stopLiveReconnect();window.ArenaFriendV70?.detached('chess');resetChat();if(publicRoomInfo){const prev=publicRoomInfo;publicRoomInfo=null;fetch('/api/match/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,room:prev.room})}).catch(()=>{});}token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
+ function closeSession(){serverClockKey=null;serverClockKnown=false;serverClockMoveNo=-1;stopLiveReconnect();window.ArenaFriendV70?.detached('chess');resetChat();if(publicRoomInfo){const prev=publicRoomInfo;publicRoomInfo=null;fetch('/api/match/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,room:prev.room})}).catch(()=>{});}token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
  function id(){let a=new Uint8Array(7);crypto.getRandomValues(a);return 'EUGEN-'+Array.from(a,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase()}
  const valid=s=>/^EUGEN-[0-9A-F]{14}$/.test(String(s||'').trim().toUpperCase());
  function peerReady(name,myToken){return new Promise(async(ok,no)=>{
@@ -2660,18 +2695,18 @@ rebuild();
   if(!s||!s.position||typeof s.position!=='object'||typeof s.white!=='boolean'||!s.remaining||!Number.isFinite(s.remaining.w)||!Number.isFinite(s.remaining.b)||!Number.isFinite(s.timeControl))return false;
   if(s.hostColor==='w'||s.hostColor==='b')side=opponent(s.hostColor);
   position={...s.position};white=s.white;ep=s.ep||null;castle=String(s.castle||'');half=s.half||0;full=s.full||1;last=Array.isArray(s.last)?[...s.last]:[];moveNo=s.moveNo||0;
-  timeControl=s.timeControl;remaining={w:s.remaining.w,b:s.remaining.b};clockAt=Date.now();clockRunning=!!s.clockRunning;
+  timeControl=s.timeControl;if(!serverClockKnown){remaining={w:s.remaining.w,b:s.remaining.b};clockAt=Date.now();clockRunning=!!s.clockRunning;}
   outcome=s.outcome||null;drawOffer=s.drawOffer||null;rematchOffer=s.rematchOffer||null;selected=null;promotion=null;$l('livePromotion').hidden=true;snapshotReceivedAt=Date.now();
   if(Array.isArray(s.recordMoves)&&Array.isArray(s.recordFrames)&&s.recordFrames.length===s.recordMoves.length+1){liveRecordId=String(s.recordId||liveRecordId);liveMoves=[...s.recordMoves];liveFrames=[...s.recordFrames];historyLiveSync(liveRecordId,liveMoves,liveFrames,outcome?outText():null)}
   if(outcome)setStatus(outText());else if(drawOffer===side)setStatus('Remis-Angebot angenommen? Wähle Annehmen oder Ablehnen.');else if(rematchOffer===side)setStatus('Dein Freund möchte ein Rückspiel.');else setStatus(asSide()===side?'Du bist am Zug.':'Dein Freund ist am Zug.');
   render();return true
  }
  function tick(){
-  if(!host()||!clockRunning||outcome||!connected||timeControl===0)return;
+  if(!host()||!clockRunning||outcome||!connected||timeControl===0||serverClockKnown)return;
   let elapsed=Math.max(0,Date.now()-clockAt);let c=asSide();remaining[c]=Math.max(0,remaining[c]-elapsed);clockAt=Date.now();
   if(remaining[c]===0){finish({reason:'timeout',winner:opponent(c),loser:c});sync()}
  }
- function displayRemaining(c){if(timeControl===0)return Infinity;let v=remaining[c];if(clockRunning&&!outcome&&connected&&asSide()===c)v=Math.max(0,v-(Date.now()-clockAt));return Math.max(0,v)}
+ function displayRemaining(c){if(timeControl===0)return Infinity;let v=remaining[c];if(clockRunning&&!outcome&&asSide()===c&&(serverClockKnown||connected))v=Math.max(0,v-(Date.now()-clockAt));return Math.max(0,v)}
  function clockText(ms){if(!Number.isFinite(ms))return '∞';let total=Math.ceil(ms/1000),minutes=Math.floor(total/60),seconds=total%60;return String(minutes).padStart(2,'0')+':'+String(seconds).padStart(2,'0')}
  function drawClocks(){for(const c of ['w','b']){const el=$l(c==='w'?'liveClockWhite':'liveClockBlack');if(!el)continue;el.textContent=clockText(displayRemaining(c));el.classList.toggle('active',timeControl!==0&&clockRunning&&!outcome&&connected&&asSide()===c);el.classList.toggle('low',timeControl!==0&&displayRemaining(c)<30000)}}
  function endCheck(){
@@ -2680,7 +2715,7 @@ rebuild();
   if(half>=100){finish({reason:'fifty'});return}
   if((historyKeys.get(key())||0)>=3){finish({reason:'repetition'});return}
  }
- function finish(result){outcome=result;clockRunning=false;drawOffer=null;rematchOffer=null;selected=null;promotion=null;$l('livePromotion').hidden=true;setStatus(outText());historyLiveSync(liveRecordId,liveMoves,liveFrames,outText());render()}
+ function finish(result){outcome=result;finishServerClock();clockRunning=false;drawOffer=null;rematchOffer=null;selected=null;promotion=null;$l('livePromotion').hidden=true;setStatus(outText());historyLiveSync(liveRecordId,liveMoves,liveFrames,outText());render()}
  function apply(m){
   const piece=position[m.from],taken=position[m.to];castle=egChangeCastle(castle,m,piece,taken);
   position=egApply(position,m);const [f,r]=egCoords(m.from);ep=m.double?egSquare(f,r+(white?1:-1)):null;
@@ -2695,7 +2730,7 @@ rebuild();
   const found=egLegal(position,actor,ep,castle).find(m=>m.from===from&&m.to===to);
   if(!found||found.promotion&&!['q','r','b','n'].includes(prom))return false;
   const m=found.promotion?{...found,promotion:prom}:found;
-  apply(m);clockAt=Date.now();sync();return true
+  apply(m);clockAt=Date.now();advanceServerClock();sync();return true
  }
  function data(msg){if(!msg||typeof msg!=='object')return;
   if(window.ArenaFriendV70?.receive('chess',msg))return;
@@ -2712,7 +2747,7 @@ rebuild();
  }
  function connect(c){
   if(conn&&conn!==c&&conn.open){c.close();return}conn=c;const thisConn=c;
-  c.on('open',()=>{if(conn!==thisConn)return;stopLiveReconnect();connected=true;clockAt=Date.now();chatInfo('Verbunden – Nachrichten und Emojis sind bereit.');window.ArenaFriendV70?.attach('chess',d=>c.send(d),()=>connected&&c.open);if(host()){clockRunning=!outcome;setStatus('Freund verbunden. Weiß beginnt! Du spielst '+(side==='w'?'Weiß.':'Schwarz.'));sync()}else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'})}render()});
+  c.on('open',()=>{if(conn!==thisConn)return;stopLiveReconnect();connected=true;clockAt=Date.now();chatInfo('Verbunden – Nachrichten und Emojis sind bereit.');window.ArenaFriendV70?.attach('chess',d=>c.send(d),()=>connected&&c.open);if(host()){clockRunning=!outcome;startServerClock(false);setStatus('Freund verbunden. Weiß beginnt! Du spielst '+(side==='w'?'Weiß.':'Schwarz.'));sync()}else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'})}render()});
   c.on('data',data);
   c.on('close',()=>{if(conn!==thisConn)return;if(host())tick();conn=null;connected=false;window.ArenaFriendV70?.detached('chess');chatInfo('Verbindung getrennt.');if(host())clockRunning=false;setStatus('Verbindung unterbrochen. Wiederherstellung läuft …');render();scheduleLiveReconnect()});
   c.on('error',e=>{if(conn===thisConn)setStatus('Verbindungsfehler: '+String(e?.message||e))});
@@ -2781,7 +2816,7 @@ rebuild();
   rematchOffer=opponent(actor);setStatus(actor===side?'Rückspiel angeboten.':'Dein Freund möchte ein Rückspiel.');sync()
  }
  function answerRematch(actor,accept){if(!connected||!outcome)return;if(!host()){send({type:'rematchAnswer',accept});setStatus('Antwort auf Rückspiel gesendet.');return}
-  if(rematchOffer!==actor)return;rematchOffer=null;if(accept){baseReset(timeControl);clockRunning=true;clockAt=Date.now()}else setStatus('Rückspiel abgelehnt.');sync()
+  if(rematchOffer!==actor)return;rematchOffer=null;if(accept){baseReset(timeControl);clockRunning=true;clockAt=Date.now();serverClockMoveNo=-1;startServerClock(true)}else setStatus('Rückspiel abgelehnt.');sync()
  }
  function render(){
   const el=$l('liveBoard');el.replaceChildren();const turn=asSide();const targets=selected&&!outcome&&connected&&turn===side?egLegal(position,turn,ep,castle).filter(m=>m.from===selected).map(m=>m.to):[];
@@ -2863,7 +2898,7 @@ rebuild();
  $l('liveResign').onclick=()=>{if(confirm('Möchtest du wirklich aufgeben?'))resign(side)};
  $l('liveRematch').onclick=()=>offerRematch(side);
  $l('liveRematchAccept').onclick=()=>answerRematch(side,true);$l('liveRematchDecline').onclick=()=>answerRematch(side,false);
- updateInterval=setInterval(()=>{if($l('liveGame').hidden)return;if(host()&&connected&&clockRunning&&!outcome){tick();if(!outcome&&Date.now()-snapshotReceivedAt>2500){snapshotReceivedAt=Date.now();sync()}}drawClocks()},250);
+ updateInterval=setInterval(()=>{if($l('liveGame').hidden)return;pollServerClock();if(host()&&connected&&clockRunning&&!outcome){tick();if(!outcome&&Date.now()-snapshotReceivedAt>2500){snapshotReceivedAt=Date.now();sync()}}drawClocks()},250);
  if(new URLSearchParams(location.hash.slice(1)).has('live'))$l('openLive').click();
 })();
 </script>
@@ -5354,4 +5389,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    }
  };
 })();
-</script></body></html>
+</script><style>/* v122: Server-clock authority/status */
+#liveGame .v121-clocks:before{content:'⏱ Server-Schachuhren';grid-column:1/-1;font-size:12px;color:#e2c18a;letter-spacing:.04em}
+#liveGame .live-clock-row strong.active{color:#f4db9b;text-shadow:0 0 12px rgba(233,187,107,.30)}
+</style></body></html>
