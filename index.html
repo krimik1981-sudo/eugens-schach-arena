@@ -5672,4 +5672,39 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
  document.querySelectorAll('#courseHome [data-page="profil"]').forEach(b=>b.addEventListener('click',()=>setTimeout(mount,20)));
 })();
 </script>
+
+<style id="v131-profile-premium">
+/* One integrated premium profile: native server controls, not legacy blue form. */
+#courseHome .v87-profile #arena71-panel [hidden],
+#courseHome .v87-profile #arena71-auth[hidden],
+#courseHome .v87-profile #arena71-logout[hidden]{display:none!important}
+#courseHome .v87-profile #arena71-panel{padding:clamp(16px,3vw,26px)!important;border-color:rgba(220,173,95,.9)!important;background:linear-gradient(150deg,#152e49 0%,#091d30 100%)!important;box-shadow:0 15px 40px #0004!important}
+#courseHome .v87-profile #arena71-panel>h3{font-family:Georgia,serif!important;color:#efd29a!important;font-size:clamp(22px,4.3vw,29px)!important;letter-spacing:.01em;margin:0 0 10px!important}
+#courseHome .v87-profile #arena71-who{display:block;color:#e8eff6!important;font-size:clamp(14px,2.5vw,17px);line-height:1.45;overflow-wrap:anywhere;padding:11px 13px;background:#0d253c;border:1px solid #4f6b85;border-radius:12px;margin:8px 0 14px}
+#courseHome .v87-profile #arena71-panel h4{font:800 clamp(17px,3vw,22px) system-ui,sans-serif!important;color:#efcb88!important;margin:24px 0 12px!important}
+#courseHome .v87-profile #arena77-friends{display:grid;gap:11px}
+#courseHome .v87-profile #arena77-friends .arena77-friend{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto auto!important;align-items:center;gap:10px!important;padding:13px!important;border:1px solid #617a91!important;border-radius:14px!important;background:linear-gradient(130deg,#1c3651,#13293f)!important;min-width:0;max-width:100%;box-sizing:border-box}
+#courseHome .v87-profile .arena77-friend>div{min-width:0;overflow-wrap:anywhere}
+#courseHome .v87-profile .arena77-friend strong{display:block;font-size:clamp(16px,3vw,20px);color:#ffe0a3}
+#courseHome .v87-profile .arena77-friend small{display:block;font-size:12px;color:#b5c8dc;overflow-wrap:anywhere;margin-top:4px}
+#courseHome .v87-profile #arena71-panel button{appearance:none;min-height:42px!important;padding:9px 14px!important;font:750 14px system-ui,sans-serif!important;letter-spacing:0;border-radius:11px!important;background:linear-gradient(135deg,#f6d99a,#d4a359)!important;border:1px solid #f5d18c!important;color:#0b2135!important;cursor:pointer;white-space:normal;overflow-wrap:normal}
+#courseHome .v87-profile #arena71-panel .arena77-friend button:last-child{background:#1b354f!important;color:#d4deea!important;border-color:#678099!important}
+#courseHome .v87-profile #arena77-add{padding:16px;border:1px solid #54708b;border-radius:15px;background:#0e253b;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;margin:18px 0!important}
+#courseHome .v87-profile #arena77-add label{grid-column:1/-1;font-weight:700;color:#e9cf9b}
+#courseHome .v87-profile #arena77-add input{min-width:0;width:100%;padding:12px!important;background:#0a1d2f!important;border:1px solid #74889f!important;border-radius:11px!important;font-size:16px!important;box-sizing:border-box}
+#courseHome .v87-profile #arena71-incoming{color:#c7d7e8}
+#courseHome .v87-profile #arena71-panel .arena71-help{display:none!important}
+#courseHome .v87-profile #arena71-panel #arena71-auth{padding:16px;border-radius:14px;border:1px solid #5d7890;background:#102840}
+#courseHome .v87-profile #arena71-panel #arena71-auth[hidden]{display:none!important}
+#courseHome .v87-profile #arena71-status:empty{display:none!important}
+#courseHome .v87-profile #arena71-panel #arena71-logout{background:transparent!important;color:#c5d4e3!important;border:1px solid #60748b!important;font-weight:650!important;min-height:34px!important;padding:6px 10px!important;font-size:12px!important;margin:0 0 4px!important}
+@media(max-width:700px){
+ #courseHome .v87-profile #arena77-friends .arena77-friend{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+ #courseHome .v87-profile .arena77-friend>div{grid-column:1/-1}
+ #courseHome .v87-profile .arena77-friend>button{min-width:0;padding:10px 5px!important;font-size:13px!important}
+ #courseHome .v87-profile #arena77-add{grid-template-columns:minmax(0,1fr)}
+ #courseHome .v87-profile #arena77-add>*{grid-column:1/-1}
+ #courseHome .v87-profile #arena71-panel{padding:14px!important}
+}
+</style>
 </body></html>
