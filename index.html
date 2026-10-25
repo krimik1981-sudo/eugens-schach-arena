@@ -2438,7 +2438,7 @@ function egAIMove(){
  egMove(chosen);
 }
 $('openEugen').addEventListener('click',()=>{const level=document.querySelector('input[name="v83chessLevel"]:checked')?.value||document.querySelector('input[name="v85ChessLevel"]:checked')?.value||'beginner';egStart(level);});
-$('backEugenHome').addEventListener('click',()=>{$('eugenMenu').hidden=true;$('courseHome').hidden=false;window.scrollTo(0,0)});
+if($('backEugenHome'))$('backEugenHome').addEventListener('click',()=>{$('eugenMenu').hidden=true;$('courseHome').hidden=false;window.scrollTo(0,0)});
 for(const b of document.querySelectorAll('[data-level]'))b.addEventListener('click',()=>egStart(b.dataset.level));
 // v102: native link handles Zurück with a new page load.
 $('eugenRestart').addEventListener('click',()=>{hideRookMate();egReset();if(egMode==='expert')egInitStockfish();if(egHuman==='b')egTimer=setTimeout(egAIMove,380)});
