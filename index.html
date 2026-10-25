@@ -2661,7 +2661,7 @@ rebuild();
  /* v135 local recovery of in-progress live chess after an accidental page reload. */
  const V135_KEY='arena_v135_chess_pending';
  function savedSession(){try{const x=JSON.parse(localStorage.getItem(V135_KEY)||'null');if(!x||x.v!==1||Date.now()-x.at>24*3600000||!x.room||!x.state||x.state.outcome||!Array.isArray(x.state.recordMoves)||!Array.isArray(x.state.recordFrames)||x.state.recordFrames.length!==x.state.recordMoves.length+1)return null;return x}catch(e){return null}}
- function clearSavedSession(){window.v138RemoteClear?.();try{localStorage.removeItem(V135_KEY)}catch(e){}const b=document.getElementById('v135Resume'),m=document.getElementById('v136ResumeOnline');if(b)b.hidden=true;if(m)m.hidden=true;}
+ function clearSavedSession(){window.v138RemoteClear?.(outcome&&room?{room,recordId:liveRecordId}:null);try{localStorage.removeItem(V135_KEY)}catch(e){}const b=document.getElementById('v135Resume'),m=document.getElementById('v136ResumeOnline');if(b)b.hidden=true;if(m)m.hidden=true;}
  function preserveSession(){
   if(!room||room==='HOST'||outcome||!liveMoves.length||!isHost)return;
   try{const saved={v:1,at:Date.now(),room,host:isHost,side,state:pack(),clockKey:isHost?serverClockKey:null};localStorage.setItem(V135_KEY,JSON.stringify(saved));window.v138RemoteSave?.(saved);recoveryButton()}catch(e){}
@@ -2731,7 +2731,7 @@ rebuild();
   timeControl=s.timeControl;if(!serverClockKnown){remaining={w:s.remaining.w,b:s.remaining.b};clockAt=Date.now();clockRunning=!!s.clockRunning;}
   outcome=s.outcome||null;drawOffer=s.drawOffer||null;rematchOffer=s.rematchOffer||null;selected=null;promotion=null;$l('livePromotion').hidden=true;snapshotReceivedAt=Date.now();
   if(Array.isArray(s.recordMoves)&&Array.isArray(s.recordFrames)&&s.recordFrames.length===s.recordMoves.length+1){liveRecordId=String(s.recordId||liveRecordId);liveMoves=[...s.recordMoves];liveFrames=[...s.recordFrames];historyLiveSync(liveRecordId,liveMoves,liveFrames,outcome?outText():null)}
-  if(outcome){window.ArenaBilanzV127?.report({matchId:liveRecordId,game:'chess',side,winner:outcome.winner||'draw'});}if(outcome)setStatus(outText());else if(drawOffer===side)setStatus('Remis-Angebot angenommen? Wähle Annehmen oder Ablehnen.');else if(rematchOffer===side)setStatus('Dein Freund möchte ein Rückspiel.');else setStatus(asSide()===side?'Du bist am Zug.':'Dein Freund ist am Zug.');
+  if(outcome){clearSavedSession();window.ArenaBilanzV127?.report({matchId:liveRecordId,game:'chess',side,winner:outcome.winner||'draw'});}if(outcome)setStatus(outText());else if(drawOffer===side)setStatus('Remis-Angebot angenommen? Wähle Annehmen oder Ablehnen.');else if(rematchOffer===side)setStatus('Dein Freund möchte ein Rückspiel.');else setStatus(asSide()===side?'Du bist am Zug.':'Dein Freund ist am Zug.');
   if(!outcome&&room&&liveMoves.length){window.v138RemoteSave?.({v:1,at:Date.now(),room,host:false,side,state:s,clockKey:null});}
   preserveSession();render();return true
  }
@@ -5912,10 +5912,28 @@ font-family:system-ui,-apple-system,sans-serif
    return x;
   }catch(_){return null}
  }
- function present(){
+ async function present(){
   const x=candidate();
   if(!x)return;
-  document.getElementById('v137MoveCount').textContent=x.state.recordMoves.length+' Züge gespeichert.';
+  // Verify a saved match is still active, using the persistent server clock.
+  // Network errors must never destroy an unfinished local game.
+  try{
+   const ctl=new AbortController();const timeout=setTimeout(()=>ctl.abort(),3500);
+   let result;
+   try{
+    const resp=await fetch('/api/live-clock/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room:x.room}),signal:ctl.signal});
+    if(resp.ok)result=await resp.json();
+   }finally{clearTimeout(timeout)}
+   if(result?.finished){
+    localStorage.removeItem(KEY);
+    window.v138RemoteClear?.({room:x.room,recordId:x.state.recordId});
+    document.getElementById('v135Resume')?.setAttribute('hidden','');
+    document.getElementById('v136ResumeOnline')?.setAttribute('hidden','');
+    overlay.hidden=true;return;
+   }
+  }catch(_){/* disconnected: offer local recovery rather than delete */}
+  const active=candidate();if(!active||active.room!==x.room)return;
+  document.getElementById('v137MoveCount').textContent=active.state.recordMoves.length+' Züge gespeichert.';
   overlay.hidden=false;
   later.focus({preventScroll:true});
  }
@@ -5953,9 +5971,10 @@ font-family:system-ui,-apple-system,sans-serif
   const str=JSON.stringify(saved);if(str===lastSerialized)return;lastSerialized=str;
   pending=saved;if(Date.now()-lastSaved>2500)flush();
  };
- window.v138RemoteClear=function(){
+ window.v138RemoteClear=function(finished){
   pending=null;lastSerialized='';clearRequested=true;
-  request('clear').catch(()=>{}).finally(()=>{clearRequested=false;});
+  // A completed game writes a durable tombstone, not a vulnerable DELETE.
+  request('clear',finished?{finished}:{}).catch(()=>{}).finally(()=>{clearRequested=false;});
  };
  setInterval(flush,3000);
  function valid(x){return x&&x.v===1&&x.room&&x.state&&!x.state.outcome&&
@@ -5965,7 +5984,18 @@ font-family:system-ui,-apple-system,sans-serif
  async function loadServer(){
   if(!access())return;
   try{
-   const result=await request('get');const server=result?.saved;if(!valid(server))return;
+   const result=await request('get');const server=result?.saved;
+   if(server?.done){
+    let local=null;try{local=JSON.parse(localStorage.getItem(KEY)||'null')}catch(_){}
+    if(local?.room===server.room && local?.state?.recordId===server.recordId){
+     localStorage.removeItem(KEY);
+     document.getElementById('v137ResumeOverlay')?.setAttribute('hidden','');
+     document.getElementById('v135Resume')?.setAttribute('hidden','');
+     document.getElementById('v136ResumeOnline')?.setAttribute('hidden','');
+    }
+    return;
+   }
+   if(!valid(server))return;
    let local=null;try{local=JSON.parse(localStorage.getItem(KEY)||'null')}catch(_){}
    if(valid(local)&&local.at>=server.at)return;
    localStorage.setItem(KEY,JSON.stringify(server));
