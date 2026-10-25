@@ -2571,7 +2571,7 @@ rebuild();
   if(d.moveNo<serverClockMoveNo)return;
   serverClockMoveNo=d.moveNo;serverClockKnown=true;serverClockLocalAt=Date.now();serverClockServerAt=Number(d.serverAt)||Date.now();
   remaining={w:d.remaining.w,b:d.remaining.b};clockAt=Date.now();clockRunning=!!d.running;
-  if(d.finished && d.timeout && !outcome){finish({reason:'timeout',winner:opponent(d.timeout),loser:d.timeout});if(host())sync()}
+  if(d.finished && d.timeout && !outcome){finish({reason:'timeout',winner:opponent(d.timeout),loser:d.timeout});if(host()&&connected)sync()}
   drawClocks();
  }
  async function startServerClock(reset=false){
@@ -2586,7 +2586,7 @@ rebuild();
   catch(e){serverClockKnown=false;setStatus('Serveruhr: '+e.message);}
  }
  async function pollServerClock(){
-  if(!room||room==='HOST'||!connected||serverClockBusy||Date.now()-serverClockPollAt<950)return;
+  if(!room||room==='HOST'||serverClockBusy||Date.now()-serverClockPollAt<950)return;
   serverClockBusy=true;serverClockPollAt=Date.now();
   try{takeServerClock(await clockRequest('state'))}catch(e){/* keep last displayed snapshot */}
   finally{serverClockBusy=false}
@@ -2781,7 +2781,42 @@ rebuild();
  }
  function connect(c){
   if(conn&&conn!==c&&conn.open){c.close();return}conn=c;const thisConn=c;
-  c.on('open',()=>{if(conn!==thisConn)return;stopLiveReconnect();connected=true;clockAt=Date.now();chatInfo('Verbunden – Nachrichten und Emojis sind bereit.');window.ArenaFriendV70?.attach('chess',d=>c.send(d),()=>connected&&c.open);if(host()){clockRunning=!outcome;startServerClock(false);setStatus('Freund verbunden. Weiß beginnt! Du spielst '+(side==='w'?'Weiß.':'Schwarz.'));sync()}else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'})}render()});
+  c.on('open',async()=>{
+   if(conn!==thisConn)return;
+   stopLiveReconnect();connected=true;clockAt=Date.now();
+   chatInfo('Verbunden – Nachrichten und Emojis sind bereit.');
+   window.ArenaFriendV70?.attach('chess',d=>c.send(d),()=>connected&&c.open);
+   if(host()){
+    // v140: Do NOT send a stale clock/unfinished outcome to the guest before the
+    // authoritative Render clock has been read after reconnection.
+    clockRunning=false;setStatus('Prüfe Spielstand und Serveruhr …');render();
+    try{
+     const server=await clockRequest('state');
+     if(conn!==thisConn||!connected)return;
+     takeServerClock(server);
+     if(!outcome && Number.isInteger(server.moveNo) && server.moveNo!==moveNo){
+      setStatus('Spielstand und Serveruhr sind nicht synchron. Bitte keine weiteren Züge ausführen.');
+      clockRunning=false;render();return;
+     }
+     if(outcome){setStatus(outText());sync();return;}
+     clockRunning=!!server.running;
+    }catch(error){
+     if(conn!==thisConn||!connected)return;
+     // Do not create/reset a server clock after an outage: it may have expired.
+     if(moveNo===0 && liveMoves.length===0){
+      await startServerClock(false);
+      if(conn!==thisConn||!connected)return;
+      if(serverClockKnown && !outcome){clockRunning=true;setStatus('Freund verbunden. Weiß beginnt!');sync();return;}
+     }
+     serverClockKnown=false;clockRunning=false;
+     setStatus('Serveruhr nicht verfügbar – Partie pausiert. Bitte Verbindung prüfen.');
+     render();return;
+    }
+    setStatus('Verbindung wiederhergestellt. '+(asSide()===side?'Du bist am Zug.':'Dein Freund ist am Zug.'));
+    sync();
+   }else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'});}
+   render();
+  });
   c.on('data',data);
   c.on('close',()=>{if(conn!==thisConn)return;if(host())tick();conn=null;connected=false;window.ArenaFriendV70?.detached('chess');chatInfo('Verbindung getrennt.');if(host())clockRunning=false;setStatus('Verbindung unterbrochen. Wiederherstellung läuft …');render();scheduleLiveReconnect()});
   c.on('error',e=>{if(conn===thisConn)setStatus('Verbindungsfehler: '+String(e?.message||e))});
