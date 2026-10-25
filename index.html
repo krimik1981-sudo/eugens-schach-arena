@@ -901,11 +901,12 @@ body{background:var(--arena62-bg)}
  async function respondByCode(code,accept){await refresh();const r=(latest?.incoming||[]).find(x=>x.from.code===code);if(!r)throw Error('Keine Server-Anfrage von diesem Spieler vorhanden.');return respond(r.id,accept)}
  async function remove(code){const j=await api('remove',{code});apply(j);msg(j.message)}
  function render(){const out=$('arena71-incoming'),who=$('arena71-who'),auth=$('arena71-auth');if(!out)return;
-  out.replaceChildren();who.textContent=logged()?'Angemeldet als '+(latest?.profile?.name||'Spieler')+' · '+(latest?.profile?.code||''):'Noch nicht am Server angemeldet';
+  out.replaceChildren();who.textContent=logged()?'Angemeldet als '+(latest?.profile?.name||'Spieler'):'Noch nicht am Server angemeldet';
   auth.hidden=logged();$('arena71-logout').hidden=!logged();
   if($('arena77-count'))$('arena77-count').textContent=logged()?'('+(latest?.friends?.length||0)+')':'';if($('arena77-friends')&&!logged())$('arena77-friends').textContent='Bitte melde dich an, um deine Freunde zu sehen.';if(!logged()){out.textContent='Melde dich an, um Freundschaften auf allen Geräten zu speichern.';return}
   const incoming=latest?.incoming||[];
-  if(!incoming.length)out.textContent='Keine offenen Freundschaftsanfragen.';
+  const requestBox=$('v153-requests');if(requestBox)requestBox.hidden=!(incoming.length||(latest?.outgoing?.length||0));
+  if(!incoming.length)out.textContent='';
   incoming.forEach(r=>{
    const row=document.createElement('div');row.className='arena71-request';const name=document.createElement('span');name.textContent=r.from.name+' ('+r.from.code+')';row.append(name);
    for(const [label,value] of [['✓ Annehmen',true],['✕ Ablehnen',false]]){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=async()=>{b.disabled=true;try{await respond(r.id,value)}catch(e){msg(e.message)}finally{b.disabled=false}};row.append(b)}out.append(row);
@@ -918,14 +919,14 @@ body{background:var(--arena62-bg)}
  }
  function init(){
   const home=$('friendList');if(!home)return;
-  const wrapper=document.createElement('section');wrapper.id='arena71-panel';wrapper.innerHTML=`<h3>☁️ Mein Konto & meine Freunde</h3>
+  const wrapper=document.createElement('section');wrapper.id='arena71-panel';wrapper.innerHTML=`<h3>🤝 Meine Freunde</h3>
   <p id="arena71-who"></p><div id="arena71-auth"><label>Spielername <input id="arena71-name" autocomplete="username" maxlength="28" placeholder="z. B. EugenRicker"></label>
   <label>Passwort <input id="arena71-pass" type="password" autocomplete="current-password" minlength="8" placeholder="Mindestens 8 Zeichen"></label>
   <div class="arena71-buttons"><button id="arena71-register" type="button">Konto erstellen</button><button id="arena71-login" type="button">Anmelden</button></div></div>
   <button type="button" id="arena71-logout" hidden>Abmelden</button><p class="arena71-status" id="arena71-status" role="status"></p>
-  <h4>🤝 Meine Freunde <span id="arena77-count"></span></h4><div id="arena77-friends" aria-live="polite"></div>
-  <div id="arena77-add"><label for="arena77-code">Freundschaftsanfrage senden · Freundescode</label><input id="arena77-code" placeholder="EF-... (Code des anderen Spielers)" autocomplete="off" autocapitalize="characters"><button id="arena77-send" type="button">+ Als Freund hinzufügen</button></div>
-  <h4>📩 Freundschaftsanfragen</h4><div id="arena71-incoming"></div>
+  <h4 class="v153-friends-count">Freundesliste <span id="arena77-count"></span></h4><div id="arena77-friends" aria-live="polite"></div>
+  <div id="arena77-add"><label for="arena77-code">Freund hinzufügen</label><input id="arena77-code" placeholder="EF-... (Code des anderen Spielers)" autocomplete="off" autocapitalize="characters"><button id="arena77-send" type="button">+ Als Freund hinzufügen</button></div>
+  <div id="v153-requests" hidden><h4>📩 Freundschaftsanfragen</h4><div id="arena71-incoming"></div></div>
   <p class="arena71-help">Hier siehst du ausschließlich bestätigte Server-Freunde. Die Liste ist für Schach und Dame gemeinsam und wird auf deinen Geräten synchronisiert. Teile deinen eigenen Freundescode aus der Anmeldung mit anderen Spielern.</p>`;
   home.parentNode.insertBefore(wrapper,home);
   $('arena71-register').onclick=async()=>{const name=$('arena71-name').value.trim(),password=$('arena71-pass').value;try{const j=await api('register',{name,password});localStorage.setItem(TOKEN,j.token);ownProfile(j.profile);location.reload()}catch(e){msg(e.message)}};
@@ -1121,6 +1122,51 @@ body{background:var(--arena62-bg)}
 @media(max-width:390px){#liveGame .v120-live-controls>.live-actions button{font-size:13px}}
 </style>
 <style id="v152-single-statistics">#v127Bilanz,#v149History{display:none!important}</style>
+<style id="v153-compact-profile">
+/* The profile is an account-and-friends view. Statistics remain in the trophy page. */
+#courseHome .v87-profile{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+#courseHome .v87-profile .v87-heading{margin:0 0 8px!important}
+#courseHome .v87-profile .v87-heading h2{font:800 clamp(20px,3vw,27px)/1.25 system-ui,sans-serif!important}
+#courseHome .v87-profile .v87-identity{padding:12px!important;gap:10px!important;border-radius:15px!important}
+#courseHome .v87-profile .v87-avatar{width:44px!important;height:44px!important;font-size:25px!important}
+#courseHome .v87-profile .v87-person h3{font:800 clamp(17px,3vw,23px)/1.2 system-ui,sans-serif!important;margin:0 0 4px!important}
+#courseHome .v87-profile .v87-code,#courseHome .v87-profile .v87-actions{display:none!important}
+#courseHome .v87-profile .v87-person p{font-size:13px!important;line-height:1.3!important;margin:4px 0!important}
+#courseHome .v87-profile .v87-metrics{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;margin:8px 0 0!important}
+#courseHome .v87-profile .v87-metrics .v118-tile{min-width:0!important;min-height:52px!important;padding:9px 4px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;border-radius:11px!important}
+#courseHome .v87-profile .v87-metrics .v118-tile span{font-size:19px!important;line-height:1!important}
+#courseHome .v87-profile .v87-metrics .v118-tile strong{font:750 12px/1.2 system-ui,sans-serif!important;overflow-wrap:normal!important;word-break:normal!important}
+#courseHome .v87-profile .v87-metrics .v118-tile small{display:none!important}
+#courseHome .v87-profile #arena71-panel{padding:14px!important;margin:12px 0!important;border-radius:15px!important;min-width:0!important;max-width:100%!important}
+#courseHome .v87-profile #arena71-panel>h3{font:800 clamp(18px,3vw,23px)/1.2 system-ui,sans-serif!important;margin:0 0 9px!important}
+#courseHome .v87-profile #arena71-who{display:inline-block!important;padding:5px 8px!important;font-size:13px!important;line-height:1.3!important;margin:0 8px 9px 0!important;overflow-wrap:anywhere!important}
+#courseHome .v87-profile #arena71-logout{display:inline-flex;min-height:34px!important;padding:5px 12px!important;font-size:12px!important}
+#courseHome .v87-profile #arena71-logout[hidden]{display:none!important}
+#courseHome .v87-profile #arena71-status:not(:empty){font-size:12px!important;margin:2px 0 8px!important}
+#courseHome .v87-profile #arena71-panel h4{font:750 15px/1.3 system-ui,sans-serif!important;margin:12px 0 7px!important}
+#courseHome .v87-profile #arena77-friends{gap:8px!important;margin:7px 0!important}
+#courseHome .v87-profile #arena77-friends .arena77-friend{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;padding:10px!important;border-radius:12px!important}
+#courseHome .v87-profile #arena77-friends .arena77-friend>div{grid-column:1/-1!important;min-width:0!important}
+#courseHome .v87-profile #arena77-friends .arena77-friend strong{font-size:17px!important}
+#courseHome .v87-profile #arena77-friends .arena77-friend small{display:none!important}
+#courseHome .v87-profile #arena77-friends .arena77-friend>button{width:100%!important;min-height:38px!important;padding:6px 7px!important;font:750 13px/1.2 system-ui,sans-serif!important;white-space:normal!important}
+#courseHome .v87-profile #arena77-friends .arena77-friend>button:last-child{grid-column:1/-1!important;min-height:32px!important;background:transparent!important}
+#courseHome .v87-profile #arena77-add{margin:10px 0!important;padding:11px!important;gap:7px!important;border-radius:12px!important}
+#courseHome .v87-profile #arena77-add label{font:750 14px system-ui,sans-serif!important}
+#courseHome .v87-profile #arena77-add input{min-width:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;font-size:16px!important;padding:10px!important}
+#courseHome .v87-profile #arena77-add button{font:750 13px/1.25 system-ui,sans-serif!important;min-height:40px!important;padding:8px 10px!important}
+#courseHome .v87-profile #v153-requests[hidden]{display:none!important}
+#courseHome .v87-profile #v153-requests{max-width:100%;overflow-wrap:anywhere}
+#courseHome .v87-profile .arena71-help{display:none!important}
+@media(max-width:600px){
+ #courseHome .v87-profile{padding-bottom:90px!important}
+ #courseHome .v87-profile .v87-identity{grid-template-columns:44px minmax(0,1fr)!important;gap:9px!important}
+ #courseHome .v87-profile .v87-person{min-width:0!important}
+ #courseHome .v87-profile #arena71-panel{padding:11px!important}
+ #courseHome .v87-profile #arena71-panel h4{font-size:15px!important}
+ #courseHome .v87-profile #arena77-friends .arena77-friend>button{font-size:12px!important}
+}
+</style>
 </head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
