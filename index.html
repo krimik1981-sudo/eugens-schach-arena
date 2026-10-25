@@ -1593,7 +1593,7 @@ body{background:var(--arena62-bg)}
     <div class="v112-live-grid">
       <div class="v112-card v112-public arena-public-search">
         <div class="v112-card-heading"><span class="v112-glyph">🌐</span><div><h2>Gegner finden</h2><p>Öffentlicher Tisch · 2 Spieler</p></div></div>
-        <label for="v76ChessColorMenu">Meine Farbe</label>
+        <label for="v76ChessColorMenu">Meine Farbe · 🎲 Zufällig wird empfohlen</label>
         <select id="v76ChessColorMenu"><option value="random">🎲 Zufällig</option><option value="w">⚪ Weiß</option><option value="b">⚫ Schwarz</option></select>
         <button class="v112-primary" id="livePublicTwo" type="button">Gegner suchen →</button>
         <p class="v112-feedback" id="livePublicInfo" role="status">Automatische Suche benötigt die Server-Version dieser Arena.</p>
@@ -2678,7 +2678,19 @@ rebuild();
  }
  async function join(text){const raw=String(text||'').trim();const isPublic=/^[cd][0-9a-f]{28}$/.test(raw);const code=isPublic?raw:raw.toUpperCase();if(!isPublic&&!valid(code)){menuStatus('Ungültiger Raumcode. Er beginnt mit EUGEN- und hat 14 weitere Zeichen.');return}
   closeSession();let myToken=token;isHost=false;side='b';room=code;show('liveGame');baseReset();$l('liveRoomCode').textContent=code;setStatus('Verbinde mit dem Gastgeber …');linkHint();
-  try{await peerReady(undefined,myToken);if(token!==myToken)return;connect(peer.connect(code,{reliable:true}));latencyTimer=setTimeout(()=>{if(token===myToken&&!connected)setStatus('Keine Verbindung: Code prüfen und den Gastgeber bitten, die Seite geöffnet zu lassen.')},15000)}
+  try{await peerReady(undefined,myToken);if(token!==myToken)return;connect(peer.connect(code,{reliable:true}));
+   // v113: PeerJS signaling may need a retry when host just registered the ID.
+   // Only public matchmaking IDs retry, private room connections are untouched.
+   if(isPublic){
+     let tries=0;
+     const retryTimer=setInterval(()=>{
+       if(token!==myToken||connected||!peer||peer.destroyed){clearInterval(retryTimer);return;}
+       if(++tries>5){clearInterval(retryTimer);setStatus('Keine Verbindung zum Gegner. Bitte Raum verlassen und erneut Gegner suchen.');return;}
+       try{if(conn&&!conn.open)conn.close();connect(peer.connect(code,{reliable:true}));setStatus('Verbindung zum Gegner wird erneut versucht ('+tries+'/5) …');}
+       catch(e){setStatus('Verbindungsfehler: '+String(e?.message||e));}
+     },5000);
+   }
+   latencyTimer=setTimeout(()=>{if(token===myToken&&!connected)setStatus('Verbindung dauert länger als erwartet. Automatischer Neuversuch läuft …')},15000)}
   catch(e){if(token===myToken)setStatus('Verbindung fehlgeschlagen: '+String(e?.message||e))}
  }
  function offerDraw(actor){if(!connected||outcome||drawOffer)return;if(!host()){send({type:'drawOffer'});setStatus('Remisangebot verschickt. Warte auf Antwort.');return}
@@ -2735,7 +2747,7 @@ rebuild();
  // Öffentlicher Zweiertisch: Matchmaking auf unserem Node-Server, Partie weiterhin über PeerJS.
  const publicClientId=(()=>{let x=sessionStorage.getItem('schachPublicClientV48');if(!x){x='c'+Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');sessionStorage.setItem('schachPublicClientV48',x)}return x})();
  let publicRoomInfo=null, publicBusy=false;
- async function publicApi(path, data){const r=await fetch('/api/match/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,...data})});if(!r.ok)throw Error(r.status===404?'Der öffentliche Tisch ist abgelaufen. Bitte neu versuchen.':'Der Spielserver ist nicht erreichbar ('+r.status+').');return r.json()}
+ async function publicApi(path, data){const r=await fetch('/api/match/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,...data})});if(!r.ok){let details;try{details=await r.json()}catch(e){}throw Error(details?.error||'Der Spielserver ist nicht erreichbar ('+r.status+').')}return r.json()}
  async function publicPlay(){
   if(publicBusy)return;publicBusy=true;const button=$l('livePublicTwo');button.disabled=true;
   const info=$l('livePublicInfo');info.textContent='Suche einen freien Gegner …';
@@ -2745,6 +2757,7 @@ rebuild();
     const actual=await create(result.room,result.hostColor);
     if(!actual)throw Error('Raum konnte nicht geöffnet werden. Bitte versuche es erneut.');
     publicRoomInfo={room:result.room,role:'host'};
+    info.textContent='🎲 Farbe: '+(result.hostColor==='w'?'Weiß':'Schwarz')+' · Suche läuft …';
     await publicApi('heartbeat',{room:result.room,ready:true});
     setStatus('🟢 Allgemeiner Tisch ist bereit. Warte auf einen zweiten Spieler …');
    }else{
@@ -2752,7 +2765,7 @@ rebuild();
     publicRoomInfo={room:result.room,role:'guest'};
     setStatus('Verbinde mit deinem Gegner am allgemeinen Tisch …');
    }
-   info.textContent='Öffentlicher Tisch geöffnet.';
+   info.textContent=result.role==='host'?'🔎 Suche läuft. Warte auf einen passenden Gegner …':'🤝 Gegner gefunden. Stelle Verbindung her …';
   }catch(err){info.textContent='⚠️ '+(err?.message||err);if(publicRoomInfo)closeSession()}
   finally{button.disabled=false;publicBusy=false}
  }
