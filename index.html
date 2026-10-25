@@ -1120,6 +1120,7 @@ body{background:var(--arena62-bg)}
 #liveGame .v120-live-controls .live-answer .live-actions button{flex:1 1 110px}
 @media(max-width:390px){#liveGame .v120-live-controls>.live-actions button{font-size:13px}}
 </style>
+<style id="v152-single-statistics">#v127Bilanz,#v149History{display:none!important}</style>
 </head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
@@ -5745,7 +5746,7 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
  function init(){
   const profile=document.getElementById('profilesView');if(!profile)return;
   const panel=document.createElement('section');panel.id='v127Bilanz';panel.innerHTML='<h3>🏆 Freunde-Bilanz</h3><p>Schach und Dame · Ergebnisse je Freund. Voraussetzung: beide Spieler sind mit ihrem Serverkonto angemeldet.</p><button type="button" id="v127Refresh">↻ Bilanz aktualisieren</button><div id="v127BilanzList" aria-live="polite"></div><p id="v127BilanzNote">Gezählt werden nur beidseitig bestätigte, abgeschlossene Online-Partien in Schach und Dame. Frühere Partien ohne gemeinsame Meldung werden nicht übernommen.</p>';
-  profile.appendChild(panel);
+  // v152: legacy friend-balance view removed; reporting stays active.
   const list=panel.querySelector('#v127BilanzList');
   async function refresh(){list.replaceChildren();if(!token()){list.textContent='Für die Freunde-Bilanz bitte mit deinem Serverkonto anmelden: Profil → Konto erstellen / Anmelden. Ein lokales Profil reicht nicht aus.';return}
    list.textContent='Ergebnisse werden geladen …';try{const {items=[]}=await api('list');list.replaceChildren();if(!items.length){list.textContent='Noch keine beidseitig bestätigten Partien. Spiele eine neue Online-Partie mit einem angemeldeten Freund.';return}
@@ -5827,7 +5828,7 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
  for(const b of document.querySelectorAll('#courseHome .v87-profile [data-open="openProfiles"], #v118Friends')){
   b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();if(b.id==='v118Friends')focusFriends();else focusAccount()},true)
  }
- const stat=$('v118Stats');stat?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();focusBilanz()},true);
+ const stat=$('v118Stats');stat?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();const nav=document.querySelector('#courseHome .arena-bottomnav [data-page="statistik"]')||document.querySelector('#courseHome .arena-navitem[data-page="statistik"]');nav?.click()},true);
  const old=$('openProfiles');old?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();focusAccount()},true);
  mount();
  document.querySelectorAll('#courseHome [data-page="profil"]').forEach(b=>b.addEventListener('click',()=>setTimeout(mount,20)));
