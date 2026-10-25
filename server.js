@@ -173,8 +173,54 @@ async function clockEndpoint(req,res,url){
  return reply(res,404,{error:'Not found'});
 }
 
+
+// v127: Confirmed, cross-device friend results. Both authenticated players must
+// independently report the same match before it contributes to their balance.
+async function bilanzEndpoint(req,res,url){
+ if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
+ let raw='';try{for await(const c of req){raw+=c;if(raw.length>2048)return reply(res,413,{error:'Too large'})}}catch{return reply(res,400,{error:'Invalid body'})}
+ let v={};try{v=JSON.parse(raw||'{}')}catch{return reply(res,400,{error:'Invalid JSON'})}
+ const id=authId(req),a=id?await findId(id):null;
+ if(!a)return reply(res,401,{error:'Bitte unter Profil anmelden.'});
+ const action=url.pathname.slice('/api/bilanz/'.length);
+ if(action==='report'){
+  if(!/^live-[a-z0-9-]{10,75}$/.test(v.matchId||'')||!['chess','dame'].includes(v.game)||!['w','b'].includes(v.side)||!['w','b','draw'].includes(v.winner)||typeof v.opponent!=='string')return reply(res,400,{error:'Ungültige Partie'});
+  const b=await findName(v.opponent);
+  if(!b||a.id===b.id||!(await relation(a.id,b.id))|| (await relation(a.id,b.id)).status!=='accepted')return reply(res,403,{error:'Bestätigter Freund nicht gefunden.'});
+  const row={match_id:v.matchId,player_id:a.id,opponent_id:b.id,game:v.game,side:v.side,winner:v.winner};
+  // Supabase unique (match_id, player_id) prevents repeated counting.
+  const existing=(await db('arena_match_reports','GET',{match_id:'eq.'+v.matchId,player_id:'eq.'+a.id,select:'match_id,player_id,opponent_id,game,side,winner',limit:1}))[0];
+  if(existing){
+   if(existing.opponent_id!==row.opponent_id||existing.game!==row.game||existing.side!==row.side||existing.winner!==row.winner)return reply(res,409,{error:'Widersprüchliches Spielergebnis'});
+  }else await db('arena_match_reports','POST',{},row);
+  return reply(res,200,{ok:true,confirmed:false});
+ }
+ if(action==='list'){
+  const rows=await db('arena_match_reports','GET',{or:'(player_id.eq.'+a.id+',opponent_id.eq.'+a.id+')',select:'match_id,player_id,opponent_id,game,side,winner',limit:3000});
+  const own=rows.filter(x=>x.player_id===a.id);
+  const byPair=new Map(rows.map(x=>[x.match_id+'|'+x.player_id,x]));
+  const agg=new Map();
+  for(const r of own){
+   const other=byPair.get(r.match_id+'|'+r.opponent_id);
+   if(!other||other.player_id!==r.opponent_id||other.opponent_id!==a.id||other.game!==r.game||other.side===r.side||other.winner!==r.winner)continue;
+   const k=r.opponent_id+'|'+r.game;
+   const v=agg.get(k)||{id:r.opponent_id,game:r.game,wins:0,losses:0,draws:0};
+   if(r.winner==='draw')v.draws++;
+   else if(r.winner===r.side)v.wins++;else v.losses++;
+   agg.set(k,v);
+  }
+  const items=[...agg.values()];
+  const ids=[...new Set(items.map(x=>x.id))];
+  const players=ids.length?await accounts({id:'in.('+ids.join(',')+')',select:'id,name,code'}):[];
+  const names=new Map(players.map(x=>[x.id,x]));
+  return reply(res,200,{items:items.map(x=>({...x,name:names.get(x.id)?.name||'Spieler',code:names.get(x.id)?.code||''}))});
+ }
+ return reply(res,404,{error:'Not found'});
+}
+
 async function handle(req,res) {
   const url=new URL(req.url,'http://localhost');
+  if(url.pathname.startsWith('/api/bilanz/'))return bilanzEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/live-clock/'))return clockEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/match/') || url.pathname.startsWith('/api/dame-match/'))return matchAction(req,res,url);
   if(url.pathname.startsWith('/api/invites/')){
