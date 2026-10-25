@@ -134,8 +134,48 @@ async function matchAction(req,res,url) {
   if(item.host===data.clientId && data.ready===true)item.ready=true;
   return reply(res,200,{ok:true,room:data.room,ready:item.ready,matched:!!item.guest});
 }
+
+// Server-authoritative chess clocks (v122). Kept per live Render instance.
+const liveClocks=new Map();
+const clockRoomValid=s=>typeof s==='string' && (/^EUGEN-[A-F0-9]{14}$/.test(s)||/^[cd][a-f0-9]{28}$/.test(s));
+function clockSnapshot(item){
+ const now=Date.now(),r={...item.remaining};
+ if(item.running && !item.finished && item.minutes>0)r[item.turn]=Math.max(0,r[item.turn]-(now-item.at));
+ const timedOut=item.minutes>0 && item.running && r[item.turn]<=0;
+ if(timedOut){item.remaining=r;item.at=now;item.running=false;item.finished=true;item.timeout=item.turn}
+ return {remaining:r,turn:item.turn,moveNo:item.moveNo,running:item.running,finished:item.finished,timeout:item.timeout||null,minutes:item.minutes,serverAt:now};
+}
+async function clockEndpoint(req,res,url){
+ if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
+ let raw='';try{for await(const chunk of req){raw+=chunk;if(raw.length>1024)return reply(res,413,{error:'Too large'})}}catch{return reply(res,400,{error:'Invalid request'})}
+ let d;try{d=JSON.parse(raw)}catch{return reply(res,400,{error:'Invalid JSON'})}
+ if(!d||!clockRoomValid(d.room))return reply(res,400,{error:'Invalid room'});
+ const now=Date.now();for(const [k,v] of liveClocks)if(now-v.updated>7200000)liveClocks.delete(k);
+ const action=url.pathname.slice('/api/live-clock/'.length);
+ if(action==='start'){
+  if(!Number.isInteger(d.minutes)||d.minutes<0||d.minutes>180||typeof d.key!=='string'||!/^[-_a-zA-Z0-9]{30,100}$/.test(d.key))return reply(res,400,{error:'Invalid clock settings'});
+  const current=liveClocks.get(d.room);
+  if(current && current.key!==d.key)return reply(res,409,{error:'Clock already owned by another host'});
+  if(current && current.key===d.key && !d.reset){current.updated=now;return reply(res,200,{...clockSnapshot(current),ok:true})}
+  const ms=d.minutes*60000,item={key:d.key,minutes:d.minutes,remaining:{w:ms,b:ms},turn:'w',moveNo:0,running:true,finished:false,at:now,updated:now,timeout:null};
+  liveClocks.set(d.room,item);return reply(res,200,{...clockSnapshot(item),ok:true});
+ }
+ const item=liveClocks.get(d.room);if(!item)return reply(res,404,{error:'Clock not found'});
+ item.updated=now;
+ if(action==='state')return reply(res,200,{...clockSnapshot(item),ok:true});
+ if(d.key!==item.key)return reply(res,403,{error:'Host required'});
+ if(action==='move'){
+  if(!Number.isSafeInteger(d.moveNo)||d.moveNo!==item.moveNo+1 || !['w','b'].includes(d.turn)||d.turn===item.turn)return reply(res,409,{error:'Clock move out of order',...clockSnapshot(item)});
+  const before=clockSnapshot(item);if(item.finished)return reply(res,409,{error:'Time has expired',...before});
+  item.remaining=before.remaining;item.moveNo=d.moveNo;item.turn=d.turn;item.at=now;return reply(res,200,{...clockSnapshot(item),ok:true});
+ }
+ if(action==='finish'){clockSnapshot(item);item.running=false;item.finished=true;return reply(res,200,{...clockSnapshot(item),ok:true})}
+ return reply(res,404,{error:'Not found'});
+}
+
 async function handle(req,res) {
   const url=new URL(req.url,'http://localhost');
+  if(url.pathname.startsWith('/api/live-clock/'))return clockEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/match/') || url.pathname.startsWith('/api/dame-match/'))return matchAction(req,res,url);
   if(url.pathname.startsWith('/api/invites/')){
     if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
