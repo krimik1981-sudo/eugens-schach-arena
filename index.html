@@ -1316,6 +1316,15 @@ body{background:var(--arena62-bg)}
 <div hidden="" id="dameInvite"><span class="dame-note">Dein Raumcode</span><strong id="dameRoomCode"></strong><button id="dameCopyLink" type="button">🔗 Einladungslink kopieren</button><button id="dameCopyCode" type="button">Code kopieren</button></div>
 </details>
 <div class="dame-chat"><button type="button" id="dameChatToggle" aria-expanded="false">💬 Chat &amp; Emojis <span id="dameChatUnread" hidden>●</span></button><div id="dameChatBody" hidden><div class="dame-chat-messages" id="dameChatMessages" aria-live="polite"></div><div id="dameChatEmojis" class="dame-chat-emojis"></div><form id="dameChatForm"><input id="dameChatInput" maxlength="200" autocomplete="off" placeholder="Nachricht an Gegner…" aria-label="Nachricht"/><button type="submit">Senden</button></form><small id="dameChatInfo">Chat ist nach der Verbindung verfügbar.</small></div></div>
+<style>
+#v147DameActions[hidden],#v147DameOfferBox[hidden]{display:none!important}
+#v147DameActions{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+#v147DameActions button,#v147DameOfferBox button{flex:1;min-width:130px;padding:12px 14px;border-radius:11px;background:#193d62;border:1px solid #c4a36e;color:#f8f0df;font-weight:700;cursor:pointer}
+#v147DameResign{border-color:#d58d8d!important}
+#v147DameOfferBox{padding:15px;margin:10px 0;border:1px solid #c4a36e;border-radius:12px;background:#152e48;color:#fff}
+#v147DameOfferBox p{margin:0 0 10px}
+</style><div id="v147DameActions" hidden><button type="button" id="v147DameResign">🏳 Aufgeben</button><button type="button" id="v147DameOffer">🤝 Remis anbieten</button></div>
+<div id="v147DameOfferBox" hidden role="dialog" aria-label="Remisangebot"><p>Dein Gegner bietet Remis an. Annehmen?</p><button type="button" id="v147DameAccept">Remis annehmen</button><button type="button" id="v147DameDecline">Ablehnen</button></div>
 <button hidden="" id="dameDisconnect" type="button">Verbindung trennen</button>
 <p class="dame-note">Die Online-Verbindung nutzt PeerJS/WebRTC. Beide Geräte müssen online und die Seiten geöffnet bleiben. Keine Registrierung erforderlich; der öffentliche Vermittlungsdienst ist jedoch nicht garantiert verfügbar.</p>
 </div><div aria-live="polite" id="dameStatus" role="status">Weiß beginnt.</div><div class="dame-stats"><span id="dameCountWhite">⚪ 12</span><span id="dameCountBlack">⚫ 12</span></div>
@@ -3520,6 +3529,15 @@ let onlinePeer=null,onlineConn=null,onlineRoom='',onlineSide=null,onlineHost=fal
 let computerColor='b',board,turn='w',selected=null,forced=null,legal=[],history=[],busy=false,gameOver=false,epoch=0;
 let dameMatchId='';
 let damePendingMove=null;
+// v147: draw offer belongs to one live connection, terminal outcome travels in state.
+let v147OfferSent=false,v147OfferReceived=false,v147Outcome=null;
+const v147Actions=document.getElementById('v147DameActions'),v147OfferBox=document.getElementById('v147DameOfferBox');
+function v147RenderActions(){if(!v147Actions)return;const active=modeEl.value==='online'&&onlineConnected&&!gameOver&&!!onlineSide;v147Actions.hidden=!active;v147OfferBox.hidden=!(active&&v147OfferReceived);document.getElementById('v147DameOffer').disabled=!active||v147OfferSent||v147OfferReceived;}
+function v147Reset(){v147OfferSent=false;v147OfferReceived=false;v147Outcome=null;v147RenderActions();}
+function v147Complete(result,winner){if(gameOver)return;gameOver=true;v147OfferSent=false;v147OfferReceived=false;v147Outcome={reason:result,winner};
+ status(result==='draw'?'Remis vereinbart. 🤝':result==='resign'?(winner==='w'?'Weiß':'Schwarz')+' gewinnt – Aufgabe. 🏳':'Partie beendet.');
+ render();reportDameWin(winner);if(onlineHost)broadcast();v147RenderActions();}
+
 // v144: separate Dame recovery; does not affect saved chess games.
 const DAME_RECOVERY_KEY='arena_v144_dame_pending';
 const dameRecoveryOverlay=document.getElementById('v144DameResumeOverlay');
@@ -3532,7 +3550,7 @@ function dameRecoveryPersist(){if(modeEl.value!=='online'||!onlineRoom||gameOver
 async function dameRecoveryApi(action,data={}){const token=localStorage.getItem('arena71_token');if(!token)throw Error('Bitte unter Profil anmelden.');const r=await fetch('/api/dame-resume/'+action,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(data)});if(!r.ok)throw Error('Server '+r.status);return r.json()}
 async function dameRecoveryFlush(){if(dameRecoverySending)return;dameRecoverySending=true;try{while(dameRecoveryPending){const p=dameRecoveryPending;dameRecoveryPending=null;try{await dameRecoveryApi('save',{saved:p})}catch(e){console.warn('Dame cloud save:',e.message);break}}}finally{dameRecoverySending=false}}
 function dameRecoveryClear(){const room=onlineRoom||dameRecoveryRead()?.room;dameRecoveryPending=null;try{localStorage.removeItem(DAME_RECOVERY_KEY)}catch(_){}dameRecoveryOverlay?.setAttribute('hidden','');if(room)dameRecoveryApi('clear',{room}).catch(()=>{})}
-function dameRecoveryApply(p){if(!dameRecoveryValid(p))return false;board=p.state.board.slice();turn=p.state.turn;forced=Number.isInteger(p.state.forced)&&p.state.forced>=0&&p.state.forced<64?p.state.forced:null;gameOver=false;onlineSequence=Number.isSafeInteger(p.state.seq)?p.state.seq:0;dameMatchId=typeof p.state.matchId==='string'?p.state.matchId:newDameMatchId();onlineHostSide=p.state.hostSide==='b'?'b':'w';onlineSide=p.side;selected=null;history=[];busy=false;render();status(p.state.message||'Gespeicherte Partie wird wiederhergestellt.');return true}
+function dameRecoveryApply(p){if(!dameRecoveryValid(p))return false;board=p.state.board.slice();turn=p.state.turn;forced=Number.isInteger(p.state.forced)&&p.state.forced>=0&&p.state.forced<64?p.state.forced:null;gameOver=false;v147Reset();onlineSequence=Number.isSafeInteger(p.state.seq)?p.state.seq:0;dameMatchId=typeof p.state.matchId==='string'?p.state.matchId:newDameMatchId();onlineHostSide=p.state.hostSide==='b'?'b':'w';onlineSide=p.side;selected=null;history=[];busy=false;render();status(p.state.message||'Gespeicherte Partie wird wiederhergestellt.');return true}
 async function dameRecoveryResume(){const p=dameRecoveryRead();if(!p||dameRecoveryBusy)return;dameRecoveryBusy=true;dameRecoveryOverlay?.setAttribute('hidden','');try{
  document.querySelector('#courseHome [data-page="dame"]')?.click();
  discardNetwork();modeEl.value='online';document.getElementById('dameOnlineBox').hidden=false;onlineHost=p.host;onlineRoom=p.room;onlineSide=p.side;onlineHostSide=p.state.hostSide==='b'?'b':'w';init();dameRecoveryApply(p);
@@ -3575,7 +3593,7 @@ function clearDamePending(){damePendingMove=null;}
 function newDameMatchId(){return 'dame-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12)}
 function reportDameWin(winner){window.dispatchEvent(new CustomEvent('arena:dame-finished',{detail:{id:dameMatchId,mode:modeEl.value,winner,playerSide:modeEl.value==='ai'?other(computerColor):onlineSide}}))}
 const idx=(r,c)=>r*8+c,inside=(r,c)=>r>=0&&r<8&&c>=0&&c<8,owner=p=>p?p.toLowerCase():null,isKing=p=>p&&p===p.toUpperCase(),other=c=>c==='w'?'b':'w';
-function init(){clearDamePending();dameMatchId=newDameMatchId();epoch++;onlineSequence++;board=Array(64).fill(null);for(let r=0;r<8;r++)for(let c=0;c<8;c++)if((r+c)%2===1){if(r<3)board[idx(r,c)]='b';if(r>4)board[idx(r,c)]='w'}turn='w';selected=null;forced=null;history=[];busy=false;gameOver=false;render();status('Weiß beginnt.');if(modeEl.value==='ai'&&computerColor==='w')scheduleAI();if(modeEl.value==='online'&&onlineHost&&onlineConnected)broadcast();}
+function init(){clearDamePending();v147Reset();dameMatchId=newDameMatchId();epoch++;onlineSequence++;board=Array(64).fill(null);for(let r=0;r<8;r++)for(let c=0;c<8;c++)if((r+c)%2===1){if(r<3)board[idx(r,c)]='b';if(r>4)board[idx(r,c)]='w'}turn='w';selected=null;forced=null;history=[];busy=false;gameOver=false;render();status('Weiß beginnt.');if(modeEl.value==='ai'&&computerColor==='w')scheduleAI();if(modeEl.value==='online'&&onlineHost&&onlineConnected)broadcast();}
 function status(t){statusEl.textContent=t}
 function captureOptions(b,pos){let p=b[pos];if(!p)return[];let r=Math.floor(pos/8),c=pos%8,out=[];for(let dr of [-1,1])for(let dc of [-1,1]){
 if(!isKing(p)){let mr=r+dr,mc=c+dc,tr=r+2*dr,tc=c+2*dc;if(inside(tr,tc)&&b[idx(mr,mc)]&&owner(b[idx(mr,mc)])!==owner(p)&&!b[idx(tr,tc)])out.push({from:pos,to:idx(tr,tc),cap:idx(mr,mc)});}
@@ -3585,7 +3603,7 @@ function options(b,color,forcedPos=null){let captures=[];for(let i=0;i<64;i++)if
 function apply(b,m){let copy=b.slice(),p=copy[m.from];copy[m.from]=null;copy[m.to]=p;if(m.cap!==null)copy[m.cap]=null;let row=Math.floor(m.to/8);if((p==='w'&&row===0)||(p==='b'&&row===7))copy[m.to]=p.toUpperCase();return copy;}
 function render(){legal=options(board,turn,forced);boardEl.innerHTML='';for(let r=0;r<8;r++)for(let c=0;c<8;c++){let displayFlipped=modeEl.value==='ai'&&computerColor==='w'||modeEl.value==='online'&&onlineSide==='b';let i=displayFlipped?idx(7-r,7-c):idx(r,c),cell=document.createElement('button');cell.type='button';cell.className='dame-square '+((r+c)%2?'dark':'light');if(i===selected)cell.classList.add('selected');if(selected!==null&&legal.some(m=>m.from===selected&&m.to===i))cell.classList.add('target');cell.setAttribute('aria-label',files[c]+(8-r)+(board[i]?' '+(owner(board[i])==='w'?'Weiß':'Schwarz'):' leer'));let p=board[i];if(p){let stone=document.createElement('span');stone.className='dame-piece '+(owner(p)==='w'?'white':'black');stone.textContent=isKing(p)?'♛':'';cell.appendChild(stone)}cell.dataset.square=String(i);boardEl.appendChild(cell)}
 document.getElementById('dameCountWhite').textContent='⚪ '+board.filter(p=>owner(p)==='w').length;document.getElementById('dameCountBlack').textContent='⚫ '+board.filter(p=>owner(p)==='b').length;
-levelEl.disabled=modeEl.value!=='ai';computerColorEl.disabled=modeEl.value!=='ai';document.getElementById('dameComputerColorBox').hidden=modeEl.value!=='ai';document.getElementById('dameUndo').disabled=modeEl.value==='online'||history.length===0;document.getElementById('dameRestart').disabled=modeEl.value==='online'&&!onlineHost;}
+levelEl.disabled=modeEl.value!=='ai';computerColorEl.disabled=modeEl.value!=='ai';document.getElementById('dameComputerColorBox').hidden=modeEl.value!=='ai';document.getElementById('dameUndo').disabled=modeEl.value==='online'||history.length===0;document.getElementById('dameRestart').disabled=modeEl.value==='online'&&!onlineHost;v147RenderActions();}
 function finishTurn(){forced=null;selected=null;turn=other(turn);let moves=options(board,turn);if(!moves.length){gameOver=true;status((turn==='w'?'Schwarz':'Weiß')+' gewinnt! 🎉');reportDameWin(other(turn))}else status((turn==='w'?'Weiß':'Schwarz')+' ist am Zug'+(moves[0].cap!==null?' – Schlagen ist Pflicht.':'.'));render();if(modeEl.value==='online'&&onlineHost)broadcast();if(!gameOver&&turn===computerColor&&modeEl.value==='ai')scheduleAI();}
 function move(m){history.push({board:board.slice(),turn,forced,selected});board=apply(board,m);if(m.cap!==null&&captureOptions(board,m.to).length){forced=m.to;selected=m.to;status((turn==='w'?'Weiß':'Schwarz')+': Mehrfachschlag fortsetzen!');render();if(modeEl.value==='online'&&onlineHost)broadcast();if(turn===computerColor&&modeEl.value==='ai')scheduleAI();return;}finishTurn();}
 function click(i){if(gameOver||busy||(modeEl.value==='ai'&&turn===computerColor))return;if(modeEl.value==='online'&&(!onlineConnected||onlineSide!==turn))return;if(selected!==null){let m=legal.find(x=>x.from===selected&&x.to===i);if(m){if(modeEl.value==='online'&&!onlineHost){if(damePendingMove)return;damePendingMove={type:'dame-move',from:m.from,to:m.to,seq:onlineSequence,attempts:1,at:Date.now()};onlineConn.send({type:'dame-move',from:m.from,to:m.to,seq:onlineSequence});selected=null;status('Zug wird übertragen …');render();}else {if(modeEl.value==='online'&&onlineHost)onlineSequence++;move(m);}return}}if(owner(board[i])===turn&&(forced===null||forced===i)&&legal.some(m=>m.from===i)){selected=i;render()}else if(forced===null){selected=null;render()}}
@@ -3722,10 +3740,29 @@ document.getElementById('damePublicPlay').addEventListener('click',damePublicPla
 setInterval(()=>{const current=publicDameRoom;if(!current)return;damePublicApi('heartbeat',{room:current.room,ready:current.role==='host'}).catch(e=>{if(publicDameRoom!==current)return;if(e.status===404){publicDameRoom=null;document.getElementById('damePublicInfo').textContent='⚠️ Suchraum abgelaufen. Bitte erneut auf Gegner automatisch finden tippen.'}else document.getElementById('damePublicInfo').textContent='⚠️ '+e.message})},12000);
 
 function discardNetwork(skipLeave=false){dameRecoveryAwaitingHost=false;clearTimeout(dameRecoveryReconnectTimer);dameRecoveryReconnectTimer=null;dameRecoveryReconnectCount=0;clearDamePending();if(publicDameRoom){const previous=publicDameRoom;publicDameRoom=null;if(!skipLeave)damePublicApi('leave',{room:previous.room}).catch(()=>{});}clearDameChat();onlineGeneration++;onlineConnected=false;onlineSide=null;onlineHost=false;onlineHostSide='w';onlineRoom='';try{onlineConn?.close()}catch(e){}try{onlinePeer?.destroy()}catch(e){}onlineConn=null;onlinePeer=null;document.getElementById('dameInvite').hidden=true;document.getElementById('dameDisconnect').hidden=true;netStatus('Nicht verbunden.');}
-function broadcast(){if(modeEl.value!=='online'||!onlineHost)return;if(gameOver)dameRecoveryClear();else dameRecoveryPersist();if(!onlineConnected||!onlineConn?.open)return;onlineConn.send({type:'dame-state',seq:onlineSequence,hostSide:onlineHostSide,board:[...board],turn,forced,gameOver,matchId:dameMatchId,message:statusEl.textContent});}
-function onlineSyncReceived(data){if(onlineHost||!data||data.type!=='dame-state'||!Array.isArray(data.board)||data.board.length!==64)return;if(!data.board.every(p=>p===null||['w','W','b','B'].includes(p)))return;if(data.turn!=='w'&&data.turn!=='b')return;if(!Number.isSafeInteger(data.seq)||(!dameRecoveryAwaitingHost&&data.seq<onlineSequence))return;if(!['w','b'].includes(data.hostSide))return;onlineHostSide=data.hostSide;onlineSide=other(onlineHostSide);netStatus('✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß (du beginnst).':'Schwarz (Gastgeber beginnt).'));if(data.forced!==null&&(!Number.isInteger(data.forced)||data.forced<0||data.forced>63))return;const previousEnded=gameOver,previousMatch=dameMatchId;if(damePendingMove&&(data.seq>damePendingMove.seq||data.turn!==onlineSide||data.board[damePendingMove.from]===null))clearDamePending();onlineSequence=data.seq;dameRecoveryAwaitingHost=false;dameRecoveryReconnectCount=0;clearTimeout(dameRecoveryReconnectTimer);dameRecoveryReconnectTimer=null;dameMatchId=typeof data.matchId==='string'&&data.matchId.length<100?data.matchId:dameMatchId;board=data.board.slice();turn=data.turn;forced=data.forced;gameOver=!!data.gameOver;selected=null;history=[];busy=false;render();status(data.message||'Stellung synchronisiert.');if(gameOver){dameRecoveryClear();if(!previousEnded||previousMatch!==dameMatchId)reportDameWin(other(turn));}else dameRecoveryPersist();}
+function broadcast(){if(modeEl.value!=='online'||!onlineHost)return;if(gameOver)dameRecoveryClear();else dameRecoveryPersist();if(!onlineConnected||!onlineConn?.open)return;onlineConn.send({type:'dame-state',seq:onlineSequence,hostSide:onlineHostSide,board:[...board],turn,forced,gameOver,matchId:dameMatchId,message:statusEl.textContent,v147Outcome});}
+function onlineSyncReceived(data){if(onlineHost||!data||data.type!=='dame-state'||!Array.isArray(data.board)||data.board.length!==64)return;if(!data.board.every(p=>p===null||['w','W','b','B'].includes(p)))return;if(data.turn!=='w'&&data.turn!=='b')return;if(!Number.isSafeInteger(data.seq)||(!dameRecoveryAwaitingHost&&data.seq<onlineSequence))return;if(!['w','b'].includes(data.hostSide))return;onlineHostSide=data.hostSide;onlineSide=other(onlineHostSide);netStatus('✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß (du beginnst).':'Schwarz (Gastgeber beginnt).'));if(data.forced!==null&&(!Number.isInteger(data.forced)||data.forced<0||data.forced>63))return;const previousEnded=gameOver,previousMatch=dameMatchId;if(damePendingMove&&(data.seq>damePendingMove.seq||data.turn!==onlineSide||data.board[damePendingMove.from]===null))clearDamePending();onlineSequence=data.seq;dameRecoveryAwaitingHost=false;dameRecoveryReconnectCount=0;clearTimeout(dameRecoveryReconnectTimer);dameRecoveryReconnectTimer=null;dameMatchId=typeof data.matchId==='string'&&data.matchId.length<100?data.matchId:dameMatchId;board=data.board.slice();turn=data.turn;forced=data.forced;gameOver=!!data.gameOver;v147Outcome=data.v147Outcome&&['draw','resign'].includes(data.v147Outcome.reason)?data.v147Outcome:null;selected=null;history=[];busy=false;render();status(data.message||'Stellung synchronisiert.');if(gameOver){dameRecoveryClear();if(!previousEnded||previousMatch!==dameMatchId)reportDameWin(v147Outcome?.winner||other(turn));}else dameRecoveryPersist();}
 function onlineHandleData(data){if(!data||typeof data!=='object')return;
  if(window.ArenaFriendV70?.receive('dame',data))return;
+ if(data.type==='v147-dame-offer'){
+  if(!onlineConnected||gameOver||v147OfferReceived)return;
+  v147OfferReceived=true;v147OfferSent=false;v147RenderActions();status('Dein Gegner bietet Remis an.');return;
+ }
+ if(data.type==='v147-dame-reply'){
+  if(!onlineConnected||gameOver||!v147OfferSent)return;
+  v147OfferSent=false;
+  if(data.accept===true){if(onlineHost)v147Complete('draw','draw');else {onlineConn.send({type:'v147-dame-draw-accepted'});netStatus('Remis angenommen. Warte auf Bestätigung des Gastgebers …');}}
+  else {status('Remisangebot wurde abgelehnt.');v147RenderActions();}
+  return;
+ }
+ if(data.type==='v147-dame-draw-accepted'&&onlineHost&&v147OfferReceived&&!gameOver){v147Complete('draw','draw');return;}
+ if(data.type==='v147-dame-resign'&&onlineHost&&!gameOver&&onlineConnected){
+  // Peer is always the guest, so winner is the host's color.
+  v147Complete('resign',onlineHostSide);return;
+ }
+ if(data.type==='v147-dame-terminal'&&!onlineHost&&!gameOver&&onlineConnected&&['w','b','draw'].includes(data.winner)){
+  v147Complete(data.reason==='draw'?'draw':'resign',data.winner);return;
+ }
  if(data.type==='dame-chat-v1'){
   if(!onlineConnected)return;const v=data.value;
   if(typeof v==='string'&&((data.kind==='emoji'&&dameChatEmojis.includes(v))||(data.kind==='text'&&v.length<=200&&v.trim())))dameChatLine('Gegner',v,false);
@@ -3742,9 +3779,9 @@ function onlineHandleData(data){if(!data||typeof data!=='object')return;
  else if(data.type==='dame-hello'&&onlineHost)broadcast();
 }
 function attachConnection(c){if(onlineConn&&onlineConn!==c&&onlineConnected){try{c.close()}catch(e){}return;}onlineConn=c;const gen=onlineGeneration;
- c.on('open',()=>{if(gen!==onlineGeneration)return;clearDamePending();onlineConnected=true;window.ArenaFriendV70?.attach('dame',d=>c.send(d),()=>onlineConnected&&c.open);dameChatInfo('Du kannst jetzt schreiben und Emojis senden.');if(publicDameRoom)document.getElementById('damePublicInfo').textContent='✅ Gegner verbunden!';document.getElementById('dameDisconnect').hidden=false;netStatus(onlineHost?'✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.')+' Dein Freund ist beigetreten.':'✅ Verbindung hergestellt. Warte auf die Farbzuweisung …');if(onlineHost)broadcast();else c.send({type:'dame-hello'});render();if(!dameRecoveryAwaitingHost)dameRecoveryPersist();});
+ c.on('open',()=>{if(gen!==onlineGeneration)return;clearDamePending();v147OfferSent=false;v147OfferReceived=false;onlineConnected=true;window.ArenaFriendV70?.attach('dame',d=>c.send(d),()=>onlineConnected&&c.open);dameChatInfo('Du kannst jetzt schreiben und Emojis senden.');if(publicDameRoom)document.getElementById('damePublicInfo').textContent='✅ Gegner verbunden!';document.getElementById('dameDisconnect').hidden=false;netStatus(onlineHost?'✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.')+' Dein Freund ist beigetreten.':'✅ Verbindung hergestellt. Warte auf die Farbzuweisung …');if(onlineHost)broadcast();else c.send({type:'dame-hello'});render();if(!dameRecoveryAwaitingHost)dameRecoveryPersist();});
  c.on('data',data=>{if(gen===onlineGeneration)onlineHandleData(data)});
- const lost=()=>{if(gen!==onlineGeneration)return;clearDamePending();onlineConnected=false;window.ArenaFriendV70?.detached('dame');netStatus(dameRecoveryAwaitingHost?'⏳ Warte auf Rückkehr des Gastgebers …':'⚠️ Verbindung unterbrochen. Bitte Partie fortsetzen wählen.');render();if(dameRecoveryAwaitingHost)dameRecoveryScheduleReconnect()};
+ const lost=()=>{if(gen!==onlineGeneration)return;clearDamePending();v147OfferSent=false;v147OfferReceived=false;onlineConnected=false;window.ArenaFriendV70?.detached('dame');netStatus(dameRecoveryAwaitingHost?'⏳ Warte auf Rückkehr des Gastgebers …':'⚠️ Verbindung unterbrochen. Bitte Partie fortsetzen wählen.');render();if(dameRecoveryAwaitingHost)dameRecoveryScheduleReconnect()};
  c.on('close',lost);c.on('error',e=>{if(gen===onlineGeneration)netStatus('Verbindungsfehler: '+(e?.message||'Unbekannt'))});
 }
 // PeerJS data channels can delay a packet on mobile Safari.
@@ -3769,6 +3806,25 @@ document.getElementById('dameCreate').addEventListener('click',()=>{if(dameRecov
 document.getElementById('dameCreate').addEventListener('click',onlineCreate);
 document.getElementById('dameJoin').addEventListener('click',()=>{if(dameRecoveryRead())dameRecoveryClear()});
 document.getElementById('dameJoin').addEventListener('click',onlineJoin);
+document.getElementById('v147DameResign').addEventListener('click',()=>{
+ if(modeEl.value!=='online'||!onlineConnected||gameOver||!onlineSide||!confirm('Wirklich aufgeben? Dein Gegner gewinnt.'))return;
+ if(onlineHost)v147Complete('resign',other(onlineSide));
+ else{onlineConn.send({type:'v147-dame-resign'});status('Aufgabe gesendet. Warte auf Bestätigung …');}
+});
+document.getElementById('v147DameOffer').addEventListener('click',()=>{
+ if(modeEl.value!=='online'||!onlineConnected||gameOver||v147OfferSent||v147OfferReceived)return;
+ v147OfferSent=true;onlineConn.send({type:'v147-dame-offer'});status('Remis angeboten. Warte auf Antwort …');v147RenderActions();
+});
+document.getElementById('v147DameAccept').addEventListener('click',()=>{
+ if(!v147OfferReceived||!onlineConnected||gameOver)return;
+ v147OfferReceived=false;onlineConn.send({type:'v147-dame-reply',accept:true});
+ if(onlineHost)v147Complete('draw','draw');else status('Remis angenommen. Warte auf Bestätigung …');
+ v147RenderActions();
+});
+document.getElementById('v147DameDecline').addEventListener('click',()=>{
+ if(!v147OfferReceived||!onlineConnected||gameOver)return;
+ v147OfferReceived=false;onlineConn.send({type:'v147-dame-reply',accept:false});status('Remisangebot abgelehnt. Partie läuft weiter.');v147RenderActions();
+});
 document.getElementById('dameDisconnect').addEventListener('click',()=>{discardNetwork();render()});
 document.getElementById('dameCopyLink').addEventListener('click',()=>copyDame(inviteUrl()));
 document.getElementById('dameCopyCode').addEventListener('click',()=>copyDame(onlineRoom));
@@ -3820,11 +3876,11 @@ document.getElementById('dameRestart').addEventListener('click',()=>{if(modeEl.v
    for(const r of rows.slice().reverse().slice(0,12)){const result=r.result==='win'?'🏆 Sieg':r.result==='loss'?'❌ Niederlage':'🤝 Remis';let date=r.date?new Date(r.date).toLocaleDateString('de-DE'):'–';makeRow(recent,result,'gegen '+(r.opponent||'Gegner'),date+' · '+safe(r.mode))}
  }
  window.addEventListener('arena:dame-finished',e=>{
-   const d=e.detail||{};if(typeof d.id!=='string'||!['w','b'].includes(d.winner))return;
+   const d=e.detail||{};if(typeof d.id!=='string'||!['w','b','draw'].includes(d.winner))return;
    const list=dameRecords();if(list.some(x=>x.id===d.id))return; // prevent double counting network updates
    const side=d.playerSide;
    if(d.mode!=='local'&&!['w','b'].includes(side))return;
-   const result=d.mode==='local'?'win':d.winner===side?'win':'loss';
+   const result=d.winner==='draw'?'draw':d.mode==='local'?'win':d.winner===side?'win':'loss';
    list.push({id:d.id,date:Date.now(),result,name:d.mode==='local'?(d.winner==='w'?'Weiß':'Schwarz'):nickname(),mode:d.mode==='ai'?'Computer':d.mode==='online'?'Online':'Zwei Spieler',opponent:d.mode==='ai'?'Dame-Computer':d.mode==='online'?'Online-Freund':(d.winner==='w'?'Schwarz':'Weiß')});
    try{localStorage.setItem(KEY,JSON.stringify(list.slice(-500)))}catch(_){}
    if(current==='dame')render();
@@ -5742,7 +5798,7 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
  setTimeout(flushReports,1000);
  window.addEventListener('arena:dame-finished',event=>{
   const d=event.detail||{};
-  if(d.mode!=='online'||!['w','b'].includes(d.playerSide)||!['w','b'].includes(d.winner))return;
+  if(d.mode!=='online'||!['w','b'].includes(d.playerSide)||!['w','b','draw'].includes(d.winner))return;
   if(typeof d.id!=='string'||!/^dame-[a-z0-9-]{10,75}$/.test(d.id))return;
   report({matchId:'live-'+d.id,game:'dame',side:d.playerSide,winner:d.winner});
  });
