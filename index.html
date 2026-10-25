@@ -1060,7 +1060,39 @@ body{background:var(--arena62-bg)}
 #courseHome .v104-dame-page .dame-note{display:none!important}
 @media(max-width:850px){#eugenGame .rook-game-layout{grid-template-columns:minmax(0,1fr)!important}#eugenGame .rook-panel{margin-top:0!important}}
 @media(max-width:650px){#eugenGame .eugen-capture-group,#courseHome .v108-cap-card{padding:8px!important}#eugenGame .v104-head, #courseHome .v104-dame-page .v104-head{padding:11px!important}#eugenGame .rook-panel{padding:10px!important}#eugenGame .rook-controls button{font-size:13px!important;padding:10px 5px!important}}
-</style></head><script>
+</style>
+<style id="v112-live-css">
+#liveMenu.v112-live{background:#071525!important;color:#f6f0e5!important;min-height:80vh;padding:20px 14px 55px!important;box-sizing:border-box}
+#liveMenu .v112-live-wrap{max-width:1040px;margin:0 auto}
+#liveMenu .v112-back{margin:0 0 24px!important;padding:10px 17px!important;border:1px solid #987645!important;border-radius:12px!important;background:#172b44!important;color:#f7d59e!important;font-size:15px!important;font-weight:700!important}
+#liveMenu .v112-head{margin-bottom:23px!important}
+#liveMenu .v112-kicker{display:block;font-size:11px;letter-spacing:2px;font-weight:800;color:#d6ab6c;margin-bottom:8px}
+#liveMenu .v112-head h1{font-family:Georgia,serif!important;color:#f5d49d!important;font-size:clamp(29px,5vw,43px)!important;line-height:1.12!important;margin:0 0 7px!important}
+#liveMenu .v112-head p{font-size:15px!important;color:#adbed1!important;line-height:1.4!important;margin:0!important}
+#liveMenu .v112-card{background:linear-gradient(155deg,#1c344f 0%,#10233b 100%)!important;border:1px solid #9b7849!important;border-radius:20px!important;box-shadow:0 10px 25px #0002!important;box-sizing:border-box!important;padding:23px!important;min-width:0!important;max-width:none!important;margin:0!important}
+#liveMenu .v112-setup{display:flex!important;align-items:center!important;gap:15px!important;margin-bottom:17px!important;padding:13px 20px!important}
+#liveMenu .v112-setup label{white-space:nowrap;margin:0!important}
+#liveMenu .v112-setup select{flex:1;margin:0!important;max-width:350px!important}
+#liveMenu .v112-live-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:17px!important;align-items:stretch!important}
+#liveMenu .v112-card-heading{display:flex;align-items:center;gap:14px;margin-bottom:21px}
+#liveMenu .v112-card-heading .v112-glyph{display:flex;align-items:center;justify-content:center;flex:0 0 49px;height:49px;background:#0a1a2d;border:1px solid #aa834e;border-radius:13px;color:#f2cd8f;font-size:26px}
+#liveMenu .v112-card-heading h2{font:700 clamp(20px,2.5vw,27px)/1.2 Georgia,serif!important;margin:0!important;color:#f4d29b!important}
+#liveMenu .v112-card-heading p{font-size:13px!important;color:#acbed2!important;margin:5px 0 0!important;line-height:1.4!important}
+#liveMenu .v112-card label{display:block;color:#f0d2a4!important;font-weight:700!important;font-size:13px!important;margin:0 0 8px!important}
+#liveMenu .v112-card select,#liveMenu .v112-card input,#liveMenu .v112-setup select{box-sizing:border-box!important;width:100%!important;min-width:0!important;padding:12px 13px!important;border-radius:11px!important;border:1px solid #5d7690!important;background:#203a54!important;color:#fff!important;font-size:15px!important;height:46px!important}
+#liveMenu .v112-card select{margin:0 0 15px!important}
+#liveMenu .v112-card button.v112-primary{width:100%!important;display:block!important;box-sizing:border-box!important;min-height:49px!important;background:linear-gradient(115deg,#f4d79f,#cc9953)!important;color:#102033!important;border:1px solid #f8e1b2!important;border-radius:12px!important;font-size:16px!important;font-weight:800!important;padding:11px!important;white-space:normal!important;line-height:1.35!important}
+#liveMenu .v112-or{font-size:10px;letter-spacing:1.7px;font-weight:800;color:#95aabe;text-align:center;margin:23px 0 13px}
+#liveMenu .v112-join{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important;align-items:center!important;margin:0!important}
+#liveMenu .v112-join input{margin:0!important}
+#liveMenu .v112-join #liveJoin{margin:0!important;min-height:46px!important;background:#254768!important;color:#f5d7a0!important;border:1px solid #bd9155!important;border-radius:11px!important;padding:9px 12px!important;white-space:nowrap!important;font-weight:750!important;font-size:14px!important}
+#liveMenu .v112-feedback{margin:14px 0 0!important;color:#a9bdd0!important;line-height:1.4!important;font-size:12px!important;overflow-wrap:anywhere!important}
+#liveMenu .v112-help{margin-top:19px!important;border:1px solid #435d77!important;border-radius:13px!important;background:#11253b!important;color:#acbdcf!important;padding:13px 17px!important;font-size:13px!important}
+#liveMenu .v112-help summary{cursor:pointer;color:#efd09e!important;font-weight:700;list-style-position:inside}
+#liveMenu .v112-help p{margin:11px 0 0!important;line-height:1.6!important;color:#bdcbd8!important}
+@media(max-width:650px){#liveMenu.v112-live{padding:14px 10px 40px!important}#liveMenu .v112-live-grid{grid-template-columns:1fr!important;gap:12px!important}#liveMenu .v112-card{padding:17px!important;border-radius:16px!important}#liveMenu .v112-setup{padding:14px 16px!important;display:block!important}#liveMenu .v112-setup select{margin-top:9px!important;max-width:none!important}#liveMenu .v112-back{margin-bottom:18px!important}#liveMenu .v112-head{margin-bottom:17px!important}#liveMenu .v112-card-heading{margin-bottom:16px}}
+</style>
+</head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
  'use strict';
@@ -1550,28 +1582,34 @@ body{background:var(--arena62-bg)}
   </div>
 </div>
 </section>
-<section class="heavy-menu" hidden="" id="liveMenu">
-<button class="course-return" id="liveBackHome" type="button">← Alle Kurse</button>
-<h1>🌐 Live gegen Freunde</h1>
-<p class="intro">Kostenlos 1 gegen 1. Erstelle einen privaten Raum oder tritt dem Raum deines Freundes bei. Registrierung und Anmeldung findest du jetzt unter „Profil → Konto erstellen / Anmelden“. Danach kannst du Freunde per Spielernamen einladen.</p>
-<div class="card" style="max-width:790px">
-<h2>Freundschaftsspiel starten</h2>
-<div class="live-actions" style="align-items:center"><label for="liveTimeSelect"><strong>Schachuhr:</strong></label><select aria-label="Zeit pro Spieler" id="liveTimeSelect"><option value="3">3 Minuten (Blitz)</option><option value="5">5 Minuten (Blitz)</option><option selected="" value="10">10 Minuten (Schnellschach)</option><option value="15">15 Minuten (Schnellschach)</option><option value="30">30 Minuten (Langschach)</option><option value="0">Ohne Zeitlimit (unbegrenzt)</option></select></div>
-<div class="arena-public-search">
-  <h2>🃏 Allgemeiner Tisch für zwei</h2>
-  <p>Wie in „Тысяча Арена“: ein Klick — wir suchen einen Gegner. Der erste Spieler wartet, der zweite wird automatisch verbunden.</p>
-  <label for="v76ChessColorMenu" style="display:block;margin:8px 0;color:#f7dca2">Meine Farbe</label>
-  <select id="v76ChessColorMenu" style="color:#fff;background:#173954;border:1px solid #6388a4;padding:11px;border-radius:9px;margin-bottom:10px"><option value="random">🎲 Zufällig</option><option value="w">⚪ Weiß</option><option value="b">⚫ Schwarz</option></select>
-  <button id="livePublicTwo" type="button">🌐 Allgemeiner Tisch · 2 Spieler</button>
-  <p id="livePublicInfo" role="status">Automatische Suche benötigt die Server-Version dieser Arena.</p>
-</div>
-<h3>Oder privat mit einem Freund spielen</h3>
-<div class="live-actions" style="align-items:center"><label for="v76PrivateChessColor">Meine Farbe als Gastgeber</label><select id="v76PrivateChessColor"><option value="w">⚪ Weiß</option><option value="b">⚫ Schwarz</option><option value="random">🎲 Zufällig</option></select><button id="liveCreate" type="button">♔ Privaten Raum erstellen</button></div>
-<p>Oder Raumcode von deinem Freund eingeben:</p>
-<div class="live-actions"><input aria-label="Raumcode" autocapitalize="characters" id="liveCodeInput" maxlength="36" placeholder="z. B. EUGEN-ABC123" type="text"/><button id="liveJoin" type="button">♚ Raum beitreten</button></div>
-<p id="liveMenuStatus" role="status">Bereit zum Verbinden.</p>
-<p class="live-help">Für die Live-Verbindung wird Internet benötigt. Die Verbindung nutzt den kostenlosen öffentlichen PeerJS-Vermittlungsdienst und WebRTC. Verfügbarkeit ist nicht garantiert. Ein Einladungslink funktioniert nur, wenn du die Arena auf einer öffentlich erreichbaren HTTPS-Adresse veröffentlicht hast. Bei einer lokalen Datei kannst du stattdessen den Raumcode teilen; beide benötigen diese Arena-Datei.</p>
-</div>
+<section class="heavy-menu v112-live" hidden="" id="liveMenu">
+  <div class="v112-live-wrap">
+    <button class="course-return v112-back" id="liveBackHome" type="button">← Zurück</button>
+    <div class="v112-head"><span class="v112-kicker">EUGENS SCHACH ARENA · ONLINE</span><h1>♟ Live-Schach</h1><p>Spiele gegen Freunde oder finde online einen Gegner.</p></div>
+    <div class="card v112-card v112-setup">
+      <label for="liveTimeSelect">⏱ Schachuhr</label>
+      <select aria-label="Zeit pro Spieler" id="liveTimeSelect"><option value="3">3 Minuten · Blitz</option><option value="5">5 Minuten · Blitz</option><option selected="" value="10">10 Minuten · Schnellschach</option><option value="15">15 Minuten · Schnellschach</option><option value="30">30 Minuten · Langschach</option><option value="0">Ohne Zeitlimit</option></select>
+    </div>
+    <div class="v112-live-grid">
+      <div class="v112-card v112-public arena-public-search">
+        <div class="v112-card-heading"><span class="v112-glyph">🌐</span><div><h2>Gegner finden</h2><p>Öffentlicher Tisch · 2 Spieler</p></div></div>
+        <label for="v76ChessColorMenu">Meine Farbe</label>
+        <select id="v76ChessColorMenu"><option value="random">🎲 Zufällig</option><option value="w">⚪ Weiß</option><option value="b">⚫ Schwarz</option></select>
+        <button class="v112-primary" id="livePublicTwo" type="button">Gegner suchen →</button>
+        <p class="v112-feedback" id="livePublicInfo" role="status">Automatische Suche benötigt die Server-Version dieser Arena.</p>
+      </div>
+      <div class="v112-card v112-private">
+        <div class="v112-card-heading"><span class="v112-glyph">♔</span><div><h2>Privater Raum</h2><p>Direkt mit einem Freund spielen</p></div></div>
+        <label for="v76PrivateChessColor">Meine Farbe</label>
+        <select id="v76PrivateChessColor"><option value="w">⚪ Weiß</option><option value="b">⚫ Schwarz</option><option value="random">🎲 Zufällig</option></select>
+        <button class="v112-primary" id="liveCreate" type="button">Raum erstellen →</button>
+        <div class="v112-or">ODER MIT CODE BEITRETEN</div>
+        <div class="live-actions v112-join"><input aria-label="Raumcode" autocapitalize="characters" id="liveCodeInput" maxlength="36" placeholder="Raumcode eingeben" type="text"/><button id="liveJoin" type="button">Beitreten →</button></div>
+        <p class="v112-feedback" id="liveMenuStatus" role="status">Bereit zum Verbinden.</p>
+      </div>
+    </div>
+    <details class="v112-help"><summary>ⓘ Hinweise zur Verbindung</summary><p>Für Live-Spiele ist Internet erforderlich. Die direkte Verbindung verwendet PeerJS und WebRTC; ihre Verfügbarkeit kann variieren. Einladungslinks funktionieren über die veröffentlichte HTTPS-Adresse der Arena. Konto und Freunde findest du unter „Profil“.</p></details>
+  </div>
 </section>
 <section class="rook-game" hidden="" id="liveGame">
 <button class="course-return" id="liveBackMenu" type="button">← Live-Auswahl</button>
