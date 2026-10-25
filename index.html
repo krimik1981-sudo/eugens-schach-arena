@@ -1498,12 +1498,12 @@ body{background:var(--arena62-bg)}
 <div class="arena-page" data-panel="statistik" hidden="">
 <section id="v150OnlineStats" style="max-width:1000px;margin:18px auto;padding:14px;color:#eaf1ff">
 <h2>🏆 Online-Statistik &amp; Partienverlauf</h2>
-<p>Nur bestätigte Partien gegen echte Spieler · Supabase · keine Computerpartien.</p>
+<p>Nur Online-Partien gegen Menschen.</p>
 <div class="v150-actions"><button type="button" id="v150Chess" class="v150-selected">♟ Schach</button><button type="button" id="v150Dame">⚫ Dame</button><button type="button" id="v150Refresh">↻ Aktualisieren</button></div>
 <div id="v150Message" role="status" aria-live="polite">Online-Ergebnisse werden geladen …</div>
 <div class="v150-summary"><div>Partien<strong id="v150Total">–</strong></div><div>Siege<strong id="v150Wins">–</strong></div><div>Niederlagen<strong id="v150Losses">–</strong></div><div>Remis<strong id="v150Draws">–</strong></div><div>Gewinnquote<strong id="v150Rate">–</strong></div></div>
 <div class="v150-panels"><section><h3>👥 Bilanz gegen Freunde</h3><div id="v150Friends"></div></section><section><h3>📜 Abgeschlossene Partien</h3><div id="v150History"></div></section></div>
-<p style="opacity:.75;font-size:13px">Ergebnisse erscheinen, wenn beide angemeldeten Spieler die abgeschlossene Online-Partie bestätigt haben. Frühere Computerpartien werden hier nicht angezeigt.</p>
+<p style="opacity:.75;font-size:13px">Gezählt werden nur von beiden Spielern bestätigte Online-Partien.</p>
 </section></div>
 <div class="arena-page v87-profile" data-panel="profil" hidden>
  <div class="v87-heading"><h2>♙ Mein Profil</h2><p>Konto, Freunde und Partien verwalten.</p></div>
@@ -6173,4 +6173,31 @@ const observer=new MutationObserver(()=>{if(!root.closest('[data-panel="statisti
 refresh();
 })();
 </script>
+
+<style id="v151-mobile-stats">
+/* v151: iPhone-sized online statistics. Desktop styles remain untouched. */
+@media screen and (max-width: 700px) {
+  [data-panel="statistik"] {overflow-x:clip !important;}
+  #v150OnlineStats {box-sizing:border-box !important;width:100% !important;max-width:100% !important;min-width:0 !important;margin:0 auto !important;padding:16px 12px 118px !important;overflow-wrap:break-word !important;}
+  #v150OnlineStats, #v150OnlineStats * {box-sizing:border-box !important;}
+  #v150OnlineStats h2 {font-size:clamp(22px,6.0vw,27px) !important;line-height:1.22 !important;margin:0 0 7px !important;overflow-wrap:anywhere !important;}
+  #v150OnlineStats > p {font-size:12px !important;line-height:1.45 !important;margin:8px 0 12px !important;}
+  #v150OnlineStats .v150-actions {display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important;margin:14px 0 12px !important;width:100% !important;}
+  #v150OnlineStats .v150-actions button {display:flex !important;align-items:center !important;justify-content:center !important;min-width:0 !important;width:100% !important;height:44px !important;margin:0 !important;padding:9px 5px !important;border-radius:12px !important;line-height:1.1 !important;font-size:14px !important;white-space:nowrap !important;}
+  #v150OnlineStats #v150Refresh {grid-column:1/-1 !important;height:40px !important;font-size:13px !important;}
+  #v150OnlineStats #v150Message {font-size:12px !important;line-height:1.4 !important;margin:9px 0 14px !important;min-height:0 !important;}
+  #v150OnlineStats .v150-summary {display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important;margin:12px 0 18px !important;width:100% !important;}
+  #v150OnlineStats .v150-summary > div {display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;min-width:0 !important;min-height:86px !important;padding:10px 6px !important;border-radius:13px !important;font-size:12px !important;line-height:1.3 !important;white-space:normal !important;overflow-wrap:break-word !important;text-align:center !important;}
+  #v150OnlineStats .v150-summary > div:last-child {grid-column:1/-1 !important;min-height:66px !important;}
+  #v150OnlineStats .v150-summary strong {font-size:29px !important;line-height:1.15 !important;margin:5px 0 0 !important;white-space:nowrap !important;}
+  #v150OnlineStats .v150-panels {display:grid !important;grid-template-columns:minmax(0,1fr) !important;gap:12px !important;width:100% !important;}
+  #v150OnlineStats .v150-panels > section {width:100% !important;min-width:0 !important;margin:0 !important;padding:14px 12px !important;border-radius:15px !important;}
+  #v150OnlineStats .v150-panels h3 {font-size:18px !important;line-height:1.25 !important;margin:0 0 10px !important;overflow-wrap:break-word !important;}
+  #v150OnlineStats .v150-item {display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;align-items:center !important;gap:10px !important;padding:11px 0 !important;min-width:0 !important;font-size:14px !important;line-height:1.4 !important;}
+  #v150OnlineStats .v150-item > div {min-width:0 !important;overflow-wrap:anywhere !important;}
+  #v150OnlineStats .v150-item > strong {font-size:13px !important;line-height:1.3 !important;text-align:right !important;max-width:95px !important;white-space:normal !important;overflow-wrap:break-word !important;}
+  #v150OnlineStats .v150-sub {font-size:11px !important;line-height:1.4 !important;}
+  #v150OnlineStats #v150Friends, #v150OnlineStats #v150History {font-size:13px !important;}
+}
+</style>
 </body></html>
