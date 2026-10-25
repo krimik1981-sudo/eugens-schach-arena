@@ -6289,4 +6289,43 @@ refresh();
 })();
 </script>
 
+
+<style id="v156-friends-navigation-fix">
+/* v156: Explicit view state; retain original server account, friend cards and their handlers. */
+#courseHome .v87-profile #arena71-panel.v155-open .v153-friends-count,
+#courseHome .v87-profile #arena71-panel.v155-open #arena77-add {display:block!important}
+#courseHome .v87-profile #arena71-panel.v155-open #arena77-friends {display:grid!important;gap:10px!important}
+#courseHome .v87-profile #arena71-panel.v155-open #v155FriendsBack {display:inline-flex!important}
+#courseHome .v87-profile #arena71-panel.v155-open #arena71-who,
+#courseHome .v87-profile #arena71-panel.v155-open #arena71-logout,
+#courseHome .v87-profile #arena71-panel.v155-open .arena71-status {display:none!important}
+#courseHome .v87-profile #arena71-panel.v155-open #v153-requests:not([hidden]) {display:block!important}
+</style>
+<script id="v156-friends-navigation-fix-script">
+(function(){'use strict';
+ // Capture on window runs BEFORE v129's document capture handler which currently
+ // stops event propagation before the v155 friends handler receives it.
+ window.addEventListener('click',function(e){
+   const friendTile=e.target.closest?.('#v118Friends');
+   if(friendTile){
+     e.preventDefault();e.stopImmediatePropagation();
+     const p=document.getElementById('arena71-panel');
+     if(!p)return;
+     p.classList.add('v155-open');
+     const first=p.querySelector('#v155FriendsBack')||p.querySelector('.v153-friends-count')||p;
+     setTimeout(()=>first.scrollIntoView({block:'start',behavior:'smooth'}),0);
+     return;
+   }
+   const back=e.target.closest?.('#v155FriendsBack');
+   if(back){
+     e.preventDefault();e.stopImmediatePropagation();
+     document.getElementById('arena71-panel')?.classList.remove('v155-open');
+     setTimeout(()=>document.getElementById('v118Friends')?.scrollIntoView({block:'start',behavior:'smooth'}),0);
+     return;
+   }
+   const profile=e.target.closest?.('#courseHome .arena-bottomnav [data-page="profil"], #courseHome .arena-navitem[data-page="profil"]');
+   if(profile)document.getElementById('arena71-panel')?.classList.remove('v155-open');
+ },true);
+})();
+</script>
 </body></html>
