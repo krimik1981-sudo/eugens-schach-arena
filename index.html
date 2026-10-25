@@ -6247,4 +6247,47 @@ refresh();
   #v150OnlineStats #v150Friends, #v150OnlineStats #v150History {font-size:13px !important;}
 }
 </style>
+
+<style id="v154-profile-friends-navigation">
+/* Account stays on the profile; friends become a deliberately opened subview. */
+#courseHome .v87-profile #v154FriendsDetails[hidden]{display:none!important}
+#courseHome .v87-profile #v154FriendsDetails{margin-top:14px;min-width:0}
+#courseHome .v87-profile #v154FriendsDetails .v154-friends-back{background:#162d44!important;color:#f1d197!important;border:1px solid #b89255!important;margin-bottom:12px!important}
+#courseHome .v87-profile #arena71-panel>h3{font-size:clamp(20px,4vw,27px)!important}
+#courseHome .v87-profile #v154FriendsDetails .v153-friends-count{font-size:clamp(18px,4vw,23px)!important}
+@media(max-width:600px){#courseHome .v87-profile #v154FriendsDetails{margin-top:10px}#courseHome .v87-profile #v154FriendsDetails .v154-friends-back{width:100%;max-width:240px}}
+</style>
+<script id="v154-profile-friends-navigation-script">
+(function(){'use strict';
+ const id=x=>document.getElementById(x);
+ let details=null;
+ function init(){
+   const panel=id('arena71-panel');if(!panel)return false;
+   if(!id('v154FriendsDetails')){
+     const wrap=document.createElement('section');wrap.id='v154FriendsDetails';wrap.hidden=true;
+     const back=document.createElement('button');back.type='button';back.className='v154-friends-back';back.textContent='← Zurück zum Profil';
+     back.onclick=()=>close();wrap.append(back);
+     // Move existing interactive DOM elements instead of recreating them.
+     const first=panel.querySelector('.v153-friends-count');
+     if(first){let n=first;while(n){const next=n.nextSibling;wrap.appendChild(n);n=next}panel.append(wrap)}
+   }
+   details=id('v154FriendsDetails');return !!details;
+ }
+ function open(){if(!init())return;details.hidden=false;details.scrollIntoView({block:'start',behavior:'smooth'});}
+ function close(){if(!init())return;details.hidden=true;const p=document.querySelector('#courseHome .v87-profile');p?.scrollIntoView({block:'start',behavior:'smooth'});}
+ // Intercept before the older v130 click handler; preserve all friend button logic.
+ document.addEventListener('click',e=>{
+   const b=e.target.closest?.('#v118Friends');
+   if(!b)return;
+   e.preventDefault();e.stopImmediatePropagation();open();
+ },true);
+ // The bottom Profil tab always shows the compact account overview.
+ document.addEventListener('click',e=>{
+   const b=e.target.closest?.('#courseHome .arena-bottomnav [data-page="profil"], #courseHome .arena-navitem[data-page="profil"]');
+   if(b&&init())details.hidden=true;
+ },true);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+
 </body></html>
