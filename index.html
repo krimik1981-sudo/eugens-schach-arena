@@ -5447,4 +5447,85 @@ document.addEventListener('DOMContentLoaded',()=>{
  };
 })();
 </script>
+<style id="v125-premium-mobile-css">
+/* Unified live-game design: board is the focus, controls are immediately beneath it */
+#liveGame{max-width:900px!important;margin:0 auto!important;padding:8px 10px 35px!important;color:#f5f0e8}
+#liveGame>h1,#liveGame>.intro,#liveGame>#liveBackMenu{display:none!important}
+#liveGame .v84-hud{border-color:#9e7a4d!important;background:linear-gradient(140deg,#112b43,#0d2034)!important;max-width:760px!important;padding:9px 12px!important;margin:4px auto 8px!important;box-shadow:none!important}
+#liveGame .v84-hud-top{gap:10px!important}
+#liveGame .v84-hud-sub{font-size:clamp(12px,3.2vw,15px)!important;line-height:1.35!important;color:#d8e1e9!important}
+#liveGame .v84-hud-actions button{border:1px solid #a6804e!important;background:#1a314a!important;color:#f0d5a9!important;border-radius:10px!important;white-space:nowrap!important}
+#liveGame .rook-game-layout{display:flex!important;flex-direction:column!important;gap:7px!important;max-width:760px!important;margin:auto!important;align-items:center!important}
+#liveGame #liveBoardFrame{width:100%!important;max-width:720px!important;margin:0!important;border-radius:13px!important}
+#liveGame .v121-clocks{width:100%!important;max-width:720px!important;margin:4px 0 0!important;order:1!important}
+#liveGame .live-clock-row{background:#10263d!important;border:1px solid #62748a!important;border-radius:12px!important;min-width:0!important;padding:8px 10px!important}
+#liveGame .live-clock-row:has(.active){border-color:#e6b76b!important;background:linear-gradient(120deg,#18334d,#253f57)!important}
+#liveGame .live-clock-row strong{font-variant-numeric:tabular-nums!important;font-size:clamp(18px,5.4vw,30px)!important}
+#liveGame #v121Captured{order:2!important;width:100%!important;max-width:720px!important;margin:0 auto 3px!important;gap:3px!important}
+#liveGame .v121-captured-line{border:1px solid #34495e!important;background:#10243a!important;min-height:27px!important;border-radius:9px!important}
+#liveGame .v125-actions{order:3;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;width:100%;max-width:720px;margin:5px auto 0!important}
+#liveGame .v125-actions button{width:100%;min-width:0;min-height:56px;display:flex;align-items:center;justify-content:center;gap:5px;flex-direction:column;background:#152e48!important;color:#f6d399!important;border:1px solid #ab8757!important;border-radius:12px!important;padding:7px 3px!important;font-weight:750!important;font-size:clamp(11px,3vw,15px)!important;line-height:1.15!important;cursor:pointer;white-space:normal!important}
+#liveGame .v125-actions button:disabled{opacity:.45}
+#liveGame .v125-actions #liveResign{background:#322837!important;border-color:#ae7776!important;color:#ffe0df!important}
+#liveGame .v125-actions #v115Analyse{background:#c59b60!important;color:#13243c!important}
+#liveGame .v125-actions #v115Analyse[hidden],#liveGame .v125-actions button[hidden]{display:none!important}
+#liveGame .v125-actions .v125-icon{font-size:23px;line-height:1.1}
+#liveGame .v120-live-controls{width:100%;max-width:720px;margin:0 auto!important;display:block!important;order:4}
+#liveGame .v120-live-controls>.live-actions{display:none!important}
+#liveGame .v120-live-controls .live-answer{margin:7px 0;padding:12px;border:1px solid #c5a16e;background:#19344b}
+#liveGame .v116-live-analysis-action{display:none!important}
+#liveGame #arenaChat{display:none!important}
+#liveGame .rook-panel{display:none!important}
+#liveGame .v125-chat-btn{width:100%;max-width:720px;display:flex;align-items:center;justify-content:center;gap:8px;background:#152e48;color:#f4d49e;border:1px solid #7b6142;border-radius:11px;padding:10px;margin:6px auto 0;order:5;cursor:pointer;font-size:14px;font-weight:800}
+#v125ChatDialog[hidden]{display:none!important}
+#v125ChatDialog{position:fixed;inset:0;background:#020915cf;z-index:110000;display:flex;align-items:center;justify-content:center;padding:16px}
+#v125ChatDialog .v125-chat-dialog-body{background:#112942;color:#f7ecde;border:1px solid #c09b67;border-radius:17px;max-width:520px;width:100%;max-height:83dvh;overflow:auto;padding:12px;box-shadow:0 12px 65px #0009}
+#v125ChatDialog .v125-chat-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:18px;font-weight:800}
+#v125ChatDialog .v125-chat-head button{padding:7px 12px;border-radius:9px;border:1px solid #a18355;background:#243f59;color:white}
+#v125ChatDialog #arenaChat{display:block!important;position:static!important;margin:0!important;width:auto!important;max-width:none!important;background:#122a42!important;box-shadow:none!important;border:0!important;padding:0!important}
+#v125ChatDialog #arenaChatToggle{display:none!important}
+#v125ChatDialog #arenaChatBody{display:flex!important;flex-direction:column!important;gap:8px!important;padding:8px!important}
+#v125ChatDialog #arenaChatMessages{height:125px!important;max-height:25dvh!important}
+#v125ChatDialog #arenaChatBody[hidden]{display:flex!important}
+/* Analysis: avoid bulky headers and extra gaps */
+#historyView{max-width:920px;margin:0 auto!important}
+#historyView #historyReview h2#historyGameTitle{font-size:clamp(17px,4vw,23px)!important;margin:8px 0!important;color:#f2d29a!important}
+#historyView .v111-review-toolbar{border:1px solid #8b704e;border-radius:12px;padding:7px;background:#11263d;gap:6px!important}
+#historyView .v111-review-toolbar button{border-radius:9px!important;background:#1b3551!important;color:#f0d09c!important;border:1px solid #8c704f!important;min-height:39px!important}
+#historyView .v111-review-board{padding:6px!important;max-width:720px!important;margin:auto!important}
+#historyView .v111-review-board .v111-nav-underboard{margin:8px 0!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important}
+#historyView .v111-review-board .v111-nav-underboard button{font-size:17px!important;background:#1a3550!important;color:#efd29a!important;padding:8px 1px!important;min-height:46px!important;border-radius:10px!important;border:1px solid #9d7b50!important}
+#historyView #historyMoveNote{font-size:14px!important;line-height:1.5!important}
+@media(max-width:520px){#liveGame{padding:4px 6px 20px!important}#liveGame .v125-actions{gap:5px!important}#liveGame .v125-actions button{min-height:55px!important;font-size:11px!important}#liveGame .v125-actions .v125-icon{font-size:19px!important}#liveGame .v84-hud{margin-bottom:5px!important}#historyView .v111-review-toolbar{display:flex!important;flex-wrap:wrap!important}}
+</style>
+<script id="v125-premium-live-script">
+(function(){'use strict';
+ const byId=id=>document.getElementById(id);
+ const game=byId('liveGame'),layout=game?.querySelector('.rook-game-layout');
+ if(!game||!layout||byId('v125ActionBar'))return;
+ const actionBar=document.createElement('div');actionBar.id='v125ActionBar';actionBar.className='v125-actions';actionBar.setAttribute('aria-label','Aktionen während der Live-Partie');
+ const actions=game.querySelector('.v120-live-controls');
+ const oldAction=actions?.querySelector('.live-actions');
+ const analysis=byId('v115Analyse');
+ function moveButton(button,icon,label){if(!button)return;actionBar.append(button);button.textContent='';const graphic=document.createElement('span');graphic.className='v125-icon';graphic.textContent=icon;const name=document.createElement('span');name.textContent=label;button.append(graphic,name)}
+ moveButton(analysis,'🔎','Analyse');
+ moveButton(byId('liveOfferDraw'),'🤝','Remis');
+ moveButton(byId('liveResign'),'⚑','Aufgeben');
+ layout.append(actionBar);
+ if(actions)layout.append(actions);
+ const chat=byId('arenaChat');
+ if(chat){
+  const open=document.createElement('button');open.type='button';open.className='v125-chat-btn';open.id='v125ChatOpen';open.textContent='💬 Chat & Emojis';layout.append(open);
+  const dialog=document.createElement('div');dialog.id='v125ChatDialog';dialog.hidden=true;dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label','Chat und Emojis');
+  const inner=document.createElement('div');inner.className='v125-chat-dialog-body';
+  const head=document.createElement('div');head.className='v125-chat-head';head.innerHTML='<span>💬 Chat & Emojis</span><button type="button" aria-label="Chat schließen">✕</button>';
+  inner.append(head,chat);dialog.append(inner);document.body.append(dialog);
+  const close=()=>{dialog.hidden=true;document.body.style.removeProperty('overflow')};
+  open.addEventListener('click',()=>{dialog.hidden=false;document.body.style.overflow='hidden';byId('arenaChatBody').hidden=false});
+  head.querySelector('button').addEventListener('click',close);
+  dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!dialog.hidden)close()});
+ }
+})();
+</script>
 </body></html>
