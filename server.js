@@ -305,8 +305,7 @@ async function resumeEndpoint(req,res,url){
      typeof p.recordId==='string' && /^live-[a-z0-9-]{5,90}$/i.test(p.recordId)){
    // Tombstone blocks any delayed autosave for this completed match.
    const previous=(await db('arena_saved_matches','GET',{player_id:'eq.'+id,select:'payload',limit:1}))[0]?.payload;
-   if(!previous || (previous.room===p.room && (!previous.state?.recordId || previous.state.recordId===p.recordId)) ||
-      (previous.done && previous.room===p.room)){
+   if(!previous || previous.room===p.room){
     await db('arena_saved_matches','POST',{on_conflict:'player_id'},
      {player_id:id,payload:{v:2,done:true,room:p.room,recordId:p.recordId,at:Date.now()}});
    }
@@ -325,8 +324,7 @@ async function resumeEndpoint(req,res,url){
     return reply(res,400,{error:'Ungültiger Spielstand'});
  // Do not resurrect a game that was already marked finished.
  const stored=(await db('arena_saved_matches','GET',{player_id:'eq.'+id,select:'payload',limit:1}))[0]?.payload;
- if(stored?.done && stored.room===p.room &&
-    stored.recordId===p.state.recordId)return reply(res,409,{error:'Partie bereits beendet'});
+ if(stored?.done && stored.room===p.room)return reply(res,409,{error:'Partie bereits beendet'});
  // No client may submit another player's account ID.
  await db('arena_saved_matches','POST',{on_conflict:'player_id'},
     {player_id:id,payload:{v:1,at:p.at,room:p.room,host:p.host,side:p.side,state:p.state,clockKey:p.clockKey||null}});
