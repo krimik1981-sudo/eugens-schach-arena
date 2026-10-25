@@ -2599,7 +2599,9 @@ rebuild();
   const existing=document.querySelector('script[data-peerjs]');if(existing){if(typeof window.Peer==='function')ok();else{existing.addEventListener('load',ok,{once:true});existing.addEventListener('error',()=>no(Error('PeerJS konnte nicht geladen werden.')),{once:true})}return}
   const script=document.createElement('script');script.src='https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';script.dataset.peerjs='true';script.onload=ok;script.onerror=()=>no(Error('PeerJS nicht verfügbar – Internet prüfen.'));document.head.appendChild(script)
  })}
- function closeSession(){window.ArenaFriendV70?.detached('chess');resetChat();if(publicRoomInfo){const prev=publicRoomInfo;publicRoomInfo=null;fetch('/api/match/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,room:prev.room})}).catch(()=>{});}token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
+ let liveReconnectTimer=null;
+ function stopLiveReconnect(){if(liveReconnectTimer){clearInterval(liveReconnectTimer);liveReconnectTimer=null}}
+ function closeSession(){stopLiveReconnect();window.ArenaFriendV70?.detached('chess');resetChat();if(publicRoomInfo){const prev=publicRoomInfo;publicRoomInfo=null;fetch('/api/match/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,room:prev.room})}).catch(()=>{});}token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
  function id(){let a=new Uint8Array(7);crypto.getRandomValues(a);return 'EUGEN-'+Array.from(a,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase()}
  const valid=s=>/^EUGEN-[0-9A-F]{14}$/.test(String(s||'').trim().toUpperCase());
  function peerReady(name,myToken){return new Promise(async(ok,no)=>{
@@ -2667,18 +2669,37 @@ rebuild();
  }
  function connect(c){
   if(conn&&conn!==c&&conn.open){c.close();return}conn=c;const thisConn=c;
-  c.on('open',()=>{if(conn!==thisConn)return;connected=true;clockAt=Date.now();chatInfo('Verbunden – Nachrichten und Emojis sind bereit.');window.ArenaFriendV70?.attach('chess',d=>c.send(d),()=>connected&&c.open);if(host()){clockRunning=!outcome;setStatus('Freund verbunden. Weiß beginnt! Du spielst '+(side==='w'?'Weiß.':'Schwarz.'));sync()}else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'})}render()});
+  c.on('open',()=>{if(conn!==thisConn)return;stopLiveReconnect();connected=true;clockAt=Date.now();chatInfo('Verbunden – Nachrichten und Emojis sind bereit.');window.ArenaFriendV70?.attach('chess',d=>c.send(d),()=>connected&&c.open);if(host()){clockRunning=!outcome;setStatus('Freund verbunden. Weiß beginnt! Du spielst '+(side==='w'?'Weiß.':'Schwarz.'));sync()}else{setStatus('Verbunden. Warte auf die Partie …');send({type:'join'})}render()});
   c.on('data',data);
-  c.on('close',()=>{if(conn!==thisConn)return;if(host())tick();conn=null;connected=false;window.ArenaFriendV70?.detached('chess');chatInfo('Verbindung getrennt.');if(host())clockRunning=false;setStatus('Verbindung unterbrochen. Die Uhr wurde angehalten. Für eine neue Partie einen neuen Raum erstellen.');render()});
+  c.on('close',()=>{if(conn!==thisConn)return;if(host())tick();conn=null;connected=false;window.ArenaFriendV70?.detached('chess');chatInfo('Verbindung getrennt.');if(host())clockRunning=false;setStatus('Verbindung unterbrochen. Wiederherstellung läuft …');render();scheduleLiveReconnect()});
   c.on('error',e=>{if(conn===thisConn)setStatus('Verbindungsfehler: '+String(e?.message||e))});
  }
+ function scheduleLiveReconnect(){
+   // Keep the board and move history. Only restore PeerJS transport.
+   if(liveReconnectTimer || !room || !peer || peer.destroyed)return;
+   const generation=token;let attempts=0;
+   const tryAgain=()=>{
+     if(generation!==token || !room || connected || !peer || peer.destroyed){stopLiveReconnect();return}
+     if(++attempts>12){stopLiveReconnect();setStatus('Verbindung nicht wiederhergestellt. Bitte Raum verlassen und erneut verbinden.');return}
+     setStatus('Verbindung unterbrochen – Neuverbindung '+attempts+'/12 …');
+     try{
+       if(peer.disconnected){peer.reconnect();return}
+       if(!host() && peer.open && (!conn || !conn.open)){
+         if(conn){try{conn.close()}catch(e){}}
+         connect(peer.connect(room,{reliable:true}));
+       }
+     }catch(e){setStatus('Neuverbindung: '+String(e?.message||e))}
+   };
+   liveReconnectTimer=setInterval(tryAgain,4000);
+   tryAgain();
+ }
  async function create(publicRoom=null,color='w'){closeSession();let myToken=token;isHost=true;side=color==='b'?'b':'w';room='HOST';show('liveGame');timeControl=Number($l('liveTimeSelect').value)*60000;baseReset(timeControl);setStatus('Raum wird erstellt …');
-  try{let name=await peerReady(typeof publicRoom==='string' ? publicRoom : id(),myToken);if(token!==myToken)return;room=name;$l('liveRoomCode').textContent=name;peer.on('connection',connect);setStatus('Raum bereit. Teile den Einladungslink oder Raumcode.');linkHint();render();document.dispatchEvent(new CustomEvent('arena80-room-ready',{detail:{game:'chess',room:name}}));return name}
+  try{let name=await peerReady(typeof publicRoom==='string' ? publicRoom : id(),myToken);if(token!==myToken)return;room=name;$l('liveRoomCode').textContent=name;peer.on('connection',connect);peer.on('disconnected',()=>{if(token===myToken)scheduleLiveReconnect()});setStatus('Raum bereit. Teile den Einladungslink oder Raumcode.');linkHint();render();document.dispatchEvent(new CustomEvent('arena80-room-ready',{detail:{game:'chess',room:name}}));return name}
   catch(e){if(token===myToken)setStatus('Verbindung zum Vermittlungsserver fehlgeschlagen: '+String(e?.message||e));return null}
  }
  async function join(text){const raw=String(text||'').trim();const isPublic=/^[cd][0-9a-f]{28}$/.test(raw);const code=isPublic?raw:raw.toUpperCase();if(!isPublic&&!valid(code)){menuStatus('Ungültiger Raumcode. Er beginnt mit EUGEN- und hat 14 weitere Zeichen.');return}
   closeSession();let myToken=token;isHost=false;side='b';room=code;show('liveGame');baseReset();$l('liveRoomCode').textContent=code;setStatus('Verbinde mit dem Gastgeber …');linkHint();
-  try{await peerReady(undefined,myToken);if(token!==myToken)return;connect(peer.connect(code,{reliable:true}));
+  try{await peerReady(undefined,myToken);if(token!==myToken)return;connect(peer.connect(code,{reliable:true}));peer.on('disconnected',()=>{if(token===myToken)scheduleLiveReconnect()});
    // v113: PeerJS signaling may need a retry when host just registered the ID.
    // Only public matchmaking IDs retry, private room connections are untouched.
    if(isPublic){
