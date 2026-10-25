@@ -263,6 +263,18 @@ async function bilanzEndpoint(req,res,url){
   }else await db('arena_match_reports','POST',{},row);
   return reply(res,200,{ok:true,confirmed:false});
  }
+ if(action==='history'){
+  const rows=await db('arena_match_reports','GET',{or:'(player_id.eq.'+a.id+',opponent_id.eq.'+a.id+')',select:'match_id,player_id,opponent_id,game,side,winner,created_at',order:'created_at.desc',limit:1500});
+  const map=new Map(rows.map(x=>[x.match_id+'|'+x.player_id,x]));
+  const confirmed=rows.filter(x=>x.player_id===a.id).filter(x=>{
+   const other=map.get(x.match_id+'|'+x.opponent_id);
+   return other&&other.player_id===x.opponent_id&&other.opponent_id===a.id&&other.game===x.game&&other.side!==x.side&&other.winner===x.winner;
+  }).slice(0,100);
+  const ids=[...new Set(confirmed.map(x=>x.opponent_id))];
+  const players=ids.length?await accounts({id:'in.('+ids.join(',')+')',select:'id,name'}):[];
+  const names=new Map(players.map(x=>[x.id,x.name]));
+  return reply(res,200,{items:confirmed.map(x=>({matchId:x.match_id,game:x.game,opponent:names.get(x.opponent_id)||'Spieler',date:x.created_at,result:x.winner==='draw'?'draw':x.winner===x.side?'win':'loss'}))});
+ }
  if(action==='list'){
   const rows=await db('arena_match_reports','GET',{or:'(player_id.eq.'+a.id+',opponent_id.eq.'+a.id+')',select:'match_id,player_id,opponent_id,game,side,winner',limit:3000});
   const own=rows.filter(x=>x.player_id===a.id);
