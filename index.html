@@ -5583,19 +5583,51 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
 
  function init(){
   const profile=document.getElementById('profilesView');if(!profile)return;
-  const panel=document.createElement('section');panel.id='v127Bilanz';panel.innerHTML='<h3>🏆 Freunde-Bilanz</h3><p>Deine bestätigten Ergebnisse gegen Freunde – auf allen Geräten synchronisiert.</p><button type="button" id="v127Refresh">↻ Bilanz aktualisieren</button><div id="v127BilanzList" aria-live="polite"></div><p id="v127BilanzNote">Gezählt werden nur beidseitig bestätigte, abgeschlossene Online-Partien in Schach und Dame. Frühere Partien ohne gemeinsame Meldung werden nicht übernommen.</p>';
+  const panel=document.createElement('section');panel.id='v127Bilanz';panel.innerHTML='<h3>🏆 Freunde-Bilanz</h3><p>Schach und Dame · Ergebnisse je Freund. Voraussetzung: beide Spieler sind mit ihrem Serverkonto angemeldet.</p><button type="button" id="v127Refresh">↻ Bilanz aktualisieren</button><div id="v127BilanzList" aria-live="polite"></div><p id="v127BilanzNote">Gezählt werden nur beidseitig bestätigte, abgeschlossene Online-Partien in Schach und Dame. Frühere Partien ohne gemeinsame Meldung werden nicht übernommen.</p>';
   profile.appendChild(panel);
   const list=panel.querySelector('#v127BilanzList');
-  async function refresh(){list.replaceChildren();if(!token()){list.textContent='Bitte zuerst unter Profil anmelden.';return}
+  async function refresh(){list.replaceChildren();if(!token()){list.textContent='Für die Freunde-Bilanz bitte mit deinem Serverkonto anmelden: Profil → Konto erstellen / Anmelden. Ein lokales Profil reicht nicht aus.';return}
    list.textContent='Ergebnisse werden geladen …';try{const {items=[]}=await api('list');list.replaceChildren();if(!items.length){list.textContent='Noch keine beidseitig bestätigten Partien. Spiele eine neue Online-Partie mit einem angemeldeten Freund.';return}
     for(const r of items){const section=document.createElement('section');section.className='v127-result';const title=document.createElement('strong');title.textContent=r.name+' · '+(r.game==='chess'?'Schach':'Dame');section.append(title);const line=document.createElement('div');for(const [value,label] of [[r.wins,'Siege'],[r.losses,'Niederlagen'],[r.draws,'Remis']]){const cell=document.createElement('span');const num=document.createElement('b');num.textContent=value;cell.append(num,document.createTextNode(label));line.append(cell)}section.append(line);list.append(section)}
-   }catch(e){list.textContent='Statistik noch nicht verfügbar: '+e.message+' (Supabase-Tabelle prüfen).'}
+   }catch(e){list.textContent='Freunde-Bilanz konnte nicht geladen werden: '+e.message+'. Prüfe in Supabase → Table Editor die Tabelle arena_match_reports und danach die Render-Logs. Solange die Verbindung nicht funktioniert, können keine Ergebnisse angezeigt werden.'}
   }
   panel.querySelector('#v127Refresh').onclick=refresh;
   document.querySelectorAll('[data-page="profil"], [data-panel="profil"], #v118Stats').forEach(el=>el.addEventListener('click',()=>setTimeout(refresh,150)));
   setTimeout(refresh,1000);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<style id="v129-profile-fix">
+/* Restore focus and click targets even if older CSS layers are present. */
+#courseHome .v87-profile .v87-metrics>.v118-tile{pointer-events:auto!important;position:relative!important;z-index:4!important;cursor:pointer!important}
+#v127Bilanz{max-width:900px;width:calc(100% - 20px);box-sizing:border-box;margin:12px auto 20px!important}
+#v127BilanzList{overflow-wrap:anywhere}
+#v127Bilanz button{cursor:pointer!important}
+#profilesView .profile-grid{max-width:100%}
+@media(max-width:620px){#courseHome .v87-profile .v87-metrics{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}#courseHome .v87-profile .v87-metrics>.v118-tile{min-width:0!important;padding:10px 3px!important}#v127Bilanz{width:calc(100% - 12px);padding:12px}}
+</style>
+<script id="v129-profile-fix-script">
+(function(){'use strict';
+ function mainTab(page){
+   const btn=document.querySelector('#courseHome .arena-bottomnav [data-page="'+page+'"]')||document.querySelector('#courseHome .arena-navitem[data-page="'+page+'"]');
+   if(btn){btn.click();return true}return false;
+ }
+ function openProfiles(){
+   const btn=document.querySelector('#courseHome [data-open="openProfiles"]');
+   if(btn){btn.click();return true}return false;
+ }
+ function openArchive(){
+   const btn=document.querySelector('#courseHome [data-open="openHistoryHome"]');
+   if(btn){btn.click();return true}return false;
+ }
+ document.addEventListener('click',function(e){
+   const btn=e.target.closest('#v118Friends,#v118Archive,#v118Stats');if(!btn)return;
+   e.preventDefault();e.stopImmediatePropagation();
+   if(btn.id==='v118Friends'){openProfiles()||mainTab('profil');return}
+   if(btn.id==='v118Archive'){openArchive()||mainTab('profil');return}
+   mainTab('statistik');
+ },true);
 })();
 </script>
 </body></html>
