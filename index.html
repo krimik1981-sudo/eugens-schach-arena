@@ -2657,6 +2657,31 @@ rebuild();
   if(fresh)historyLiveSync(game.id,game.moves,game.frames,outcome?game.result:null);
   hShow();hOpen(game);hAnalyze();
 });
+
+ /* v135 local recovery of in-progress live chess after an accidental page reload. */
+ const V135_KEY='arena_v135_chess_pending';
+ function savedSession(){try{const x=JSON.parse(localStorage.getItem(V135_KEY)||'null');if(!x||x.v!==1||Date.now()-x.at>24*3600000||!x.room||!x.state||x.state.outcome||!Array.isArray(x.state.recordMoves)||!Array.isArray(x.state.recordFrames)||x.state.recordFrames.length!==x.state.recordMoves.length+1)return null;return x}catch(e){return null}}
+ function clearSavedSession(){try{localStorage.removeItem(V135_KEY)}catch(e){}}
+ function preserveSession(){
+  if(!room||room==='HOST'||outcome||!liveMoves.length)return;
+  try{localStorage.setItem(V135_KEY,JSON.stringify({v:1,at:Date.now(),room,host:isHost,side,state:pack(),clockKey:isHost?serverClockKey:null}))}catch(e){}
+ }
+ function recoveryButton(){
+  let b=document.getElementById('v135Resume');const x=savedSession();
+  if(!b){b=document.createElement('button');b.id='v135Resume';b.type='button';b.className='v135-resume';const menu=$l('liveMenu');const ref=$l('liveMenuStatus');(ref?.parentNode||menu).insertBefore(b,ref||null);
+   b.addEventListener('click',async()=>{const x=savedSession();if(!x)return recoveryButton();b.disabled=true;try{if(x.host)await create(x.room,x.side,x);else await join(x.room); }finally{b.disabled=false;}});
+  }
+  b.hidden=!x;b.textContent=x?'↻ Partie fortsetzen · '+x.state.recordMoves.length+' Züge':'';
+ }
+ function recoverHost(x){
+  const s=x.state;if(!s||!s.position||typeof s.position!=='object'||typeof s.white!=='boolean'||!Array.isArray(s.recordMoves)||!Array.isArray(s.recordFrames)||s.recordFrames.length!==s.recordMoves.length+1||s.outcome)return false;
+  position={...s.position};white=s.white;ep=s.ep||null;castle=String(s.castle||'');half=Number(s.half)||0;full=Number(s.full)||1;last=Array.isArray(s.last)?[...s.last]:[];moveNo=Number(s.moveNo)||0;
+  timeControl=Number(s.timeControl)||0;remaining={w:Number(s.remaining?.w)||0,b:Number(s.remaining?.b)||0};clockAt=Date.now();clockRunning=false;
+  liveRecordId=String(s.recordId||liveRecordId);liveMoves=[...s.recordMoves];liveFrames=[...s.recordFrames];outcome=null;historyKeys=new Map([[key(),1]]);selected=null;drawOffer=null;rematchOffer=null;
+  serverClockKey=typeof x.clockKey==='string'?x.clockKey:null;serverClockMoveNo=-1;serverClockKnown=false;
+  historyLiveSync(liveRecordId,liveMoves,liveFrames,null);setStatus('Gespeicherte Partie geladen. Warte auf den Gegner …');render();return true;
+ }
+
  const setStatus=s=>{notice=s;$l('liveStatus').textContent=s};
  const menuStatus=s=>$l('liveMenuStatus').textContent=s;
  const show=id=>{for(const name of ['courseHome','heavyMenu','trainingView','rookGame','eugenMenu','eugenGame','liveMenu','liveGame']){let el=$l(name);if(el)el.hidden=name!==id}};
@@ -2691,7 +2716,7 @@ rebuild();
  })}
  function send(d){if(connected&&conn?.open)try{conn.send(d)}catch(e){setStatus('Senden fehlgeschlagen – Verbindung prüfen.')}}
  function pack(){return {hostColor:side,position:{...position},white,ep,castle,half,full,last:[...last],moveNo,remaining:{...remaining},clockRunning,clockAt:Date.now(),timeControl,outcome,drawOffer,rematchOffer,recordId:liveRecordId,recordMoves:[...liveMoves],recordFrames:[...liveFrames]}}
- function sync(){if(host())send({type:'sync',state:pack()});render()}
+ function sync(){if(host()){preserveSession();send({type:'sync',state:pack()})}render()}
  function acceptState(s){
   if(!s||!s.position||typeof s.position!=='object'||typeof s.white!=='boolean'||!s.remaining||!Number.isFinite(s.remaining.w)||!Number.isFinite(s.remaining.b)||!Number.isFinite(s.timeControl))return false;
   if(s.hostColor==='w'||s.hostColor==='b')side=opponent(s.hostColor);
@@ -2700,7 +2725,7 @@ rebuild();
   outcome=s.outcome||null;drawOffer=s.drawOffer||null;rematchOffer=s.rematchOffer||null;selected=null;promotion=null;$l('livePromotion').hidden=true;snapshotReceivedAt=Date.now();
   if(Array.isArray(s.recordMoves)&&Array.isArray(s.recordFrames)&&s.recordFrames.length===s.recordMoves.length+1){liveRecordId=String(s.recordId||liveRecordId);liveMoves=[...s.recordMoves];liveFrames=[...s.recordFrames];historyLiveSync(liveRecordId,liveMoves,liveFrames,outcome?outText():null)}
   if(outcome){window.ArenaBilanzV127?.report({matchId:liveRecordId,game:'chess',side,winner:outcome.winner||'draw'});}if(outcome)setStatus(outText());else if(drawOffer===side)setStatus('Remis-Angebot angenommen? Wähle Annehmen oder Ablehnen.');else if(rematchOffer===side)setStatus('Dein Freund möchte ein Rückspiel.');else setStatus(asSide()===side?'Du bist am Zug.':'Dein Freund ist am Zug.');
-  render();return true
+  preserveSession();render();return true
  }
  function tick(){
   if(!host()||!clockRunning||outcome||!connected||timeControl===0||serverClockKnown)return;
@@ -2716,12 +2741,12 @@ rebuild();
   if(half>=100){finish({reason:'fifty'});return}
   if((historyKeys.get(key())||0)>=3){finish({reason:'repetition'});return}
  }
- function finish(result){outcome=result;window.ArenaBilanzV127?.report({matchId:liveRecordId,game:'chess',side,winner:result.winner||'draw'});finishServerClock();clockRunning=false;drawOffer=null;rematchOffer=null;selected=null;promotion=null;$l('livePromotion').hidden=true;setStatus(outText());historyLiveSync(liveRecordId,liveMoves,liveFrames,outText());render()}
+ function finish(result){outcome=result;clearSavedSession();window.ArenaBilanzV127?.report({matchId:liveRecordId,game:'chess',side,winner:result.winner||'draw'});finishServerClock();clockRunning=false;drawOffer=null;rematchOffer=null;selected=null;promotion=null;$l('livePromotion').hidden=true;setStatus(outText());historyLiveSync(liveRecordId,liveMoves,liveFrames,outText());render()}
  function apply(m){
   const piece=position[m.from],taken=position[m.to];castle=egChangeCastle(castle,m,piece,taken);
   position=egApply(position,m);const [f,r]=egCoords(m.from);ep=m.double?egSquare(f,r+(white?1:-1)):null;
   half=piece.toLowerCase()==='p'||taken||m.epCapture?0:half+1;if(!white)full++;white=!white;moveNo++;last=[m.from,m.to];selected=null;
-  liveMoves.push(m.from+m.to+(m.promotion||''));liveFrames.push(hFenFrom(position,white,castle,ep,half,full));historyLiveSync(liveRecordId,liveMoves,liveFrames,null);
+  liveMoves.push(m.from+m.to+(m.promotion||''));liveFrames.push(hFenFrom(position,white,castle,ep,half,full));historyLiveSync(liveRecordId,liveMoves,liveFrames,null);preserveSession();
   drawOffer=null;const k=key();historyKeys.set(k,(historyKeys.get(k)||0)+1);endCheck();
   if(!outcome)setStatus(asSide()===side?'Du bist am Zug.':'Dein Freund ist am Zug.')
  }
@@ -2772,8 +2797,8 @@ rebuild();
    liveReconnectTimer=setInterval(tryAgain,4000);
    tryAgain();
  }
- async function create(publicRoom=null,color='w'){closeSession();let myToken=token;isHost=true;side=color==='b'?'b':'w';room='HOST';show('liveGame');timeControl=Number($l('liveTimeSelect').value)*60000;baseReset(timeControl);setStatus('Raum wird erstellt …');
-  try{let name=await peerReady(typeof publicRoom==='string' ? publicRoom : id(),myToken);if(token!==myToken)return;room=name;$l('liveRoomCode').textContent=name;peer.on('connection',connect);peer.on('disconnected',()=>{if(token===myToken)scheduleLiveReconnect()});setStatus('Raum bereit. Teile den Einladungslink oder Raumcode.');linkHint();render();document.dispatchEvent(new CustomEvent('arena80-room-ready',{detail:{game:'chess',room:name}}));return name}
+ async function create(publicRoom=null,color='w',recover=null){closeSession();let myToken=token;isHost=true;side=color==='b'?'b':'w';room='HOST';show('liveGame');timeControl=Number($l('liveTimeSelect').value)*60000;baseReset(timeControl);if(recover&&!recoverHost(recover)){menuStatus('Gespeicherte Partie ist ungültig.');return null}setStatus(recover?'Stelle gespeicherte Partie wieder her …':'Raum wird erstellt …');
+  try{let name=await peerReady(typeof publicRoom==='string' ? publicRoom : id(),myToken);if(token!==myToken)return;room=name;$l('liveRoomCode').textContent=name;peer.on('connection',connect);if(recover)preserveSession();peer.on('disconnected',()=>{if(token===myToken)scheduleLiveReconnect()});setStatus('Raum bereit. Teile den Einladungslink oder Raumcode.');linkHint();render();document.dispatchEvent(new CustomEvent('arena80-room-ready',{detail:{game:'chess',room:name}}));return name}
   catch(e){if(token===myToken)setStatus('Verbindung zum Vermittlungsserver fehlgeschlagen: '+String(e?.message||e));return null}
  }
  async function join(text){const raw=String(text||'').trim();const isPublic=/^[cd][0-9a-f]{28}$/.test(raw);const code=isPublic?raw:raw.toUpperCase();if(!isPublic&&!valid(code)){menuStatus('Ungültiger Raumcode. Er beginnt mit EUGEN- und hat 14 weitere Zeichen.');return}
@@ -2817,7 +2842,7 @@ rebuild();
   rematchOffer=opponent(actor);setStatus(actor===side?'Rückspiel angeboten.':'Dein Freund möchte ein Rückspiel.');sync()
  }
  function answerRematch(actor,accept){if(!connected||!outcome)return;if(!host()){send({type:'rematchAnswer',accept});setStatus('Antwort auf Rückspiel gesendet.');return}
-  if(rematchOffer!==actor)return;rematchOffer=null;if(accept){baseReset(timeControl);clockRunning=true;clockAt=Date.now();serverClockMoveNo=-1;startServerClock(true)}else setStatus('Rückspiel abgelehnt.');sync()
+  if(rematchOffer!==actor)return;rematchOffer=null;if(accept){clearSavedSession();baseReset(timeControl);clockRunning=true;clockAt=Date.now();serverClockMoveNo=-1;startServerClock(true)}else setStatus('Rückspiel abgelehnt.');sync()
  }
  function render(){
   const el=$l('liveBoard');el.replaceChildren();const turn=asSide();const targets=selected&&!outcome&&connected&&turn===side?egLegal(position,turn,ep,castle).filter(m=>m.from===selected).map(m=>m.to):[];
@@ -2888,9 +2913,9 @@ rebuild();
  }
  $l('livePublicTwo').onclick=publicPlay;
  setInterval(()=>{if(!publicRoomInfo||$l('liveGame').hidden)return;publicApi('heartbeat',{room:publicRoomInfo.room,ready:publicRoomInfo.role==='host'}).catch(()=>{});},12000);
- $l('openLive').addEventListener('click',()=>{closeSession();show('liveMenu');menuStatus('Bereit zum Verbinden.');const code=new URLSearchParams(location.hash.slice(1)).get('live');if(code){$l('liveCodeInput').value=code;menuStatus('Einladung gefunden – auf „Raum beitreten“ klicken.')}});
- $l('liveBackHome').onclick=()=>{closeSession();show('courseHome')};$l('liveBackMenu').onclick=()=>{closeSession();show('liveMenu')};
- $l('liveCreate').onclick=()=>{const c=$l('v76PrivateChessColor').value;create(null,c==='random'?(crypto.getRandomValues(new Uint8Array(1))[0]%2?'w':'b'):c);};$l('liveJoin').onclick=()=>join($l('liveCodeInput').value);
+ $l('openLive').addEventListener('click',()=>{closeSession();show('liveMenu');recoveryButton();menuStatus('Bereit zum Verbinden.');const code=new URLSearchParams(location.hash.slice(1)).get('live');if(code){$l('liveCodeInput').value=code;menuStatus('Einladung gefunden – auf „Raum beitreten“ klicken.')}});
+ $l('liveBackHome').onclick=()=>{clearSavedSession();closeSession();show('courseHome')};$l('liveBackMenu').onclick=()=>{clearSavedSession();closeSession();show('liveMenu');recoveryButton()};
+ $l('liveCreate').onclick=()=>{clearSavedSession();const c=$l('v76PrivateChessColor').value;create(null,c==='random'?(crypto.getRandomValues(new Uint8Array(1))[0]%2?'w':'b'):c);};$l('liveJoin').onclick=()=>{clearSavedSession();join($l('liveCodeInput').value)};
  $l('liveCopyCode').onclick=async()=>{try{await navigator.clipboard.writeText(room);setStatus('Raumcode kopiert.')}catch(e){setStatus('Bitte den Raumcode manuell markieren und kopieren.')}};
  $l('liveCopyLink').onclick=async()=>{if(!/^https?:$/.test(location.protocol)){setStatus('Link nur auf der veröffentlichten Webseite verfügbar.');return}try{await navigator.clipboard.writeText(link());setStatus('Einladungslink kopiert!')}catch(e){setStatus('Kopieren fehlgeschlagen. Bitte Raumcode teilen.')}};
  $l('livePromotionCancel').onclick=()=>{promotion=null;$l('livePromotion').hidden=true;render()};
@@ -2900,7 +2925,7 @@ rebuild();
  $l('liveRematch').onclick=()=>offerRematch(side);
  $l('liveRematchAccept').onclick=()=>answerRematch(side,true);$l('liveRematchDecline').onclick=()=>answerRematch(side,false);
  updateInterval=setInterval(()=>{if($l('liveGame').hidden)return;pollServerClock();if(host()&&connected&&clockRunning&&!outcome){tick();if(!outcome&&Date.now()-snapshotReceivedAt>2500){snapshotReceivedAt=Date.now();sync()}}drawClocks()},250);
- if(new URLSearchParams(location.hash.slice(1)).has('live'))$l('openLive').click();
+ recoveryButton();if(new URLSearchParams(location.hash.slice(1)).has('live'))$l('openLive').click();
 })();
 </script>
 <script>
@@ -5789,4 +5814,4 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
  .premium-v6-home .v83-mode[data-type="computer"] .v83-levels label span {text-overflow:clip!important}
 }
 </style>
-</body></html>
+<style id="v135-recovery-style">#v135Resume:not([hidden]){display:block;width:100%;max-width:620px;margin:12px auto;padding:14px 18px;background:linear-gradient(130deg,#e9cb8a,#b78342);color:#11243b;border:1px solid #f5e0b2;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer}#v135Resume[hidden]{display:none!important}</style></body></html>
