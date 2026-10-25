@@ -998,34 +998,39 @@ body{background:var(--arena62-bg)}
  body.v79-chat-chess #arenaChatBody[hidden],body.v79-chat-dame #dameChatBody[hidden]{display:none!important}
 }
 </style>
-<script id="arena-v100-back-fix">
+<script id="arena-v101-back-fix">
 (function(){
-  function back(e){
-    if(e){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation(); }
-    var game=document.getElementById('eugenGame');
-    var home=document.getElementById('courseHome');
-    if(!game||!home)return false;
-    // Navigate before cleanup. No engine or puzzle cleanup function can interrupt this.
-    game.hidden=true;
-    var oldMenu=document.getElementById('eugenMenu');if(oldMenu)oldMenu.hidden=true;
-    var heavy=document.getElementById('heavyMenu');if(heavy)heavy.hidden=true;
-    var training=document.getElementById('trainingView');if(training)training.hidden=true;
-    var rook=document.getElementById('rookGame');if(rook)rook.hidden=true;
-    home.hidden=false;
-    // Call the app's own page handler first.
-    var nav=home.querySelector('.arena-bottomnav [data-page="spielen"]')||home.querySelector('.arena-navitem[data-page="spielen"]');
-    if(nav)try{nav.click()}catch(err){console.warn('Menu:',err)}
-    // Keep a reliable fallback even if the normal menu handler is broken.
-    home.querySelectorAll('.arena-page[data-panel]').forEach(function(p){p.hidden=p.dataset.panel!=='spielen'});
-    home.querySelectorAll('.arena-navitem').forEach(function(p){p.classList.toggle('active',p.dataset.page==='spielen')});
-    try{window.scrollTo(0,0)}catch(_e){}
-    return false;
-  }
-  window.arenaReturnFromChess=back;
-  document.addEventListener('click',function(e){
-    var button=e.target && e.target.closest && e.target.closest('#backEugenLevels');
-    if(button)back(e);
-  },true);
+ 'use strict';
+ function returnToGames(event){
+   if(event){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();}
+   // Set views synchronously. Do NOT simulate a click on another navigation control:
+   // older page handlers could reopen the game, leaving the Zurück button seemingly inert.
+   var home=document.getElementById('courseHome');
+   if(!home)return false;
+   ['eugenGame','eugenMenu','heavyMenu','rookGame','trainingView','historyView','liveMenu','liveGame','profilesView'].forEach(function(id){
+     var node=document.getElementById(id);if(node)node.hidden=true;
+   });
+   home.hidden=false;
+   home.removeAttribute('hidden');
+   home.querySelectorAll('.arena-page[data-panel]').forEach(function(page){
+     page.hidden=page.getAttribute('data-panel')!=='spielen';
+   });
+   home.querySelectorAll('.arena-navitem[data-page], .arena-bottomnav [data-page]').forEach(function(button){
+     var selected=button.getAttribute('data-page')==='spielen';
+     button.classList.toggle('active',selected);
+     if(button.matches('.arena-bottomnav [data-page]'))button.setAttribute('aria-current',selected?'page':'false');
+   });
+   try{window.scrollTo({top:0,left:0,behavior:'instant'});}catch(e){window.scrollTo(0,0);}
+   // Invalidate pending AI moves without making UI navigation depend on engine cleanup.
+   try{if(typeof egTimer!=='undefined')clearTimeout(egTimer)}catch(e){}
+   try{if(typeof egDisposeStockfish==='function')egDisposeStockfish()}catch(e){}
+   return false;
+ }
+ window.arenaReturnFromChess=returnToGames;
+ // Capture clicks before legacy listeners. Inline handler remains a fallback.
+ document.addEventListener('click',function(event){
+   if(event.target && event.target.closest && event.target.closest('#backEugenLevels'))returnToGames(event);
+ },true);
 })();
 </script>
 </head><script>
