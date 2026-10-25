@@ -3524,6 +3524,7 @@ let damePendingMove=null;
 const DAME_RECOVERY_KEY='arena_v144_dame_pending';
 const dameRecoveryOverlay=document.getElementById('v144DameResumeOverlay');
 let dameRecoveryBusy=false,dameRecoveryLast='',dameRecoveryAt=0,dameRecoveryPending=null,dameRecoverySending=false;
+let dameRecoveryAwaitingHost=false,dameRecoveryReconnectTimer=null,dameRecoveryReconnectCount=0;
 function dameRecoveryRead(){try{const p=JSON.parse(localStorage.getItem(DAME_RECOVERY_KEY)||'null');return dameRecoveryValid(p)?p:null}catch(_){return null}}
 function dameRecoveryValid(p){return !!(p&&p.v===1&&typeof p.room==='string'&&(/^(DAME-[A-Z0-9]{8}-[A-Z0-9]{4}|d[a-f0-9]{28})$/.test(p.room))&&typeof p.host==='boolean'&&['w','b'].includes(p.side)&&p.state&&Array.isArray(p.state.board)&&p.state.board.length===64&&p.state.board.every(x=>x===null||['w','W','b','B'].includes(x))&&['w','b'].includes(p.state.turn)&&!p.state.gameOver&&Number.isFinite(p.at)&&Date.now()-p.at<86400000)}
 function dameRecoverySnapshot(){return {v:1,at:Date.now(),room:onlineRoom,host:onlineHost,side:onlineSide, state:{board:board.slice(),turn,forced,gameOver,seq:onlineSequence,matchId:dameMatchId,hostSide:onlineHostSide,message:statusEl.textContent}}}
@@ -3536,11 +3537,30 @@ async function dameRecoveryResume(){const p=dameRecoveryRead();if(!p||dameRecove
  document.querySelector('#courseHome [data-page="dame"]')?.click();
  discardNetwork();modeEl.value='online';document.getElementById('dameOnlineBox').hidden=false;onlineHost=p.host;onlineRoom=p.room;onlineSide=p.side;onlineHostSide=p.state.hostSide==='b'?'b':'w';init();dameRecoveryApply(p);
  const gen=onlineGeneration;
+ dameRecoveryAwaitingHost=!p.host;
  netStatus(p.host?'Gespeicherte Dame-Partie: Raum wird wieder geöffnet …':'Gespeicherte Dame-Partie: Verbinde mit Gastgeber …');
- if(p.host){await setupPeer(p.room);if(gen!==onlineGeneration)return;onlinePeer.on('connection',attachConnection);netStatus('✅ Raum wieder geöffnet. Warte auf deinen Gegner.');document.getElementById('dameRoomCode').textContent=p.room;document.getElementById('dameInvite').hidden=false;document.dispatchEvent(new CustomEvent('arena80-room-ready',{detail:{game:'dame',room:p.room}}));}
- else{await setupPeer(undefined);if(gen!==onlineGeneration)return;attachConnection(onlinePeer.connect(p.room,{reliable:true}));}
- dameRecoveryPersist();
+ if(p.host){await setupPeer(p.room);if(gen!==onlineGeneration)return;onlinePeer.on('connection',attachConnection);netStatus('⏳ Raum wieder geöffnet. Warte auf den zweiten Spieler; Züge sind bis dahin gesperrt.');document.getElementById('dameRoomCode').textContent=p.room;document.getElementById('dameInvite').hidden=false;document.dispatchEvent(new CustomEvent('arena80-room-ready',{detail:{game:'dame',room:p.room}}));}
+ else{await setupPeer(undefined);if(gen!==onlineGeneration)return;attachConnection(onlinePeer.connect(p.room,{reliable:true}));dameRecoveryReconnectCount=0;dameRecoveryScheduleReconnect();}
+ if(p.host)dameRecoveryPersist();
  }catch(e){netStatus('Wiederherstellen fehlgeschlagen: '+e.message);console.warn(e)}finally{dameRecoveryBusy=false}}
+
+// v145: a guest who returns before the host must keep retrying the old room.
+// The host's first complete snapshot is authoritative, even if local seq was higher.
+function dameRecoveryScheduleReconnect(){
+ if(!dameRecoveryAwaitingHost||onlineHost||!onlineRoom||modeEl.value!=='online'||dameRecoveryReconnectTimer)return;
+ const gen=onlineGeneration;
+ dameRecoveryReconnectTimer=setTimeout(()=>{
+  dameRecoveryReconnectTimer=null;
+  if(gen!==onlineGeneration||!dameRecoveryAwaitingHost||onlineHost||!onlineRoom)return;
+  if(onlineConnected&&onlineConn?.open){onlineConn.send({type:'dame-sync-request'});dameRecoveryScheduleReconnect();return;}
+  if(!onlinePeer||onlinePeer.destroyed){netStatus('⚠️ Verbindung getrennt. Bitte Dame-Partie fortsetzen erneut öffnen.');return;}
+  try{onlineConn?.close()}catch(_){}
+  try{attachConnection(onlinePeer.connect(onlineRoom,{reliable:true}));dameRecoveryReconnectCount++;
+   netStatus('⏳ Warte auf den Gastgeber – versuche erneut zu verbinden ('+dameRecoveryReconnectCount+').');}
+  catch(e){netStatus('Warte auf Verbindung: '+e.message)}
+  dameRecoveryScheduleReconnect();
+ },5000);
+}
 function dameRecoveryShow(){const p=dameRecoveryRead();if(!p||!dameRecoveryOverlay)return;document.getElementById('v144DameResumeText').textContent='Deine Online-Dame-Partie wartet auf dich. '+(p.host?'Du bist Gastgeber.':'Du bist Gast.')+' Fortsetzen?';dameRecoveryOverlay.hidden=false}
 window.addEventListener('pagehide',()=>{dameRecoveryPersist()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')dameRecoveryPersist()});
@@ -3701,9 +3721,9 @@ async function damePublicPlay(){if(publicDameBusy)return;publicDameBusy=true;con
 document.getElementById('damePublicPlay').addEventListener('click',damePublicPlay);
 setInterval(()=>{const current=publicDameRoom;if(!current)return;damePublicApi('heartbeat',{room:current.room,ready:current.role==='host'}).catch(e=>{if(publicDameRoom!==current)return;if(e.status===404){publicDameRoom=null;document.getElementById('damePublicInfo').textContent='⚠️ Suchraum abgelaufen. Bitte erneut auf Gegner automatisch finden tippen.'}else document.getElementById('damePublicInfo').textContent='⚠️ '+e.message})},12000);
 
-function discardNetwork(skipLeave=false){clearDamePending();if(publicDameRoom){const previous=publicDameRoom;publicDameRoom=null;if(!skipLeave)damePublicApi('leave',{room:previous.room}).catch(()=>{});}clearDameChat();onlineGeneration++;onlineConnected=false;onlineSide=null;onlineHost=false;onlineHostSide='w';onlineRoom='';try{onlineConn?.close()}catch(e){}try{onlinePeer?.destroy()}catch(e){}onlineConn=null;onlinePeer=null;document.getElementById('dameInvite').hidden=true;document.getElementById('dameDisconnect').hidden=true;netStatus('Nicht verbunden.');}
+function discardNetwork(skipLeave=false){dameRecoveryAwaitingHost=false;clearTimeout(dameRecoveryReconnectTimer);dameRecoveryReconnectTimer=null;dameRecoveryReconnectCount=0;clearDamePending();if(publicDameRoom){const previous=publicDameRoom;publicDameRoom=null;if(!skipLeave)damePublicApi('leave',{room:previous.room}).catch(()=>{});}clearDameChat();onlineGeneration++;onlineConnected=false;onlineSide=null;onlineHost=false;onlineHostSide='w';onlineRoom='';try{onlineConn?.close()}catch(e){}try{onlinePeer?.destroy()}catch(e){}onlineConn=null;onlinePeer=null;document.getElementById('dameInvite').hidden=true;document.getElementById('dameDisconnect').hidden=true;netStatus('Nicht verbunden.');}
 function broadcast(){if(modeEl.value!=='online'||!onlineHost)return;if(gameOver)dameRecoveryClear();else dameRecoveryPersist();if(!onlineConnected||!onlineConn?.open)return;onlineConn.send({type:'dame-state',seq:onlineSequence,hostSide:onlineHostSide,board:[...board],turn,forced,gameOver,matchId:dameMatchId,message:statusEl.textContent});}
-function onlineSyncReceived(data){if(onlineHost||!data||data.type!=='dame-state'||!Array.isArray(data.board)||data.board.length!==64)return;if(!data.board.every(p=>p===null||['w','W','b','B'].includes(p)))return;if(data.turn!=='w'&&data.turn!=='b')return;if(!Number.isSafeInteger(data.seq)||data.seq<onlineSequence)return;if(!['w','b'].includes(data.hostSide))return;onlineHostSide=data.hostSide;onlineSide=other(onlineHostSide);netStatus('✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß (du beginnst).':'Schwarz (Gastgeber beginnt).'));if(data.forced!==null&&(!Number.isInteger(data.forced)||data.forced<0||data.forced>63))return;const previousEnded=gameOver,previousMatch=dameMatchId;if(damePendingMove&&(data.seq>damePendingMove.seq||data.turn!==onlineSide||data.board[damePendingMove.from]===null))clearDamePending();onlineSequence=data.seq;dameMatchId=typeof data.matchId==='string'&&data.matchId.length<100?data.matchId:dameMatchId;board=data.board.slice();turn=data.turn;forced=data.forced;gameOver=!!data.gameOver;selected=null;history=[];busy=false;render();status(data.message||'Stellung synchronisiert.');if(gameOver){dameRecoveryClear();if(!previousEnded||previousMatch!==dameMatchId)reportDameWin(other(turn));}else dameRecoveryPersist();}
+function onlineSyncReceived(data){if(onlineHost||!data||data.type!=='dame-state'||!Array.isArray(data.board)||data.board.length!==64)return;if(!data.board.every(p=>p===null||['w','W','b','B'].includes(p)))return;if(data.turn!=='w'&&data.turn!=='b')return;if(!Number.isSafeInteger(data.seq)||(!dameRecoveryAwaitingHost&&data.seq<onlineSequence))return;if(!['w','b'].includes(data.hostSide))return;onlineHostSide=data.hostSide;onlineSide=other(onlineHostSide);netStatus('✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß (du beginnst).':'Schwarz (Gastgeber beginnt).'));if(data.forced!==null&&(!Number.isInteger(data.forced)||data.forced<0||data.forced>63))return;const previousEnded=gameOver,previousMatch=dameMatchId;if(damePendingMove&&(data.seq>damePendingMove.seq||data.turn!==onlineSide||data.board[damePendingMove.from]===null))clearDamePending();onlineSequence=data.seq;dameRecoveryAwaitingHost=false;dameRecoveryReconnectCount=0;clearTimeout(dameRecoveryReconnectTimer);dameRecoveryReconnectTimer=null;dameMatchId=typeof data.matchId==='string'&&data.matchId.length<100?data.matchId:dameMatchId;board=data.board.slice();turn=data.turn;forced=data.forced;gameOver=!!data.gameOver;selected=null;history=[];busy=false;render();status(data.message||'Stellung synchronisiert.');if(gameOver){dameRecoveryClear();if(!previousEnded||previousMatch!==dameMatchId)reportDameWin(other(turn));}else dameRecoveryPersist();}
 function onlineHandleData(data){if(!data||typeof data!=='object')return;
  if(window.ArenaFriendV70?.receive('dame',data))return;
  if(data.type==='dame-chat-v1'){
@@ -3722,9 +3742,9 @@ function onlineHandleData(data){if(!data||typeof data!=='object')return;
  else if(data.type==='dame-hello'&&onlineHost)broadcast();
 }
 function attachConnection(c){if(onlineConn&&onlineConn!==c&&onlineConnected){try{c.close()}catch(e){}return;}onlineConn=c;const gen=onlineGeneration;
- c.on('open',()=>{if(gen!==onlineGeneration)return;clearDamePending();onlineConnected=true;window.ArenaFriendV70?.attach('dame',d=>c.send(d),()=>onlineConnected&&c.open);dameChatInfo('Du kannst jetzt schreiben und Emojis senden.');if(publicDameRoom)document.getElementById('damePublicInfo').textContent='✅ Gegner verbunden!';document.getElementById('dameDisconnect').hidden=false;netStatus(onlineHost?'✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.')+' Dein Freund ist beigetreten.':'✅ Verbindung hergestellt. Warte auf die Farbzuweisung …');if(onlineHost)broadcast();else c.send({type:'dame-hello'});render();dameRecoveryPersist();});
+ c.on('open',()=>{if(gen!==onlineGeneration)return;clearDamePending();onlineConnected=true;window.ArenaFriendV70?.attach('dame',d=>c.send(d),()=>onlineConnected&&c.open);dameChatInfo('Du kannst jetzt schreiben und Emojis senden.');if(publicDameRoom)document.getElementById('damePublicInfo').textContent='✅ Gegner verbunden!';document.getElementById('dameDisconnect').hidden=false;netStatus(onlineHost?'✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.')+' Dein Freund ist beigetreten.':'✅ Verbindung hergestellt. Warte auf die Farbzuweisung …');if(onlineHost)broadcast();else c.send({type:'dame-hello'});render();if(!dameRecoveryAwaitingHost)dameRecoveryPersist();});
  c.on('data',data=>{if(gen===onlineGeneration)onlineHandleData(data)});
- const lost=()=>{if(gen!==onlineGeneration)return;clearDamePending();onlineConnected=false;window.ArenaFriendV70?.detached('dame');netStatus('⚠️ Verbindung unterbrochen. Bitte einen neuen Raum erstellen.');render()};
+ const lost=()=>{if(gen!==onlineGeneration)return;clearDamePending();onlineConnected=false;window.ArenaFriendV70?.detached('dame');netStatus(dameRecoveryAwaitingHost?'⏳ Warte auf Rückkehr des Gastgebers …':'⚠️ Verbindung unterbrochen. Bitte Partie fortsetzen wählen.');render();if(dameRecoveryAwaitingHost)dameRecoveryScheduleReconnect()};
  c.on('close',lost);c.on('error',e=>{if(gen===onlineGeneration)netStatus('Verbindungsfehler: '+(e?.message||'Unbekannt'))});
 }
 // PeerJS data channels can delay a packet on mobile Safari.
