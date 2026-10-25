@@ -1097,6 +1097,12 @@ body{background:var(--arena62-bg)}
 #v115Analyse[hidden]{display:none!important}
 #arenaChatEmojis button:disabled{opacity:.32!important;cursor:not-allowed;filter:grayscale(.75)}
 @media(max-width:600px){#v115Analyse{width:100%;font-size:15px}}
+</style><style id="v116-visible-live-analysis">
+.v116-live-analysis-action{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 12px;max-width:100%}
+#v116AnalysisTip{font-size:13px;color:#aabbd0}
+#v115Analyse{background:linear-gradient(120deg,#f2d596,#c9984f)!important;color:#10243b!important;font-weight:800;border:1px solid #d4af6f;border-radius:12px;padding:11px 18px;min-height:46px}
+#v115Analyse[hidden],#v116AnalysisTip[hidden]{display:none!important}
+@media(max-width:600px){.v116-live-analysis-action{padding:0 3px}#v115Analyse{width:100%;font-size:16px}}
 </style></head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
@@ -1479,7 +1485,11 @@ body{background:var(--arena62-bg)}
   <div class="v87-person"><h3><span id="v87Name">Spieler</span> <span class="v87-crown">♛</span></h3><p id="v87AccountState">Profil wird geladen …</p><p class="v87-code">Freundescode: <strong id="v87FriendCode">–</strong></p>
    <div class="v87-actions"><button type="button" data-open="openProfiles" class="v87-gold">✎ Profil bearbeiten</button><button type="button" id="v87CopyCode" class="v87-outline">▢ Freundescode kopieren</button></div>
   </div>
-  <div class="v87-metrics"><div><span>👥</span><strong id="v87FriendsCount">–</strong><small>Freunde</small></div><div><span>📚</span><strong>Archiv</strong><small>Gespeicherte Partien</small></div><div><span>♟</span><strong>Statistik</strong><small>Online-Partien</small></div></div>
+  <div class="v87-metrics" aria-label="Profilbereiche">
+    <button type="button" class="v118-tile" id="v118Friends"><span aria-hidden="true">👥</span><strong>Freunde</strong><small id="v118FriendsText">Freundesliste öffnen</small></button>
+    <button type="button" class="v118-tile" id="v118Archive"><span aria-hidden="true">📚</span><strong>Archiv</strong><small>Gespeicherte Partien</small></button>
+    <button type="button" class="v118-tile" id="v118Stats"><span aria-hidden="true">🏆</span><strong>Statistik</strong><small>Spielergebnisse</small></button>
+  </div>
  </section>
  <div class="v87-tiles">
   <section class="v87-tile"><h3>👥 Freunde &amp; Einladungen</h3><p>Verwalte deine Freunde und fordere sie zu Schach oder Dame heraus.</p><button type="button" data-open="openProfiles" class="v87-gold">Freundesliste öffnen →</button><button type="button" id="v87OpenEmail" class="v87-outline">✉ Einladung per E-Mail</button></section>
@@ -1620,6 +1630,7 @@ body{background:var(--arena62-bg)}
 <button class="course-return" id="liveBackMenu" type="button">← Live-Auswahl</button>
 <h1>🌐 Live gegen Freund</h1>
 <p class="intro" id="liveSideLabel">Verbindung wird hergestellt ...</p>
+<div class="v116-live-analysis-action"><button type="button" id="v115Analyse" hidden>🔎 Partie analysieren</button><span id="v116AnalysisTip">Nach dem Spiel kannst du die Partie hier direkt analysieren.</span></div>
 <div class="rook-game-layout">
 <div class="wood rook-board-frame" id="liveBoardFrame"><div aria-label="Live-Schachbrett" class="board rook-board" id="liveBoard" role="group"></div></div>
 <aside class="rook-panel">
@@ -1635,7 +1646,7 @@ body{background:var(--arena62-bg)}
 <p id="arenaChatInfo" class="arena-chat-hint" role="status">Chat ist verfügbar, sobald dein Gegner verbunden ist.</p>
 </div></section><div id="arenaEmojiToast" class="arena-emoji-toast" hidden aria-live="polite"></div>
 <div aria-label="Schachuhren" class="live-clock-panel"><div class="live-clock-row"><span>⚪ Weiß</span><strong id="liveClockWhite">10:00</strong></div><div class="live-clock-row"><span>⚫ Schwarz</span><strong id="liveClockBlack">10:00</strong></div></div><p class="live-help"><span id="liveTimeLabel">Zeit: 10 Minuten pro Spieler</span> · <span id="liveMoveLabel">Züge: 0</span></p>
-<div class="live-actions" style="margin:12px 0"><button id="liveOfferDraw" type="button">🤝 Remis anbieten</button><button class="live-danger" id="liveResign" type="button">🏳 Aufgeben</button><button hidden="" id="liveRematch" type="button">🔄 Rückspiel anbieten</button><button type="button" id="v115Analyse" hidden>🔎 Partie analysieren</button></div>
+<div class="live-actions" style="margin:12px 0"><button id="liveOfferDraw" type="button">🤝 Remis anbieten</button><button class="live-danger" id="liveResign" type="button">🏳 Aufgeben</button><button hidden="" id="liveRematch" type="button">🔄 Rückspiel anbieten</button></div>
 <div class="live-answer" hidden="" id="liveDrawAnswer"><strong>Dein Freund bietet Remis an.</strong><div class="live-actions"><button id="liveDrawAccept" type="button">Remis annehmen</button><button id="liveDrawDecline" type="button">Ablehnen</button></div></div>
 <div class="live-answer" hidden="" id="liveRematchAnswer"><strong>Dein Freund möchte ein Rückspiel.</strong><div class="live-actions"><button id="liveRematchAccept" type="button">Rückspiel starten</button><button id="liveRematchDecline" type="button">Ablehnen</button></div></div>
 <p>Dein Raumcode:</p><span class="live-code" id="liveRoomCode">–</span>
@@ -2583,7 +2594,12 @@ rebuild();
  const emojiEl=$l('arenaChatEmojis');
  for(const symbol of ARENA_EMOJIS){const b=document.createElement('button');b.type='button';b.textContent=symbol;b.title=symbol;b.addEventListener('click',()=>sendChat('emoji',symbol));emojiEl.appendChild(b)}
  $l('arenaChatForm').addEventListener('submit',e=>{e.preventDefault();const input=$l('arenaChatInput');if(sendChat('text',input.value))input.value=''});
- $l('v115Analyse').addEventListener('click',()=>{if(!outcome||!liveMoves.length)return;const game={id:liveRecordId||'live-'+Date.now(),date:Date.now(),mode:'live',playerSide:side,moves:[...liveMoves],frames:[...liveFrames],result:outText()};historyLiveSync(game.id,game.moves,game.frames,game.result);hShow();hOpen(game);});
+ $l('v115Analyse').addEventListener('click',()=>{
+  if(!liveMoves.length||liveFrames.length!==liveMoves.length+1){setStatus('Keine vollständige Partie zur Analyse vorhanden.');return}
+  const game={id:liveRecordId||'live-'+Date.now(),date:Date.now(),mode:'live',playerSide:side,moves:[...liveMoves],frames:[...liveFrames],result:outcome?outText():'Laufend'};
+  historyLiveSync(game.id,game.moves,game.frames,outcome?game.result:null);
+  hShow();hOpen(game);hAnalyze();
+});
  const setStatus=s=>{notice=s;$l('liveStatus').textContent=s};
  const menuStatus=s=>$l('liveMenuStatus').textContent=s;
  const show=id=>{for(const name of ['courseHome','heavyMenu','trainingView','rookGame','eugenMenu','eugenGame','liveMenu','liveGame']){let el=$l(name);if(el)el.hidden=name!==id}};
@@ -2706,18 +2722,29 @@ rebuild();
  async function join(text){const raw=String(text||'').trim();const isPublic=/^[cd][0-9a-f]{28}$/.test(raw);const code=isPublic?raw:raw.toUpperCase();if(!isPublic&&!valid(code)){menuStatus('Ungültiger Raumcode. Er beginnt mit EUGEN- und hat 14 weitere Zeichen.');return}
   closeSession();let myToken=token;isHost=false;side='b';room=code;show('liveGame');baseReset();$l('liveRoomCode').textContent=code;setStatus('Verbinde mit dem Gastgeber …');linkHint();
   try{await peerReady(undefined,myToken);if(token!==myToken)return;connect(peer.connect(code,{reliable:true}));peer.on('disconnected',()=>{if(token===myToken)scheduleLiveReconnect()});
-   // v113: PeerJS signaling may need a retry when host just registered the ID.
-   // Only public matchmaking IDs retry, private room connections are untouched.
-   if(isPublic){
-     let tries=0;
-     const retryTimer=setInterval(()=>{
-       if(token!==myToken||connected||!peer||peer.destroyed){clearInterval(retryTimer);return;}
-       if(++tries>5){clearInterval(retryTimer);setStatus('Keine Verbindung zum Gegner. Bitte Raum verlassen und erneut Gegner suchen.');return;}
-       try{if(conn&&!conn.open)conn.close();connect(peer.connect(code,{reliable:true}));setStatus('Verbindung zum Gegner wird erneut versucht ('+tries+'/5) …');}
-       catch(e){setStatus('Verbindungsfehler: '+String(e?.message||e));}
-     },5000);
-   }
-   latencyTimer=setTimeout(()=>{if(token===myToken&&!connected)setStatus('Verbindung dauert länger als erwartet. Automatischer Neuversuch läuft …')},15000)}
+   // v117: Retry both public matchmaking AND private room joins. Private rooms
+   // often fail when the invitee opens the room before PeerJS host registration.
+   // Keep the room and game state instead of replacing it on each retry.
+   let tries=0;
+   const retryLimit=isPublic?10:12;
+   const retryTimer=setInterval(()=>{
+     if(token!==myToken||connected||!peer||peer.destroyed){clearInterval(retryTimer);return;}
+     if(++tries>retryLimit){
+       clearInterval(retryTimer);
+       setStatus(isPublic
+         ? 'Keine Verbindung zum Gegner. Bitte die Gegnersuche erneut starten.'
+         : 'Gastgeber nicht erreichbar. Bitte Raumcode prüfen und sicherstellen, dass der Gastgeber den Raum offen lässt.');
+       return;
+     }
+     try{
+       if(peer.disconnected){peer.reconnect();setStatus('Verbindung zum Vermittlungsserver wird wiederhergestellt …');return;}
+       if(!peer.open)return;
+       if(conn&&!conn.open){try{conn.close()}catch(_){}}
+       connect(peer.connect(code,{reliable:true}));
+       setStatus('Verbindung zum Gastgeber: Versuch '+tries+'/'+retryLimit+' …');
+     }catch(e){setStatus('Verbindungsfehler: '+String(e?.message||e));}
+   },5000);
+   latencyTimer=setTimeout(()=>{if(token===myToken&&!connected)setStatus('Verbindung wird hergestellt. Raum auf dem anderen Gerät geöffnet lassen …')},15000)}
   catch(e){if(token===myToken)setStatus('Verbindung fehlgeschlagen: '+String(e?.message||e))}
  }
  function offerDraw(actor){if(!connected||outcome||drawOffer)return;if(!host()){send({type:'drawOffer'});setStatus('Remisangebot verschickt. Warte auf Antwort.');return}
@@ -2753,7 +2780,8 @@ rebuild();
   $l('liveOfferDraw').disabled=!connected||!!outcome||!!drawOffer;
   $l('liveResign').disabled=!connected||!!outcome;
   $l('liveRematch').hidden=!outcome;$l('liveRematch').disabled=!connected||!!rematchOffer;
-  $l('v115Analyse').hidden=!outcome||!liveMoves.length;
+  $l('v115Analyse').hidden=!liveMoves.length;
+  $l('v116AnalysisTip').hidden=!!liveMoves.length;
   for(const button of emojiEl.querySelectorAll('button'))button.disabled=!connected||!!outcome||asSide()!==side;
   drawClocks()
  }
@@ -3072,7 +3100,7 @@ async function hAnalyze(){
   });
  };
 })();
-H('liveAnalyzePartie').addEventListener('click',()=>{if(!hLive||!hLive.moves.length){const st=H('liveStatus');if(st)st.textContent='Spiele zuerst mindestens einen Zug, bevor du analysierst.';return}hShow();hOpen(hLive);hAnalyze()});
+H('liveAnalyzePartie').addEventListener('click',()=>H('v115Analyse').click());
 H('eugenAnalyzeNow').addEventListener('click',()=>{if(!hCurrent||!hCurrent.moves.length){H('eugenStatus').textContent='Spiele zuerst mindestens einen Zug.';return}hWrite(HISTORY_CURRENT,hCurrent);hShow();hOpen(hCurrent);hAnalyze()});
 H('openHistoryHome').addEventListener('click',hShow);
 H('historyBack').addEventListener('click',()=>{hCancelAnalysis();H('historyView').hidden=true;H('courseHome').hidden=false;window.scrollTo(0,0)});
@@ -4651,7 +4679,7 @@ function refresh(){
  if(p.photo&&typeof p.photo==='string'&&p.photo.startsWith('data:image/')){$('v87Avatar').replaceChildren();const img=document.createElement('img');img.src=p.photo;img.alt='';img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%';$('v87Avatar').append(img)}
  let fs=[];try{fs=JSON.parse(localStorage.getItem('eugens_arena_freunde_v1')||'[]')}catch(_){}
  const count=(($('arena77-count')?.textContent||'').match(/\d+/)||[])[0];
- $('v87FriendsCount').textContent=logged?(count||String(Array.isArray(fs)?fs.length:0)):'–';
+ const friendsText=$('v118FriendsText');if(friendsText)friendsText.textContent=logged?((count||String(Array.isArray(fs)?fs.length:0))+' Freunde anzeigen'):'Freundesliste öffnen';
 }
 $('v87CopyCode').onclick=async()=>{
  const code=$('v87FriendCode').textContent.trim();if(!/^EF-[A-F0-9]+$/i.test(code)){alert('Bitte zuerst mit deinem Serverkonto anmelden.');return}
@@ -5207,6 +5235,56 @@ document.addEventListener('DOMContentLoaded',()=>{
   observe.observe(view,{childList:true,subtree:true});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<style id="v118-profile-modern">
+#courseHome .v87-profile{width:100%;max-width:1120px!important;box-sizing:border-box}
+#courseHome .v87-profile .v87-identity{grid-template-columns:90px minmax(0,1fr);gap:18px;padding:clamp(16px,3vw,26px);align-items:center}
+#courseHome .v87-profile .v87-person{min-width:0}
+#courseHome .v87-profile .v87-person h3{font-family:Georgia,serif;color:#ffe2a5;font-size:clamp(26px,5vw,37px)}
+#courseHome .v87-profile .v87-code{display:flex;flex-direction:column;gap:5px;min-width:0;font-size:13px;color:#adbed4}
+#courseHome .v87-profile #v87FriendCode{display:block;overflow-wrap:anywhere;word-break:break-word;font-size:clamp(13px,3.1vw,19px);line-height:1.4;letter-spacing:.035em;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#f7cf8e}
+#courseHome .v87-profile .v87-actions{margin-top:15px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#courseHome .v87-profile .v87-actions button{width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;font-size:clamp(12px,2.8vw,15px);line-height:1.3}
+#courseHome .v87-profile .v87-metrics{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;border-left:0;border-top:1px solid #54718a66;padding:17px 0 0;margin:3px 0 0;min-width:0}
+#courseHome .v87-profile .v87-metrics>.v118-tile{min-width:0;width:100%;min-height:110px;padding:13px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px solid #a7824d;background:linear-gradient(160deg,#1d3a58,#0b2138);border-radius:15px;color:#fff4df;cursor:pointer;box-shadow:0 8px 22px #0002}
+#courseHome .v87-profile .v87-metrics>.v118-tile:hover{background:#234565;border-color:#f2ce85}
+#courseHome .v87-profile .v87-metrics>.v118-tile:focus-visible{outline:3px solid #f2ce85;outline-offset:3px}
+#courseHome .v87-profile .v118-tile span{font-size:26px;line-height:1.1}
+#courseHome .v87-profile .v118-tile strong{font-size:clamp(13px,2.9vw,18px);color:#fff1d4;white-space:normal;overflow-wrap:anywhere}
+#courseHome .v87-profile .v118-tile small{font-size:clamp(10px,2.4vw,12px);color:#bcd0e2;line-height:1.25;overflow-wrap:anywhere}
+#courseHome .v87-profile .v87-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:650px){
+ #courseHome .v87-profile .v87-identity{grid-template-columns:62px minmax(0,1fr);gap:12px;padding:14px}
+ #courseHome .v87-profile .v87-avatar{width:60px;height:60px;font-size:33px}
+ #courseHome .v87-profile .v87-actions{grid-template-columns:1fr}
+ #courseHome .v87-profile .v87-metrics{gap:7px}
+ #courseHome .v87-profile .v87-metrics>.v118-tile{min-height:100px;padding:11px 4px}
+ #courseHome .v87-profile .v87-tiles{grid-template-columns:1fr}
+}
+</style>
+<script id="v118-profile-navigation">
+(function(){'use strict';
+ const root=document.querySelector('#courseHome .arena-page[data-panel="profil"]');if(!root)return;
+ function navigateTo(selector){
+   const item=document.querySelector(selector);
+   if(item){item.click();return true}
+   return false;
+ }
+ document.getElementById('v118Friends')?.addEventListener('click',()=>{
+   if(!navigateTo('#courseHome .v87-tiles [data-open="openProfiles"]')){
+     navigateTo('#courseHome [data-open="openProfiles"]');
+   }
+ });
+ document.getElementById('v118Archive')?.addEventListener('click',()=>{
+   navigateTo('#courseHome .v87-tiles [data-open="openHistoryHome"]');
+ });
+ document.getElementById('v118Stats')?.addEventListener('click',()=>{
+   navigateTo('#courseHome .arena-bottomnav [data-page="statistik"]') ||
+   navigateTo('#courseHome .arena-navitem[data-page="statistik"]') ||
+   navigateTo('#courseHome .v87-tiles [data-page="statistik"]');
+ });
 })();
 </script>
 </body></html>
