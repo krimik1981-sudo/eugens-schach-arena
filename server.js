@@ -50,6 +50,7 @@ async function db(table, method='GET', params={}, body) {
   // New sb_secret_* keys are opaque, not JWTs: never put them into Bearer.
   if (!SECRET.startsWith('sb_secret_')) headers.Authorization = 'Bearer '+SECRET;
   if (method !== 'GET') headers.Prefer = 'return=representation';
+  if (method==='POST' && params.on_conflict) headers.Prefer = 'resolution=merge-duplicates,return=representation';
   let resp;
   try { resp = await fetch(url,{method,headers,body:body === undefined ? undefined : JSON.stringify(body),signal:AbortSignal.timeout(12000)}); }
   catch (e) { throw new DatabaseError('Supabase nicht erreichbar.',503,e.message); }
