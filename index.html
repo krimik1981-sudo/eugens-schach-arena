@@ -5562,19 +5562,28 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
 (function(){'use strict';
  const token=()=>{try{return localStorage.getItem('arena71_token')||''}catch(_){return ''}};
  const who=()=>{const x=document.getElementById('arena71-who')?.textContent||'';return x.startsWith('Angemeldet als ')};
- const opponent=()=>{const x=document.querySelector('#arena70-chess .arena70-opponent')?.textContent||'';return x.replace(/^👤\s*/,'').replace(/\s*▾\s*$/,'').trim()};
+ const opponent=(game='chess')=>{const x=document.querySelector('#arena70-'+(game==='dame'?'dame':'chess')+' .arena70-opponent')?.textContent||'';return x.replace(/^👤\s*/,'').replace(/\s*▾\s*$/,'').trim()};
  async function api(action,payload){const resp=await fetch('/api/bilanz/'+action,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token()},body:JSON.stringify(payload||{})});let d={};try{d=await resp.json()}catch(_){}if(!resp.ok)throw Error(d.error||'Serverfehler');return d}
  const submitted=new Set();
  async function report(data,attempt=0){
   if(!data||!/^live-[a-z0-9-]{10,75}$/.test(data.matchId||'')||!token()||!['w','b'].includes(data.side)||!['w','b','draw'].includes(data.winner))return;
-  const name=opponent();if(!name||/Gegner|nicht verbunden|wird erkannt/i.test(name)){if(attempt<8)setTimeout(()=>report(data,attempt+1),1800);return}
+  const name=opponent(data.game);if(!name||/Gegner|nicht verbunden|wird erkannt/i.test(name)){if(attempt<8)setTimeout(()=>report(data,attempt+1),1800);return}
   const key=data.matchId+'|'+data.side;if(submitted.has(key))return;
   try{await api('report',{...data,opponent:name});submitted.add(key)}catch(e){if(attempt<8)setTimeout(()=>report(data,attempt+1),3000)}
  }
  window.ArenaBilanzV127={report};
+ // v128: Russian draughts online results use the host's shared match ID.
+ // Both peers report independently; backend counts only matching reports.
+ window.addEventListener('arena:dame-finished',event=>{
+  const d=event.detail||{};
+  if(d.mode!=='online'||!['w','b'].includes(d.playerSide)||!['w','b'].includes(d.winner))return;
+  if(typeof d.id!=='string'||!/^dame-[a-z0-9-]{10,75}$/.test(d.id))return;
+  report({matchId:'live-'+d.id,game:'dame',side:d.playerSide,winner:d.winner});
+ });
+
  function init(){
   const profile=document.getElementById('profilesView');if(!profile)return;
-  const panel=document.createElement('section');panel.id='v127Bilanz';panel.innerHTML='<h3>🏆 Freunde-Bilanz</h3><p>Deine bestätigten Ergebnisse gegen Freunde – auf allen Geräten synchronisiert.</p><button type="button" id="v127Refresh">↻ Bilanz aktualisieren</button><div id="v127BilanzList" aria-live="polite"></div><p id="v127BilanzNote">Gezählt werden nur beidseitig bestätigte, abgeschlossene Online-Schachpartien. Frühere Partien ohne gemeinsame Meldung werden nicht übernommen.</p>';
+  const panel=document.createElement('section');panel.id='v127Bilanz';panel.innerHTML='<h3>🏆 Freunde-Bilanz</h3><p>Deine bestätigten Ergebnisse gegen Freunde – auf allen Geräten synchronisiert.</p><button type="button" id="v127Refresh">↻ Bilanz aktualisieren</button><div id="v127BilanzList" aria-live="polite"></div><p id="v127BilanzNote">Gezählt werden nur beidseitig bestätigte, abgeschlossene Online-Partien in Schach und Dame. Frühere Partien ohne gemeinsame Meldung werden nicht übernommen.</p>';
   profile.appendChild(panel);
   const list=panel.querySelector('#v127BilanzList');
   async function refresh(){list.replaceChildren();if(!token()){list.textContent='Bitte zuerst unter Profil anmelden.';return}
