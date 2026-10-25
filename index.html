@@ -5707,4 +5707,56 @@ body:has(#liveGame:not([hidden])) #liveGame > p.intro{display:none!important}
  #courseHome .v87-profile #arena71-panel{padding:14px!important}
 }
 </style>
+
+<style id="v132-profile-mobile-layout">
+/* Profile friends: respect narrow Safari/iPhone viewports and avoid overflowing buttons. */
+#courseHome .v87-profile #arena77-friends .arena77-friend {
+  width:100%!important; max-width:100%!important; min-width:0!important;
+  box-sizing:border-box!important; overflow:hidden!important;
+}
+#courseHome .v87-profile #arena77-friends .arena77-friend > div {
+  min-width:0!important; max-width:100%!important;
+}
+#courseHome .v87-profile #arena77-friends .arena77-friend small {
+  overflow-wrap:anywhere!important; word-break:break-word!important;
+}
+#courseHome .v87-profile #arena77-friends .arena77-friend > button {
+  display:flex!important; align-items:center!important; justify-content:center!important;
+  width:100%!important; max-width:100%!important; min-width:0!important;
+  box-sizing:border-box!important; margin:0!important;
+  white-space:normal!important; overflow-wrap:anywhere!important;
+  text-align:center!important; line-height:1.2!important;
+}
+#courseHome .v87-profile #arena77-add {
+  min-width:0!important; max-width:100%!important; box-sizing:border-box!important;
+}
+#courseHome .v87-profile #arena77-add input {
+  min-width:0!important; max-width:100%!important; box-sizing:border-box!important;
+}
+#courseHome .v87-profile #arena77-add button {
+  width:100%!important; min-width:0!important; box-sizing:border-box!important;
+}
+@media(max-width:800px){
+ #courseHome .v87-profile #arena77-friends .arena77-friend {
+   display:grid!important;
+   grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+   gap:9px!important; padding:13px!important;
+ }
+ #courseHome .v87-profile #arena77-friends .arena77-friend > div {
+   grid-column:1/-1!important;
+ }
+ #courseHome .v87-profile #arena77-friends .arena77-friend > button {
+   font-size:clamp(12px,3.5vw,15px)!important;
+   padding:11px 5px!important; min-height:44px!important;
+ }
+ #courseHome .v87-profile #arena77-friends .arena77-friend > button:last-child {
+   grid-column:1/-1!important;
+ }
+ #courseHome .v87-profile #arena77-add {
+   grid-template-columns:minmax(0,1fr)!important;
+ }
+ #courseHome .v87-profile #arena77-add > * {grid-column:1/-1!important}
+ #courseHome .v87-profile #arena71-panel {min-width:0!important; width:100%!important; box-sizing:border-box!important}
+}
+</style>
 </body></html>
