@@ -1034,6 +1034,32 @@ body{background:var(--arena62-bg)}
 #eugenGame .v104-actions .arena-v103-quick-actions, #courseHome .v104-dame-page .v104-actions .arena-v103-quick-actions{min-width:0!important;width:100%!important}
 #eugenGame .v104-actions a, #courseHome .v104-dame-page .v104-actions .arena-back, #eugenGame .v104-actions #eugenUndo, #courseHome .v104-dame-page .v104-actions #dameUndo {box-sizing:border-box!important;min-width:0!important;max-width:100%!important;width:100%!important;white-space:normal!important;word-break:normal!important;overflow-wrap:normal!important;text-overflow:clip!important;font-size:clamp(11px,3.3vw,14px)!important;line-height:1.22!important;padding:10px 5px!important;min-height:46px!important;text-align:center!important}
 @media(min-width:651px){#eugenGame .v104-actions,#courseHome .v104-dame-page .v104-actions{max-width:360px!important}}
+</style><style id="v108-compact-game-ui">
+#eugenGame .v104-head, #courseHome .v104-dame-page .v104-head {padding:12px 16px!important;margin-bottom:10px!important}
+#eugenGame .v104-eyebrow, #courseHome .v104-dame-page .v104-eyebrow {margin-bottom:8px!important;letter-spacing:.07em!important}
+#eugenGame .v104-head h1, #courseHome .v104-dame-page .v104-head h2 {font-size:clamp(18px,4.4vw,24px)!important;margin:8px 0 2px!important;font-weight:800!important}
+#eugenGame .v104-head .intro {font-size:clamp(12px,3vw,14px)!important;line-height:1.3!important}
+#eugenGame .v104-actions,#courseHome .v104-dame-page .v104-actions{margin-bottom:7px!important}
+#eugenGame .rook-game-layout {display:grid!important;grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr)!important;gap:14px!important}
+#eugenGame .v108-board-col {min-width:0;width:100%}
+#eugenGame .eugen-captures, #courseHome .v108-dame-captures {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;background:none!important;padding:0!important;margin:10px 0 4px!important;border:0!important}
+#eugenGame .eugen-capture-group,#courseHome .v108-cap-card {min-width:0;border:1px solid rgba(212,171,97,.46)!important;border-radius:12px!important;background:#162c47!important;padding:10px!important;display:flex;flex-direction:column;gap:8px}
+#eugenGame .eugen-capture-group strong,#courseHome .v108-cap-card strong {font-size:clamp(11px,2.6vw,13px)!important;color:#f4d598!important;line-height:1.25!important;overflow-wrap:anywhere}
+#eugenGame .eugen-capture-icons {min-height:25px!important;display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+#eugenGame .eugen-capture-icons svg{max-width:24px;max-height:28px}
+#eugenGame .eugen-capture-empty,#courseHome .v108-cap-card>div {font-size:12px!important;color:#c5d3e4!important}
+#courseHome .v108-dame-captures .v108-tokens {display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+#courseHome .v108-dame-captures .v108-token {font-size:20px;line-height:1.1}
+#eugenGame .rook-status {padding:10px!important;font-size:14px!important}
+#eugenGame .rook-panel{padding:14px!important}
+#eugenGame .rook-panel h2{font-size:clamp(17px,3vw,22px)!important;margin-bottom:8px!important}
+#eugenGame .rook-controls{display:flex!important;flex-wrap:wrap!important;gap:8px!important}
+#eugenGame .rook-controls button{flex:1 1 130px!important}
+#eugenGame .rook-panel>.eugen-engine-status{margin-top:8px!important}
+#eugenGame .v108-visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#courseHome .v104-dame-page .dame-note{display:none!important}
+@media(max-width:850px){#eugenGame .rook-game-layout{grid-template-columns:minmax(0,1fr)!important}#eugenGame .rook-panel{margin-top:0!important}}
+@media(max-width:650px){#eugenGame .eugen-capture-group,#courseHome .v108-cap-card{padding:8px!important}#eugenGame .v104-head, #courseHome .v104-dame-page .v104-head{padding:11px!important}#eugenGame .rook-panel{padding:10px!important}#eugenGame .rook-controls button{font-size:13px!important;padding:10px 5px!important}}
 </style></head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
@@ -1209,9 +1235,9 @@ body{background:var(--arena62-bg)}
   </div>
   <p class="v85-extra">Gegen andere Menschen spielst du im Bereich <strong>Online</strong>.</p>
 </div>
-<div class="arena-page v104-dame-page" data-panel="dame" hidden=""><div class="v104-head"><span class="v104-eyebrow">EUGENS SCHACH ARENA · GEGEN COMPUTER</span><div class="v104-actions"><button class="arena-back" data-page="spielen" type="button">← Zurück</button><div class="arena-v103-quick-actions arena-v103-dame-action"><button type="button" id="dameUndo" aria-label="Letzten Damezug zurücknehmen">↶ Zug zurück</button></div></div><h2>⛀ Dame gegen Computer</h2><p>Schlagpflicht · Mehrfachschläge · fliegende Damen.</p></div>
+<div class="arena-page v104-dame-page" data-panel="dame" hidden=""><div class="v104-head"><span class="v104-eyebrow">EUGENS SCHACH ARENA · GEGEN COMPUTER</span><div class="v104-actions"><button class="arena-back" data-page="spielen" type="button">← Zurück</button><div class="arena-v103-quick-actions arena-v103-dame-action"><button type="button" id="dameUndo" aria-label="Letzten Damezug zurücknehmen">↶ Zug zurück</button></div></div><h2>Dame · Gegen Computer</h2></div>
 <!-- Dame-Training ist ausschließlich über Lernen zugänglich. -->
-<div class="dame-layout"><div class="dame-board-area"><div aria-label="Damebrett" class="dame-board" id="dameBoard"></div><div class="dame-note">Tippe auf einen Stein und danach auf einen grünen Punkt. Beim Mehrfachschlag weiterziehen.</div></div>
+<div class="dame-layout"><div class="dame-board-area"><div aria-label="Damebrett" class="dame-board" id="dameBoard"></div><div id="v108DameCaptures" class="v108-dame-captures" aria-label="Geschlagene Steine" aria-live="polite"><div class="v108-cap-card"><strong>Von dir geschlagen</strong><div id="v108DameMine">Noch keine Steine</div></div><div class="v108-cap-card"><strong>Vom Computer geschlagen</strong><div id="v108DameComputer">Noch keine Steine</div></div></div></div>
 <div class="dame-panel"><h3>Spielmodus</h3><label for="dameMode">Gegner</label><select id="dameMode"><option value="ai">Gegen Computer</option><option value="local">Zwei Spieler am Gerät</option><option value="online">🌐 Online gegen Freunde</option></select>
 <div id="dameComputerColorBox"><label for="dameComputerColor">Meine Farbe (Weiß beginnt)</label><select id="dameComputerColor"><option value="w">⚪ Weiß – du beginnst</option><option value="b">⚫ Schwarz – Computer beginnt</option></select></div>
 <label for="dameLevel">Computerstärke</label><select id="dameLevel"><option value="easy">Anfänger</option><option selected="" value="medium">Fortgeschritten</option><option value="hard">Profi</option></select>
@@ -1234,7 +1260,7 @@ body{background:var(--arena62-bg)}
 <p class="dame-note">Die Online-Verbindung nutzt PeerJS/WebRTC. Beide Geräte müssen online und die Seiten geöffnet bleiben. Keine Registrierung erforderlich; der öffentliche Vermittlungsdienst ist jedoch nicht garantiert verfügbar.</p>
 </div><div aria-live="polite" id="dameStatus" role="status">Weiß beginnt.</div><div class="dame-stats"><span id="dameCountWhite">⚪ 12</span><span id="dameCountBlack">⚫ 12</span></div>
 <button id="dameRestart" type="button">↻ Neues Spiel</button>
-<p class="dame-note">Bei Schlagpflicht sind nur schlagende Züge erlaubt. Du kannst auch mit dem Finger tippen – Ziehen und Ablegen ist nicht erforderlich.</p><p class="dame-note">Computergegner: lokale Spiel-KI mit Alpha-Beta-Suche ohne Internet. „Profi“ ist eine tiefere Suche, aber keine Turnier-Engine.</p></div></div></div>
+</div></div></div>
 <div class="arena-page v86-lernen v89-learn" data-panel="lernen" hidden>
   <div class="v89-overview" id="v89Overview">
     <div class="v89-title"><span class="v89-kicker">EUGENS SCHACH ARENA · LERNEN</span><h2>Lernen</h2><p>Was möchtest du heute lernen?</p></div>
@@ -1620,21 +1646,21 @@ body{background:var(--arena62-bg)}
 </div>
 </div>
 <section class="rook-game" hidden="" id="eugenGame">
-<div class="v104-head"><span class="v104-eyebrow">EUGENS SCHACH ARENA · GEGEN COMPUTER</span><div class="v104-actions"><a class="course-return arena-native-back" id="backEugenLevels" href="?arenaReturn=spielen" role="button">← Zurück</a><div class="arena-v103-quick-actions"><button type="button" id="eugenUndo" aria-label="Letzten Zug gegen Computer zurücknehmen">↶ Zug zurück</button></div></div><h1 id="eugenTitle">♟️ Schach gegen Computer</h1><p class="intro" id="v93EugenIntro">Du spielst mit Weiß. Eugen spielt Schwarz. Tippe auf eine Figur und dann auf ihr Zielfeld.</p></div>
+<div class="v104-head"><span class="v104-eyebrow">EUGENS SCHACH ARENA · GEGEN COMPUTER</span><div class="v104-actions"><a class="course-return arena-native-back" id="backEugenLevels" href="?arenaReturn=spielen" role="button">← Zurück</a><div class="arena-v103-quick-actions"><button type="button" id="eugenUndo" aria-label="Letzten Zug gegen Computer zurücknehmen">↶ Zug zurück</button></div></div><h1 id="eugenTitle" class="v108-compact-title">Schach · Anfänger</h1><p class="intro v108-subtitle" id="v93EugenIntro">Du spielst Weiß · Computer Schwarz</p></div>
 <div class="rook-game-layout">
-<div class="wood rook-board-frame"><div aria-label="Schachpartie gegen Eugen" class="board rook-board" id="eugenBoard" role="group"></div></div>
+<div class="v108-board-col"><div class="wood rook-board-frame"><div aria-label="Schachpartie gegen Eugen" class="board rook-board" id="eugenBoard" role="group"></div></div><div aria-label="Geschlagene Figuren" aria-live="polite" class="eugen-captures">
+<div class="eugen-capture-group"><strong>Von dir geschlagen (Schwarz)</strong><div class="eugen-capture-icons" id="eugenCapturedBlack"><span class="eugen-capture-empty">Noch keine Figuren</span></div></div>
+<div class="eugen-capture-group"><strong>Vom Computer geschlagen (Weiß)</strong><div class="eugen-capture-icons" id="eugenCapturedWhite"><span class="eugen-capture-empty">Noch keine Figuren</span></div></div>
+</div></div>
 <aside class="rook-panel">
 <h2 id="eugenHeadline">Weiß am Zug</h2>
 <div aria-live="polite" class="rook-status" id="eugenStatus" role="status">Deine Partie beginnt.</div>
 <div class="rook-stats"><span id="eugenMoves">Züge: 0</span><span id="eugenLevelLabel">Anfänger</span></div>
-<div aria-label="Geschlagene Figuren" aria-live="polite" class="eugen-captures">
-<div class="eugen-capture-group"><strong>⚪ Von dir geschlagen (Schwarz)</strong><div class="eugen-capture-icons" id="eugenCapturedBlack"><span class="eugen-capture-empty">Noch keine Figuren</span></div></div>
-<div class="eugen-capture-group"><strong>⚫ Von Eugen geschlagen (Weiß)</strong><div class="eugen-capture-icons" id="eugenCapturedWhite"><span class="eugen-capture-empty">Noch keine Figuren</span></div></div>
-</div>
+
 <p aria-live="polite" class="eugen-engine-status" id="eugenEngineStatus" style="font-size:13px;color:#afc8e5;line-height:1.5">Spielbereit.</p>
 <div class="rook-controls"><button id="eugenSaveReview" type="button">💾 Partie ansehen</button><button id="eugenAnalyzeNow" type="button">🔎 Partie analysieren</button><button id="eugenRestart" type="button">↻ Neues Spiel</button></div>
-<p>Du kannst alle Figuren wie im normalen Schach ziehen, inklusive Rochade, Bauernumwandlung und en passant. Eugen antwortet nach deinem Zug.</p>
-<p id="eugenTurnInfo">Ziel: Setze Eugen schachmatt!</p>
+
+<p id="eugenTurnInfo" class="v108-visually-hidden">Ziel: Setze den Computer schachmatt!</p>
 </aside>
 </div>
 </section>
@@ -2287,9 +2313,11 @@ function egReset(){
  historyEugenReset();
 }
 function egStart(mode){  egHuman=window.arenaChessChosenColor==='b'?'b':'w';egMode=mode;egReset();$('courseHome').hidden=true;$('heavyMenu').hidden=true;$('trainingView').hidden=true;$('rookGame').hidden=true;$('eugenMenu').hidden=true;$('eugenGame').hidden=false;
- $('eugenTitle').textContent='♟️ Spiel gegen Eugen – '+egLevels[mode];$('eugenLevelLabel').textContent=egLevels[mode];egDraw();$('v93EugenIntro').textContent=egHuman==='w'?'Du spielst Weiß, Eugen Schwarz. Tippe auf eine Figur und dann auf ihr Zielfeld.':'Du spielst Schwarz, Eugen Weiß. Eugen macht den ersten Zug.';if(mode==='expert')egInitStockfish();else egEngineInfo(mode==='beginner'?'Anfänger: lockerer Computergegner.':'Fortgeschrittene: taktisch stärkerer Computergegner.');if(egHuman==='b')egTimer=setTimeout(egAIMove,380);window.scrollTo(0,0);
+ $('eugenTitle').textContent='Schach · '+egLevels[mode];$('eugenLevelLabel').textContent=egLevels[mode];egDraw();$('v93EugenIntro').textContent=egHuman==='w'?'Du: Weiß · Computer: Schwarz':'Du: Schwarz · Computer: Weiß';if(mode==='expert')egInitStockfish();else egEngineInfo(mode==='beginner'?'Anfänger: lockerer Computergegner.':'Fortgeschrittene: taktisch stärkerer Computergegner.');if(egHuman==='b')egTimer=setTimeout(egAIMove,380);window.scrollTo(0,0);
 }
  function egDrawCaptures(){
+  const capLabels=document.querySelectorAll('#eugenGame .eugen-capture-group strong');
+  if(capLabels.length===2){capLabels[0].textContent='Von dir geschlagen ('+(egHuman==='w'?'Schwarz':'Weiß')+')';capLabels[1].textContent='Vom Computer geschlagen ('+(egHuman==='w'?'Weiß':'Schwarz')+')';}
   const order={q:0,r:1,b:2,n:3,p:4};
   for(const [id,pieces] of [['eugenCapturedBlack',egCapturedBlack],['eugenCapturedWhite',egCapturedWhite]]){
    const el=$(id);el.replaceChildren();
@@ -4861,4 +4889,29 @@ document.addEventListener('DOMContentLoaded',()=>{
 @media(max-width:600px){.arena-v103-quick-actions button{font-size:15px;min-height:48px}.arena-v103-quick-actions span{display:none}}
 </style>
 
-</body></html>
+<script id="v108-dame-captures-update">
+(()=>{
+ const white=document.getElementById('dameCountWhite'),black=document.getElementById('dameCountBlack');
+ const mine=document.getElementById('v108DameMine'),computer=document.getElementById('v108DameComputer');
+ const color=document.getElementById('dameComputerColor'),mode=document.getElementById('dameMode');
+ if(!white||!black||!mine||!computer)return;
+ const count=el=>{const n=Number((el.textContent||'').match(/\d+/)?.[0]||12);return Math.max(0,Math.min(12,n))};
+ function draw(target,n,blackPieces){
+   target.replaceChildren();
+   if(n===0){target.textContent='Noch keine Steine';return}
+   const row=document.createElement('div');row.className='v108-tokens';
+   for(let i=0;i<n;i++){const piece=document.createElement('span');piece.className='v108-token';piece.textContent=blackPieces?'⚫':'⚪';row.appendChild(piece)}
+   target.appendChild(row);
+ }
+ function update(){
+   const yourWhite=(color?.value||'w')==='w';
+   const capturedBlack=12-count(black),capturedWhite=12-count(white);
+   draw(mine,yourWhite?capturedBlack:capturedWhite,yourWhite);
+   draw(computer,yourWhite?capturedWhite:capturedBlack,!yourWhite);
+   const box=document.getElementById('v108DameCaptures');if(box)box.hidden=mode?.value!=='ai';
+ }
+ new MutationObserver(update).observe(white,{subtree:true,childList:true,characterData:true});
+ new MutationObserver(update).observe(black,{subtree:true,childList:true,characterData:true});
+ color?.addEventListener('change',update);mode?.addEventListener('change',update);update();
+})();
+</script></body></html>
