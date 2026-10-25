@@ -6,7 +6,7 @@
 <meta name="mobile-web-app-capable" content="yes"/>
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png"/>
-<link rel="manifest" href="/manifest.webmanifest"/>
+<!-- No standalone manifest: server only serves index.html -->
 <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/><meta content="#101b29" name="theme-color"/><title>Eugens Schach Arena 6.0 – Premium Dark</title>
 <style>
 :root{font-family:system-ui,-apple-system,Arial,sans-serif;color:#f0f4f8;background:#101b29}*{box-sizing:border-box}body{margin:0}header{background:#17283a;border-bottom:1px solid #ffffff10;padding:17px max(15px,calc((100vw - 1150px)/2));font-weight:850;font-size:25px;display:flex;align-items:center;gap:10px}.brand-eugen,.brand-schach,.brand-arena{display:inline-block;letter-spacing:.2px}.brand-eugen{color:#111;text-shadow:0 0 1px #fff,0 0 2px #fff,0 1px 0 #fff}.brand-schach{color:#d61f26;text-shadow:0 1px 0 rgba(0,0,0,.35)}.brand-arena{color:#f2c94c;text-shadow:0 1px 0 rgba(0,0,0,.35)}.flag-divider{display:inline-block;width:34px;height:18px;border-radius:4px;vertical-align:middle;background:linear-gradient(to bottom,#111 0 33.33%,#d61f26 33.33% 66.66%,#f2c94c 66.66% 100%);box-shadow:0 0 0 1px #ffffff28}main{max-width:1150px;margin:0 auto;padding:25px 14px 45px}h1{font-size:clamp(23px,4vw,37px);margin:0 0 6px}p{color:#bac9db;line-height:1.5}.intro{margin:0 0 23px}.layout{display:grid;grid-template-columns:minmax(0,650px) minmax(265px,1fr);gap:24px;align-items:start}.board-area{min-width:0}.wood{padding:13px;background:linear-gradient(135deg,#9a7146,#4b3020 55%,#8e643e);border-radius:14px;box-shadow:0 16px 35px #0008,inset 0 2px 2px #fff5,inset 0 -4px 4px #0007}.boardwrap{position:relative}.board{width:100%;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));border:3px solid #3a2518;overflow:hidden;border-radius:3px;touch-action:manipulation}.sq{border:0;cursor:pointer;position:relative;min-width:0;min-height:0;width:100%;height:100%;padding:0;display:flex;justify-content:center;align-items:center;appearance:none;-webkit-appearance:none;outline:none}.light{background:#f1dfbe}.dark{background:#ae8057}.sq.sel{background:#eed05c}.sq.correct{background:#7dbc6b}.sq.bad{background:#d16b61}.sq:focus-visible{outline:4px solid #4ca5ff;outline-offset:-4px;z-index:2}.piece{width:89%;height:89%;filter:drop-shadow(0 2px 1px #0003);display:block;pointer-events:none;transition:transform .18s ease}.sq.sel .piece{transform:scale(1.09)}.sq:active .piece{transform:scale(.93)}.coord{position:absolute;font-size:clamp(9px,1.4vw,13px);font-weight:850;line-height:1;pointer-events:none}.rank{top:4px;left:4px}.file{bottom:4px;right:4px}.light .coord{color:#986d48}.dark .coord{color:#f8e6cd}.marker{position:absolute;width:27%;height:27%;border-radius:50%;background:#242e35a0;pointer-events:none}.target{position:absolute;inset:3px;border:5px solid #1c3826a0;border-radius:50%;pointer-events:none}.overlay{position:absolute;inset:0;background:#06101bdc;z-index:5;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;border-radius:4px}.overlay.visible{display:flex;animation:pop .22s ease-out}@keyframes pop{from{opacity:0}to{opacity:1}}.overlay img{display:none;width:50%;max-width:270px;aspect-ratio:1;object-fit:cover;border:5px solid white;border-radius:50%;box-shadow:0 12px 20px #0008}.overlay img.ready{display:block}.no{font-weight:1000;font-size:clamp(43px,10vw,76px);color:#ff6262;text-shadow:2px 4px 0 #531010}.overlay small{font-weight:750;font-size:17px}.boardfoot{display:flex;justify-content:space-between;color:#d0dfec;padding:13px 3px 0;font-size:13px}.card{background:#1c2d43;padding:23px;border-radius:18px;box-shadow:0 12px 30px #0002}.card h2{margin:0 0 12px;font-size:26px}.hint{min-height:75px;font-size:17px;line-height:1.5;color:#e1eaf2}.stats{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0}.stat{background:#2b415d;border-radius:10px;padding:12px;font-size:15px}.status{min-height:55px;line-height:1.5;font-size:17px;font-weight:600}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}button.action{border:0;border-radius:10px;background:#348ce9;color:white;font-size:16px;padding:13px 16px;font-weight:800;cursor:pointer}button.secondary{background:#405570}.footnote{font-size:12px;margin-top:26px}.toast{background:#203d36;color:#c7f8d8;padding:8px 12px;border-radius:8px;display:none}.toast.visible{display:block}.legend{font-size:14px;margin-top:10px;color:#bbcde0}@media(max-width:820px){.layout{grid-template-columns:1fr}.card{padding:20px}.hint{min-height:0}.boardfoot{font-size:12px}}@media(max-width:420px){main{padding:17px 9px 35px}.wood{padding:8px}.board{border-width:2px}.coord{font-size:9px}.rank{top:2px;left:2px}.file{bottom:2px;right:2px}.card h2{font-size:22px}}
@@ -4257,7 +4257,7 @@ E('dtxRetry').addEventListener('click',reset);E('dtxNext').addEventListener('cli
  // Standardansicht: zuerst Grundlagen / Züge lernen, statt Schachaufgaben.
  setMode(true);
 })();
-</script><script src="account-ui.js" defer></script><style id="v69-account-greeting-style">
+</script><!-- Account UI is implemented inline; no external account-ui.js --><style id="v69-account-greeting-style">
 .premium-welcome-text{min-width:0!important;overflow:visible!important;}
 .premium-welcome-text strong{min-width:0;overflow-wrap:break-word!important;word-break:normal!important;hyphens:none;}
 @media(max-width:740px){
@@ -5972,9 +5972,18 @@ font-family:system-ui,-apple-system,sans-serif
   pending=saved;if(Date.now()-lastSaved>2500)flush();
  };
  window.v138RemoteClear=function(finished){
+  // Serialize clearing after in-flight saves; an older save must not overtake
+  // the completion marker. Keep future games able to autosave normally.
   pending=null;lastSerialized='';clearRequested=true;
-  // A completed game writes a durable tombstone, not a vulnerable DELETE.
-  request('clear',finished?{finished}:{}).catch(()=>{}).finally(()=>{clearRequested=false;});
+  (async()=>{
+   try{
+    // Wait until the existing save request has left the browser.
+    for(let n=0;n<60&&sending;n++)await new Promise(r=>setTimeout(r,100));
+    pending=null;
+    await request('clear',finished?{finished}:{});
+   }catch(e){console.warn('Partie-Cloudspeicher konnte nicht gelöscht werden:',e)}
+   finally{pending=null;clearRequested=false;}
+  })();
  };
  setInterval(flush,3000);
  function valid(x){return x&&x.v===1&&x.room&&x.state&&!x.state.outcome&&
