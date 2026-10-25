@@ -4541,8 +4541,7 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
 #v84ChessHud,#v84DameHud{display:none}
 .v84-hud{width:100%;max-width:min(96vw,720px);margin:8px auto 12px;padding:10px 14px;background:#112b45;border:1px solid #9e7b4b;border-radius:13px;color:#f5f0df;box-shadow:0 8px 25px #0004}
 .v84-hud-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.v84-hud-names{font-size:clamp(15px,2.5vw,21px);font-weight:800;overflow-wrap:anywhere}
-.v84-hud-sub{font-size:13px;color:#cbdcec;margin-top:5px}
+.v84-hud-sub{font-size:15px;color:#f5f0df;margin-top:0;font-weight:700;line-height:1.4}
 .v84-hud-actions button{background:#355573;color:#fff;border:1px solid #68819c;border-radius:9px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:700}
 body:has(#liveGame:not([hidden])) #v84ChessHud{display:block}
 body:has(#liveGame:not([hidden])) #liveGame #liveBackMenu{display:none!important}
@@ -4553,7 +4552,17 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
 body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) .arena-page[data-panel="dame"] > p:not(.v84-hud){display:none!important}
 body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) .arena-page[data-panel="dame"] .dame-note{display:none!important}
 body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) .arena-page[data-panel="dame"] #dameOnlineBox > .dame-chat{display:block!important}
-@media(max-width:650px){.v84-hud{margin:6px auto 10px;padding:9px 11px}.v84-hud-names{font-size:16px}.v84-hud-actions button{padding:8px 10px}}
+@media(max-width:650px){.v84-hud{margin:6px auto 10px;padding:9px 11px}.v84-hud-actions button{padding:8px 10px}}
+
+/* v124: hide live chat completely and remove player-vs-player title line */
+body:has(#liveGame:not([hidden])) #liveGame #arenaChat{display:none!important}
+body:has(#liveGame:not([hidden])) #v79ChatFab{display:none!important}
+body:has(#liveGame:not([hidden])) #liveGame .rook-panel{display:block!important;width:100%!important;max-width:none!important}
+body:has(#liveGame:not([hidden])) #liveGame .rook-panel > :not(#arenaChat){display:block!important}
+#v84ChessHud .v84-hud-names,#v84DameHud .v84-hud-names{display:none!important}
+#v84ChessHud .v84-hud-top,#v84DameHud .v84-hud-top{align-items:center}
+@media(max-width:650px){.v84-hud{padding:10px 12px}.v84-hud-sub{font-size:16px}}
+
 </style>
 
 <script id="v84-clean-online-game-script">
@@ -4563,7 +4572,7 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
  if(!live||!damePage)return;
  function makeHud(kind,container,reference){
   const hud=document.createElement('section');hud.className='v84-hud';hud.id=kind==='chess'?'v84ChessHud':'v84DameHud';
-  hud.innerHTML='<div class="v84-hud-top"><div><div class="v84-hud-names" data-names>Du vs. Gegner</div><div class="v84-hud-sub" data-info>Verbinde mit deinem Freund …</div></div><div class="v84-hud-actions"><button type="button" data-leave>🚪 Raum verlassen</button></div></div>';
+  hud.innerHTML='<div class="v84-hud-top"><div><div class="v84-hud-sub" data-info>Verbinde mit deinem Freund …</div></div><div class="v84-hud-actions"><button type="button" data-leave>🚪 Raum verlassen</button></div></div>';
   container.insertBefore(hud,reference);
   hud.querySelector('[data-leave]').addEventListener('click',()=>{
    if(kind==='chess')$('liveBackMenu')?.click();
@@ -4583,24 +4592,23 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
   const value=(document.querySelector('#arena70-'+kind+' .arena70-opponent')?.textContent||'').replace(/^👤\s*/,'').replace(/\s*▾\s*$/,'').trim();
   return value && !/nicht verbunden|wird erkannt/i.test(value)?value:'Gegner';
  }
- function update(hud,names,info){
-  const a=hud.querySelector('[data-names]'),b=hud.querySelector('[data-info]');
-  if(a.textContent!==names)a.textContent=names;
-  if(b.textContent!==info)b.textContent=info;
+ function update(hud,info){
+  const b=hud.querySelector('[data-info]');
+  if(b && b.textContent!==info)b.textContent=info;
  }
  function sync(){
   if(!live.hidden){
    const status=($('liveHeadline')?.textContent||$('liveStatus')?.textContent||'').trim();
    const side=($('liveSideLabel')?.textContent||'').trim();
    const color=/du spielst schwarz|du bist schwarz|spielst schwarz/i.test(side+' '+$('liveStatus')?.textContent)?'Schwarz':/du spielst weiß|du spielst weiss|du bist weiß|spielst weiß/i.test(side+' '+$('liveStatus')?.textContent)?'Weiß':'–';
-   update(chessHud,nameFromLogin()+' vs. '+opponent('chess'),'Deine Farbe: '+color+' · '+(status||'Warte auf Freund …'));
+   update(chessHud,'Deine Farbe: '+color+' · '+(status||'Warte auf Freund …'));
   }
   if(!damePage.hidden && !$('dameDisconnect')?.hidden){
    const status=($('dameStatus')?.textContent||'').trim();
    const onlineStatus=($('dameOnlineStatus')?.textContent||'').trim();
    let color=/du spielst schwarz/i.test(onlineStatus)?'Schwarz':/du spielst weiß/i.test(onlineStatus)?'Weiß':'–';
    const turn=/Schwarz.*(?:am Zug|Mehrfachschlag)/i.test(status)?'Schwarz':/Weiß.*(?:am Zug|Mehrfachschlag)/i.test(status)?'Weiß':null;
-   update(dameHud,nameFromLogin()+' vs. '+opponent('dame'),'Deine Farbe: '+color+' · '+(turn?'Am Zug: '+turn:status||'Verbunden'));
+   update(dameHud,'Deine Farbe: '+color+' · '+(turn?'Am Zug: '+turn:status||'Verbunden'));
   }
  }
  sync();
