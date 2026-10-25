@@ -1653,7 +1653,8 @@ body{background:var(--arena62-bg)}
 <div class="live-answer" hidden="" id="liveRematchAnswer"><strong>Dein Freund möchte ein Rückspiel.</strong><div class="live-actions"><button id="liveRematchAccept" type="button">Rückspiel starten</button><button id="liveRematchDecline" type="button">Ablehnen</button></div></div>
 </div>
 <div class="rook-game-layout">
-<div class="v121-clocks" aria-label="Schachuhren"><div aria-label="Schachuhren" class="live-clock-panel"><div class="live-clock-row"><span>⚪ Weiß</span><strong id="liveClockWhite">10:00</strong></div><div class="live-clock-row"><span>⚫ Schwarz</span><strong id="liveClockBlack">10:00</strong></div></div></div><div class="wood rook-board-frame" id="liveBoardFrame"><div aria-label="Live-Schachbrett" class="board rook-board" id="liveBoard" role="group"></div></div>
+<div class="wood rook-board-frame" id="liveBoardFrame"><div aria-label="Live-Schachbrett" class="board rook-board" id="liveBoard" role="group"></div></div>
+<div class="v121-clocks" aria-label="Schachuhren"><div aria-label="Schachuhren" class="live-clock-panel"><div class="live-clock-row"><span>⚪ Weiß</span><strong id="liveClockWhite">10:00</strong></div><div class="live-clock-row"><span>⚫ Schwarz</span><strong id="liveClockBlack">10:00</strong></div></div></div>
 <div class="v121-captured" id="v121Captured" aria-label="Geschlagene Schachfiguren"><div class="v121-captured-line" id="v121TakenBlack" aria-label="Geschlagene schwarze Figuren"></div><div class="v121-captured-line" id="v121TakenWhite" aria-label="Geschlagene weiße Figuren"></div></div>
 <aside class="rook-panel">
 <h2 id="liveHeadline">Warte auf Freund …</h2>
@@ -2828,7 +2829,7 @@ rebuild();
    if(row===7){let c=document.createElement('span');c.className='coord file';c.textContent=egFiles[f];cell.appendChild(c)}
    cell.addEventListener('click',()=>click(sq));el.appendChild(cell)
   }
-  window.arena121Captured?.(position);
+  window.arena123Captured?.(position, figure);
   $l('liveHeadline').textContent=outcome?'🏁 '+outText():!connected?'Warte auf Verbindung …':side===turn?'♔ Du bist am Zug':'♚ Dein Freund ist am Zug';
   $l('liveTimeLabel').textContent=timeControl===0?'Ohne Zeitlimit – keine Schachuhr':'Zeit: '+(timeControl/60000)+' Minuten pro Spieler';$l('liveMoveLabel').textContent='Züge: '+moveNo;
   const answerDrawVisible=connected&&!outcome&&drawOffer===side;
@@ -5392,4 +5393,50 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script><style>/* v122: Server-clock authority/status */
 #liveGame .v121-clocks:before{content:'⏱ Server-Schachuhren';grid-column:1/-1;font-size:12px;color:#e2c18a;letter-spacing:.04em}
 #liveGame .live-clock-row strong.active{color:#f4db9b;text-shadow:0 0 12px rgba(233,187,107,.30)}
-</style></body></html>
+</style><style>
+/* v123 live UI: board > clocks > captured figures, consistent piece artwork */
+#liveGame .rook-game-layout #liveBoardFrame {order:0!important}
+#liveGame .rook-game-layout .v121-clocks {order:1!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);width:min(100%,720px);margin:8px auto 0!important;gap:8px}
+#liveGame .rook-game-layout #v121Captured {order:2!important;width:min(100%,720px);margin:0 auto 8px!important;gap:4px!important}
+#liveGame .rook-game-layout .rook-panel {order:3!important}
+#liveGame .v121-clocks:before{display:none!important;content:none!important}
+#liveGame .live-clock-row{gap:5px!important;padding:9px 10px!important;flex-wrap:nowrap!important}
+#liveGame .live-clock-row span{font-size:clamp(11px,3.3vw,15px)!important;white-space:nowrap!important}
+#liveGame .live-clock-row strong{font-size:clamp(19px,5vw,27px)!important}
+#liveGame .v121-captured-line{min-height:30px!important;padding:3px 8px!important;display:flex!important;gap:2px!important;flex-wrap:wrap!important;align-items:center!important}
+#liveGame .v123-captured-piece{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:clamp(17px,5.1vw,27px);height:clamp(19px,5.7vw,29px);line-height:1!important}
+#liveGame .v123-captured-piece img{display:block!important;max-width:100%;width:100%;height:100%;object-fit:contain;filter:none!important}
+@media(max-width:400px){#liveGame .live-clock-row{padding:7px 6px!important}}
+</style>
+<script>
+(function(){
+ const starting={q:1,r:2,b:2,n:2,p:8};
+ // Use exactly the board's figure() renderer, so Safari never substitutes emoji fonts.
+ window.arena123Captured=function(position,renderPiece){
+  if(!position||typeof position!=="object"||typeof renderPiece!=="function")return;
+  for(const color of ['black','white']){
+   const target=document.getElementById(color==='black'?'v121TakenBlack':'v121TakenWhite');
+   if(!target)continue;
+   const onBoard={q:0,r:0,b:0,n:0,p:0};
+   for(const code of Object.values(position)){
+    if(typeof code!=='string'||code.length!==1)continue;
+    if((code===code.toUpperCase())!==(color==='white'))continue;
+    const kind=code.toLowerCase();if(Object.hasOwn(onBoard,kind))onBoard[kind]++;
+   }
+   const frag=document.createDocumentFragment();let count=0;
+   for(const kind of ['q','r','b','n','p']){
+    const lost=Math.max(0,starting[kind]-onBoard[kind]);
+    for(let j=0;j<lost;j++){
+     const span=document.createElement('span');span.className='v123-captured-piece';
+     span.setAttribute('aria-label',(color==='black'?'Schwarz ':'Weiß ')+kind);
+     span.innerHTML=renderPiece(color==='white'?kind.toUpperCase():kind);
+     frag.appendChild(span);count++;
+    }
+   }
+   if(!count){const mark=document.createElement('span');mark.className='v121-captured-empty';mark.textContent='–';frag.appendChild(mark)}
+   target.replaceChildren(frag);
+  }
+ };
+})();
+</script>
+</body></html>
