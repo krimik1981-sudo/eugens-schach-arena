@@ -1237,7 +1237,7 @@ body{background:var(--arena62-bg)}
 </div>
 <div class="arena-page v104-dame-page" data-panel="dame" hidden=""><div class="v104-head"><span class="v104-eyebrow">EUGENS SCHACH ARENA · GEGEN COMPUTER</span><div class="v104-actions"><button class="arena-back" data-page="spielen" type="button">← Zurück</button><div class="arena-v103-quick-actions arena-v103-dame-action"><button type="button" id="dameUndo" aria-label="Letzten Damezug zurücknehmen">↶ Zug zurück</button></div></div><h2>Dame · Gegen Computer</h2></div>
 <!-- Dame-Training ist ausschließlich über Lernen zugänglich. -->
-<div class="dame-layout"><div class="dame-board-area"><div aria-label="Damebrett" class="dame-board" id="dameBoard"></div><div id="v108DameCaptures" class="v108-dame-captures" aria-label="Geschlagene Steine" aria-live="polite"><div class="v108-cap-card"><strong>Von dir geschlagen</strong><div id="v108DameMine">Noch keine Steine</div></div><div class="v108-cap-card"><strong>Vom Computer geschlagen</strong><div id="v108DameComputer">Noch keine Steine</div></div></div></div>
+<div class="dame-layout"><div class="dame-board-area"><div aria-label="Damebrett" class="dame-board" id="dameBoard"></div><div id="v108DameCaptures" class="v108-dame-captures" aria-label="Geschlagene Steine" aria-live="polite"><div class="v108-cap-card"><div id="v108DameMine">Noch keine Steine</div></div><div class="v108-cap-card"><div id="v108DameComputer">Noch keine Steine</div></div></div></div>
 <div class="dame-panel"><h3>Spielmodus</h3><label for="dameMode">Gegner</label><select id="dameMode"><option value="ai">Gegen Computer</option><option value="local">Zwei Spieler am Gerät</option><option value="online">🌐 Online gegen Freunde</option></select>
 <div id="dameComputerColorBox"><label for="dameComputerColor">Meine Farbe (Weiß beginnt)</label><select id="dameComputerColor"><option value="w">⚪ Weiß – du beginnst</option><option value="b">⚫ Schwarz – Computer beginnt</option></select></div>
 <label for="dameLevel">Computerstärke</label><select id="dameLevel"><option value="easy">Anfänger</option><option selected="" value="medium">Fortgeschritten</option><option value="hard">Profi</option></select>
@@ -1649,8 +1649,8 @@ body{background:var(--arena62-bg)}
 <div class="v104-head"><span class="v104-eyebrow">EUGENS SCHACH ARENA · GEGEN COMPUTER</span><div class="v104-actions"><a class="course-return arena-native-back" id="backEugenLevels" href="?arenaReturn=spielen" role="button">← Zurück</a><div class="arena-v103-quick-actions"><button type="button" id="eugenUndo" aria-label="Letzten Zug gegen Computer zurücknehmen">↶ Zug zurück</button></div></div><h1 id="eugenTitle" class="v108-compact-title">Schach · Anfänger</h1><p class="intro v108-subtitle" id="v93EugenIntro">Du spielst Weiß · Computer Schwarz</p></div>
 <div class="rook-game-layout">
 <div class="v108-board-col"><div class="wood rook-board-frame"><div aria-label="Schachpartie gegen Eugen" class="board rook-board" id="eugenBoard" role="group"></div></div><div aria-label="Geschlagene Figuren" aria-live="polite" class="eugen-captures">
-<div class="eugen-capture-group"><strong>Von dir geschlagen (Schwarz)</strong><div class="eugen-capture-icons" id="eugenCapturedBlack"><span class="eugen-capture-empty">Noch keine Figuren</span></div></div>
-<div class="eugen-capture-group"><strong>Vom Computer geschlagen (Weiß)</strong><div class="eugen-capture-icons" id="eugenCapturedWhite"><span class="eugen-capture-empty">Noch keine Figuren</span></div></div>
+<div class="eugen-capture-group"><div class="eugen-capture-icons" id="eugenCapturedBlack"><span class="eugen-capture-empty">Noch keine Figuren</span></div></div>
+<div class="eugen-capture-group"><div class="eugen-capture-icons" id="eugenCapturedWhite"><span class="eugen-capture-empty">Noch keine Figuren</span></div></div>
 </div></div>
 <aside class="rook-panel">
 <h2 id="eugenHeadline">Weiß am Zug</h2>
@@ -4978,4 +4978,155 @@ document.addEventListener('DOMContentLoaded',()=>{
  #historyView #historyReview .v96-board-area .board{max-width:100%!important}
 }
 </style>
+
+<style id="v110-compact-captured-pieces">
+/* Captured figures: two slim strips under the board, with no redundant ownership labels. */
+#eugenGame .eugen-captures,
+#courseHome .v108-dame-captures{
+  display:flex!important;flex-direction:column!important;gap:4px!important;
+  padding:0!important;margin:7px 0 5px!important;background:none!important;
+  border:0!important;width:100%!important;max-width:100%!important;
+}
+#eugenGame .eugen-capture-group,
+#courseHome .v108-cap-card{
+  box-sizing:border-box!important;min-height:29px!important;height:auto!important;
+  width:100%!important;min-width:0!important;padding:3px 7px!important;
+  margin:0!important;border-radius:8px!important;gap:0!important;
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  background:#162b42!important;border:1px solid rgba(212,171,97,.34)!important;
+}
+#eugenGame .eugen-capture-group>strong,
+#courseHome .v108-cap-card>strong{display:none!important}
+#eugenGame .eugen-capture-icons{
+  display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;
+  align-items:center!important;justify-content:flex-start!important;
+  min-height:21px!important;max-height:none!important;gap:0 1px!important;width:100%!important;
+}
+#eugenGame .eugen-capture-icons img.piece{
+  flex:none!important;width:clamp(18px,4.6vw,23px)!important;
+  height:clamp(19px,4.8vw,24px)!important;max-width:23px!important;
+  max-height:24px!important;margin:0!important;padding:0!important;
+}
+#eugenGame .eugen-capture-icons svg{
+  width:clamp(18px,4.6vw,23px)!important;height:clamp(19px,4.8vw,24px)!important;
+  max-width:23px!important;max-height:24px!important;
+}
+#eugenGame .eugen-capture-empty,
+#courseHome .v108-cap-card>div:not(.v108-tokens){font-size:11px!important;line-height:1.25!important}
+#courseHome .v108-dame-captures .v108-tokens{
+  display:flex!important;flex-wrap:wrap!important;gap:1px!important;align-items:center!important;margin:0!important;
+}
+#courseHome .v108-dame-captures .v108-token{font-size:18px!important;line-height:1.1!important}
+@media(max-width:700px){
+ #eugenGame .eugen-captures,#courseHome .v108-dame-captures{margin:5px 0!important;gap:3px!important}
+ #eugenGame .eugen-capture-group,#courseHome .v108-cap-card{padding:3px 5px!important;min-height:26px!important}
+}
+</style>
+
+<style id="v111-clean-analysis">
+/* v111 focused archive and review */
+#historyView{max-width:1180px;margin:0 auto;padding:clamp(12px,2vw,24px)}
+#historyView>h1{font-size:clamp(24px,3vw,34px);margin:15px 0 8px}
+#historyView>.v111-archive-intro{color:#b9c9da;font-size:14px;margin-bottom:14px}
+#historyView>.v111-archive-tools{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 17px}
+#historyView .v111-archive-tools button,#historyView .v111-archive-tools summary{font-size:13px!important;padding:9px 13px!important;border-radius:10px!important;background:#203a55!important;color:#f4d399!important;border:1px solid #b38b50!important;min-height:38px!important}
+#historyView .v111-archive-tools details{position:relative}
+#historyView .v111-archive-tools details>div{position:absolute;z-index:40;top:calc(100% + 6px);left:0;width:min(290px,80vw);padding:12px;background:#122840;border:1px solid #9d7c4b;border-radius:12px;box-shadow:0 8px 24px #0007}
+#historyView .v111-archive-tools details button{display:block;margin:7px 0;width:100%;white-space:normal}
+#historyView .history-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px}
+#historyView .history-entry{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center;gap:6px 10px!important;margin:0!important;padding:13px!important;border-radius:13px!important;background:#1b314a!important;border:1px solid #45617b!important;box-shadow:none!important;min-width:0}
+#historyView .history-entry>div:first-child{grid-column:1/3;min-width:0}
+#historyView .history-entry strong{display:block;font-size:15px!important;line-height:1.32;overflow-wrap:anywhere}
+#historyView .history-entry small{display:block;color:#b9c9d9;font-size:12px;margin-top:3px}
+#historyView .history-entry button{font-size:12px!important;line-height:1.2!important;min-height:39px!important;margin:0!important;padding:8px 10px!important;border-radius:9px!important;white-space:normal}
+#historyView .history-entry button:last-child{background:#c79c5e!important;color:#0b2032!important}
+#historyView:has(#historyReview:not([hidden]))>#historyList,#historyView:has(#historyReview:not([hidden]))>.v111-archive-tools,#historyView:has(#historyReview:not([hidden]))>.v111-archive-intro,#historyView:has(#historyReview:not([hidden]))>h1{display:none!important}
+#historyView #historyReview{min-width:0}
+#historyView #historyReview #historyGameTitle{font-size:clamp(15px,2vw,19px);font-weight:600;line-height:1.35;overflow-wrap:anywhere;margin:9px 0}
+#historyView .v111-review-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin:0 0 9px}
+#historyView .v111-review-toolbar button{font-size:13px!important;padding:8px 12px!important;min-height:38px!important;border-radius:10px!important;background:#1c3550!important;color:#f2d399!important;border:1px solid #bc9456!important}
+#historyView .v111-review-tabs{display:flex;gap:7px;flex-wrap:wrap}
+#historyView .v111-nav-underboard{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;width:100%;margin:8px 0 11px}
+#historyView .v111-nav-underboard button{margin:0!important;min-height:44px!important;padding:6px 4px!important;font-size:20px!important;line-height:1.1!important;border-radius:10px!important;background:#24435f!important;color:#f1d09a!important;border:1px solid #58748c!important}
+#historyView .v111-nav-underboard button:disabled{opacity:.35}
+#historyView .v111-review-board{display:flex;flex-direction:column;gap:5px;min-width:0}
+#historyView .v111-review-board .v96-board-area{width:100%!important;max-width:100%!important;min-width:0!important;order:1!important}
+#historyView .v111-review-board .v111-nav-underboard{order:2!important}
+#historyView .v111-review-board .v95-review-head{order:3!important;display:flex;justify-content:space-between;gap:8px;align-items:center;margin:0!important}
+#historyView .v111-review-board .v95-review-head strong{font-size:13px!important;min-width:0}
+#historyView .v111-review-board .v95-review-head button{font-size:12px!important;padding:7px 9px!important;white-space:nowrap}
+#historyView .v111-review-board #v96EvaluationCaption{order:0!important;font-size:12px!important;margin:0 0 5px!important;padding:9px!important;border-radius:10px!important}
+#historyView #historyReview .history-layout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(270px,.8fr)!important;gap:18px!important;align-items:start!important}
+#historyView #historyReview .history-side{display:block!important;min-width:0!important}
+#historyView .history-side>.history-moves{max-height:250px;overflow:auto}
+#historyView .v111-hide-extra{display:none!important}
+#historyView .v111-modal[hidden]{display:none!important}
+#historyView .v111-modal{position:fixed;inset:0;z-index:99999;background:#000b;display:flex;justify-content:center;align-items:center;padding:18px;overflow:auto}
+#historyView .v111-modal-card{background:#112840;color:#f5f6f8;border:1px solid #b59059;border-radius:18px;width:min(570px,100%);max-height:85dvh;overflow:auto;padding:18px;box-shadow:0 18px 60px #0009}
+#historyView .v111-modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+#historyView .v111-modal-head h3{margin:0;font-size:21px;color:#edc98e}
+#historyView .v111-close{background:#263f5b;border:1px solid #bb9254;border-radius:9px;color:#fff;font-size:23px;min-width:40px;height:40px;cursor:pointer}
+#historyView .v111-modal-card .arena-accuracy{margin:0!important;padding:0!important;border:0!important;background:transparent!important}
+#historyView .v111-modal-card .arena-accuracy-card{padding:12px}
+#historyView .v111-modal-card .arena-accuracy-number{font-size:clamp(24px,6vw,38px)}
+#historyView #v111StatSlot:empty:after{content:'Noch keine Analyse. Starte zuerst Stockfish.';display:block;color:#b9c9d9;padding:10px 0}
+#historyView .v111-modal-card .history-moves{max-height:55dvh;overflow:auto}
+@media(max-width:700px){
+ #historyView{padding:9px!important}
+ #historyView #historyReview .history-layout{display:flex!important;flex-direction:column!important;gap:8px!important}
+ #historyView #historyReview .v111-review-board{width:100%!important}
+ #historyView #historyReview .history-side{display:block!important;width:100%!important}
+ #historyView #historyReview .history-board{max-width:100%!important}
+ #historyView .history-list{grid-template-columns:1fr}
+ #historyView .v111-review-toolbar{gap:6px}
+ #historyView .v111-review-toolbar button{font-size:12px!important;padding:7px 9px!important}
+ #historyView #historyReview #historyGameTitle{font-size:13px!important}
+ #historyView .v111-modal-card{padding:13px}
+ #historyView .v111-modal-card .arena-accuracy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+<script id="v111-clean-analysis-script">
+(()=>{
+ function init(){
+  const view=document.getElementById('historyView'),review=document.getElementById('historyReview');
+  if(!view||!review||document.getElementById('v111StatModal'))return;
+  const intro=document.createElement('p');intro.className='v111-archive-intro';intro.textContent='Gespeicherte Partien · Tippe auf eine Partie, um sie anzusehen oder zu analysieren.';
+  const oldIntros=[...view.children].filter(e=>e.tagName==='P');oldIntros.forEach(e=>e.classList.add('v111-hide-extra'));
+  const title=view.querySelector('h1'); if(title){title.textContent='♟️ Meine Partien';title.after(intro)}
+  const tools=document.createElement('div');tools.className='v111-archive-tools';
+  const current=document.getElementById('historyCurrent'),exportAll=document.getElementById('historyExportAll'),importBtn=document.getElementById('historyImport');
+  const details=document.createElement('details');details.innerHTML='<summary>⚙ Optionen</summary><div></div>';
+  details.querySelector('div').append(exportAll,importBtn);
+  tools.append(current,details);intro.after(tools);
+  const list=document.getElementById('historyList');
+  const toolbar=document.createElement('div');toolbar.className='v111-review-toolbar';
+  toolbar.innerHTML='<button type="button" id="v111BackList">← Partien</button><div class="v111-review-tabs"><button type="button" id="v111StatsButton">▤ Statistik</button><button type="button" id="v111MovesButton">☷ Zugliste</button><button type="button" id="v111OptionsButton">⚙ Optionen</button></div>';
+  review.prepend(toolbar);
+  const layout=review.querySelector('.history-layout'),boardArea=layout?.querySelector('.v96-board-area'),side=layout?.querySelector('.history-side');if(!layout||!boardArea||!side)return;
+  const main=document.createElement('div');main.className='v111-review-board';layout.insertBefore(main,boardArea);main.append(boardArea);
+  const caption=document.getElementById('v96EvaluationCaption'),nav=side.querySelector('.history-actions:has(#historyFirst)'),head=side.querySelector('.v95-review-head');
+  if(caption)main.prepend(caption);
+  if(nav){nav.classList.add('v111-nav-underboard');main.append(nav);[['historyFirst','⏮'],['historyPrev','◀'],['historyNext','▶'],['historyLast','⏭']].forEach(([id,label])=>{const b=document.getElementById(id);if(b){b.textContent=label;b.setAttribute('aria-label',{'historyFirst':'Erster Zug','historyPrev':'Vorheriger Zug','historyNext':'Nächster Zug','historyLast':'Letzter Zug'}[id])}})}
+  if(head)main.append(head);
+  const moves=document.getElementById('historyMoves');
+  const mkModal=(id,heading)=>{const m=document.createElement('div');m.className='v111-modal';m.id=id;m.hidden=true;m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.innerHTML='<div class="v111-modal-card"><div class="v111-modal-head"><h3>'+heading+'</h3><button type="button" class="v111-close" aria-label="Schließen">×</button></div><div class="v111-modal-slot"></div></div>';view.append(m);m.querySelector('.v111-close').addEventListener('click',()=>m.hidden=true);m.addEventListener('click',e=>{if(e.target===m)m.hidden=true});return m};
+  const stats=mkModal('v111StatModal','Partiestatistik'),moveModal=mkModal('v111MovesModal','Zugliste'),options=mkModal('v111OptionsModal','Analyse-Optionen');
+  const statsSlot=stats.querySelector('.v111-modal-slot');statsSlot.id='v111StatSlot';
+  const summary=document.getElementById('arenaAccuracy');if(summary)statsSlot.append(summary);
+  if(moves)moveModal.querySelector('.v111-modal-slot').append(moves);
+  const optionsSlot=options.querySelector('.v111-modal-slot');
+  [...side.children].forEach(el=>{if(el===moves||el===caption||el===nav||el===head)return;if(el.id==='historyMoveNote'||el.id==='historyAnalysis'||el.id==='historyProgress')return;optionsSlot.append(el)});
+  const note=document.getElementById('historyMoveNote'),analysis=document.getElementById('historyAnalysis'),progress=document.getElementById('historyProgress');
+  [note,analysis,progress].forEach(el=>{if(el)side.append(el)});
+  document.getElementById('v111BackList').addEventListener('click',()=>{review.hidden=true;list.scrollIntoView({block:'start',behavior:'smooth'})});
+  document.getElementById('v111StatsButton').addEventListener('click',()=>stats.hidden=false);
+  document.getElementById('v111MovesButton').addEventListener('click',()=>moveModal.hidden=false);
+  document.getElementById('v111OptionsButton').addEventListener('click',()=>options.hidden=false);
+  window.addEventListener('keydown',e=>{if(e.key==='Escape')[stats,moveModal,options].forEach(m=>m.hidden=true)});
+  const observe=new MutationObserver(()=>{const s=document.getElementById('arenaAccuracy');if(s && s.parentElement!==statsSlot)statsSlot.append(s)});
+  observe.observe(view,{childList:true,subtree:true});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body></html>
