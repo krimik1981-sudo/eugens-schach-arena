@@ -1096,7 +1096,7 @@ body{background:var(--arena62-bg)}
 <style id="v115-live-controls">
 #v115Analyse{background:linear-gradient(120deg,#e9c98a,#c49a50)!important;color:#14253a!important;font-weight:800;border:1px solid #f7d99e;border-radius:12px;padding:12px 16px;cursor:pointer;min-height:44px}
 #v115Analyse[hidden]{display:none!important}
-#arenaChatEmojis button:disabled{opacity:.32!important;cursor:not-allowed;filter:grayscale(.75)}
+#arenaChatEmojis button:disabled{opacity:.65!important;cursor:not-allowed}
 @media(max-width:600px){#v115Analyse{width:100%;font-size:15px}}
 </style><style id="v116-visible-live-analysis">
 .v116-live-analysis-action{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 12px;max-width:100%}
@@ -2739,19 +2739,19 @@ window.ArenaV161Presence=(()=>{
  function sendChat(kind,value){
   if(!chatConnected()){chatInfo('Bitte zuerst mit einem Gegner verbinden.');return false}
   const now=Date.now();if(now-lastChatSent<700){chatInfo('Bitte nicht so schnell senden.');return false}
-  if(kind==='emoji') {if(!ARENA_EMOJIS.includes(value))return false; if(outcome||asSide()!==side){chatInfo('Emojis nur, wenn du am Zug bist.');return false;}}
+  if(kind==='emoji') {if(!ARENA_EMOJIS.includes(value))return false;}
   else if(kind==='text') {value=String(value||'').trim().slice(0,200);if(!value)return false;}
   else return false;
   lastChatSent=now;
   send({type:'arena-chat-v1',kind,value});
-  if(kind==='emoji')showEmoji(value,'Du');else addChatLine('Du',value,true);
+  addChatLine('Du',value,true);
   chatInfo('Gesendet');return true;
  }
  function receiveChat(msg){
   if(!chatConnected()||msg?.type!=='arena-chat-v1')return false;
   const kind=msg.kind,value=msg.value;
   if(typeof value!=='string')return true;
-  if(kind==='emoji'&&ARENA_EMOJIS.includes(value)){if(outcome||asSide()===side)return true;showEmoji(value,'Gegner');return true}
+  if(kind==='emoji'&&ARENA_EMOJIS.includes(value)){addChatLine('Gegner',value,false);return true}
   if(kind==='text'&&value.length<=200&&value.trim()){addChatLine('Gegner',value,false);return true}
   return true;
  }
@@ -4787,7 +4787,7 @@ body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidde
 }
 </style>
 
-<script id="v82-safe-emoji">
+<script type="text/plain" id="v82-safe-emoji-disabled-v191">
 (function(){'use strict';
  // Move only the Chess emoji layer – no page-wide attribute observers or repeated DOM changes.
  const frame=document.getElementById('liveBoardFrame');
@@ -7160,4 +7160,29 @@ if(layout&&controls&&panel&&controls.parentNode!==layout){layout.insertBefore(co
 }
 </style>
 
+<style id="v191-messenger-chat">
+/* v191: conversational chat; no emojis are rendered above either board. */
+#arenaEmojiToast,#v82DameEmoji{display:none!important}
+#arenaChatUnread:not([hidden]),#dameChatUnread:not([hidden]){display:inline-block!important;color:#e6b968!important}
+#v79ChatFab{background:#162f49!important;border:1px solid #d7ad68!important;color:#f4d29b!important;box-shadow:0 8px 24px #0007!important;min-width:85px!important;height:46px!important;border-radius:26px!important;font-size:14px!important}
+#v79ChatBadge:not([hidden]){background:#c44242!important;color:#fff!important}
+#arenaChatBody[hidden],#dameChatBody[hidden]{display:none!important}
+#arenaChatToggle,#dameChatToggle{background:#19324c!important;color:#f0c780!important;border:1px solid #c69b5b!important;border-radius:12px!important;font-size:15px!important;font-weight:700!important;min-height:42px!important}
+#arenaChatMessages,#dameChatMessages{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:9px!important;background:#0b1b2c!important;border-radius:13px!important;padding:13px!important;min-height:110px!important;max-height:300px;overflow:auto!important}
+#arenaChatMessages .arena-chat-item,#dameChatMessages .dame-chat-item{align-self:flex-start!important;width:fit-content!important;max-width:84%!important;background:#28465f!important;border:1px solid #43617a!important;border-radius:14px 14px 14px 5px!important;color:#f8f5ee!important;line-height:1.35!important;font-size:14px!important;padding:9px 12px!important;margin:0!important;overflow-wrap:anywhere;text-align:left!important}
+#arenaChatMessages .arena-chat-item.mine,#dameChatMessages .dame-chat-item.mine{align-self:flex-end!important;background:#d7ad6a!important;border-color:#e4c18c!important;color:#142539!important;border-radius:14px 14px 5px 14px!important}
+#arenaChatMessages .arena-chat-item strong{font-size:12px!important;opacity:.7}
+#arenaChatEmojis,#dameChatEmojis{display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:4px!important;flex-shrink:0!important}
+#arenaChatEmojis button,#dameChatEmojis button{min-width:0!important;width:100%!important;height:36px!important;padding:2px!important;border-radius:9px!important;font-size:20px!important;background:#1b354d!important;border:1px solid #496079!important;color:#fff!important;opacity:1!important;filter:none!important}
+#arenaChatForm,#dameChatForm{display:flex!important;flex-direction:row!important;gap:7px!important;flex-shrink:0!important}
+#arenaChatInput,#dameChatInput{min-width:0!important;flex:1!important;border-radius:22px!important;background:#142b43!important;border:1px solid #587089!important;color:white!important;font-size:16px!important;padding:10px 13px!important}
+#arenaChatForm button,#dameChatForm button{flex:0 0 auto!important;background:#d8af70!important;color:#142539!important;border:0!important;border-radius:20px!important;padding:9px 14px!important;font-size:13px!important;font-weight:800!important}
+#arenaChatInfo,#dameChatInfo,.arena-chat-hint{font-size:11px!important;line-height:1.3!important;color:#aebfd0!important;margin:3px 0!important}
+@media(max-width:760px){
+ body.v79-chat-chess #arenaChat,body.v79-chat-dame .arena-page[data-panel="dame"] .dame-chat{top:auto!important;bottom:0!important;left:0!important;right:0!important;height:min(73dvh,570px)!important;max-height:calc(100dvh - 50px)!important;background:#10243a!important;border:1px solid #bd9258!important;border-radius:22px 22px 0 0!important;padding:13px 12px calc(15px + env(safe-area-inset-bottom))!important;box-shadow:0 0 0 100vmax #030b18a8,0 -8px 40px #0008!important}
+ body.v79-chat-chess #arenaChatMessages,body.v79-chat-dame #dameChatMessages{flex:1!important;min-height:0!important;max-height:none!important}
+ body.v79-chat-chess #arenaChatToggle,body.v79-chat-dame #dameChatToggle{text-align:left!important;flex-shrink:0!important}
+}
+@media(max-width:390px){#arenaChatEmojis button,#dameChatEmojis button{font-size:17px!important}}
+</style>
 </body></html>
