@@ -3622,10 +3622,11 @@ hLoad();
 #v144DameResumeBox p{color:#c9d9e9;font-size:15px;line-height:1.5}
 #v144DameResumeBox button{display:block;width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:750;margin-top:12px;cursor:pointer}
 #v144DameResumeYes{background:linear-gradient(120deg,#f4d99d,#bb8d4b);border:1px solid #ffecbc;color:#102238}
+#v164DameDiscard{background:#49313b;color:#fff;border:1px solid #b78388}
 #v144DameResumeLater{background:#1b3e5d;color:#fff;border:1px solid #56728d}
 </style>
 <div id="v144DameResumeOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="v144DameResumeTitle">
- <div id="v144DameResumeBox"><div aria-hidden="true" style="font-size:38px">⛀</div><h2 id="v144DameResumeTitle">Dame-Partie fortsetzen?</h2><p id="v144DameResumeText">Du hast eine laufende Dame-Partie.</p><button id="v144DameResumeYes" type="button">↻ Dame-Partie fortsetzen</button><button id="v144DameResumeLater" type="button">Nicht jetzt</button></div>
+ <div id="v144DameResumeBox"><div aria-hidden="true" style="font-size:38px">⛀</div><h2 id="v144DameResumeTitle">Dame-Partie fortsetzen?</h2><p id="v144DameResumeText">Du hast eine laufende Dame-Partie.</p><button id="v144DameResumeYes" type="button">↻ Dame-Partie fortsetzen</button><button id="v144DameResumeLater" type="button">Nicht jetzt</button><button id="v164DameDiscard" type="button">Partie verwerfen</button></div>
 </div>
 <script>
 (function(){const y=document.getElementById('v144DameResumeYes'),n=document.getElementById('v144DameResumeLater');if(y)y.addEventListener('click',()=>window.dispatchEvent(new Event('v144-dame-resume')));if(n)n.addEventListener('click',()=>window.dispatchEvent(new Event('v144-dame-resume-later')));})();
@@ -3673,6 +3674,29 @@ function dameRecoveryPersist(){if(modeEl.value!=='online'||!onlineRoom||gameOver
 async function dameRecoveryApi(action,data={}){const token=localStorage.getItem('arena71_token');if(!token)throw Error('Bitte unter Profil anmelden.');const r=await fetch('/api/dame-resume/'+action,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(data)});if(!r.ok)throw Error('Server '+r.status);return r.json()}
 async function dameRecoveryFlush(){if(dameRecoverySending)return;dameRecoverySending=true;try{while(dameRecoveryPending){const p=dameRecoveryPending;dameRecoveryPending=null;try{await dameRecoveryApi('save',{saved:p})}catch(e){console.warn('Dame cloud save:',e.message);break}}}finally{dameRecoverySending=false}}
 function dameRecoveryClear(){const room=onlineRoom||dameRecoveryRead()?.room;dameRecoveryPending=null;try{localStorage.removeItem(DAME_RECOVERY_KEY)}catch(_){}dameRecoveryOverlay?.setAttribute('hidden','');if(room)dameRecoveryApi('clear',{room}).catch(()=>{})}
+async function dameRecoveryDiscard(){
+ const p=dameRecoveryRead();if(!p)return dameRecoveryOverlay?.setAttribute('hidden','');
+ if(!confirm('Gespeicherte Dame-Partie wirklich verwerfen? Die Statistik bleibt unverändert.'))return;
+ const button=document.getElementById('v164DameDiscard');if(button)button.disabled=true;
+ try{
+  // A queued autosave must not recreate the match after deletion.
+  dameRecoveryPending=null;
+  while(dameRecoverySending)await new Promise(r=>setTimeout(r,80));
+  await dameRecoveryApi('clear',{room:p.room});
+  localStorage.removeItem(DAME_RECOVERY_KEY);
+  dameRecoveryOverlay?.setAttribute('hidden','');
+ }catch(e){alert('Löschen aus Supabase fehlgeschlagen. Bitte erneut versuchen. '+e.message)}
+ finally{if(button)button.disabled=false}
+}
+async function dameRecoveryServerFinished(p){
+ if(!p?.state?.matchId)return false;
+ try{
+  const token=localStorage.getItem('arena71_token');if(!token)return false;
+  const r=await fetch('/api/presence/status',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({game:'dame',room:p.room,matchId:p.state.matchId,role:p.host?'host':'guest',side:p.side}),signal:AbortSignal.timeout(4000)});
+  if(!r.ok)return false;
+  const x=await r.json();return !!x.finished;
+ }catch(_){return false}
+}
 function dameRecoveryApply(p){if(!dameRecoveryValid(p))return false;board=p.state.board.slice();turn=p.state.turn;forced=Number.isInteger(p.state.forced)&&p.state.forced>=0&&p.state.forced<64?p.state.forced:null;gameOver=false;v147Reset();onlineSequence=Number.isSafeInteger(p.state.seq)?p.state.seq:0;dameMatchId=typeof p.state.matchId==='string'?p.state.matchId:newDameMatchId();onlineHostSide=p.state.hostSide==='b'?'b':'w';onlineSide=p.side;selected=null;history=[];busy=false;render();status(p.state.message||'Gespeicherte Partie wird wiederhergestellt.');return true}
 async function dameRecoveryResume(){const p=dameRecoveryRead();if(!p||dameRecoveryBusy)return;dameRecoveryBusy=true;dameRecoveryOverlay?.setAttribute('hidden','');try{
  document.querySelector('#courseHome [data-page="dame"]')?.click();
@@ -3702,12 +3726,20 @@ function dameRecoveryScheduleReconnect(){
   dameRecoveryScheduleReconnect();
  },5000);
 }
-function dameRecoveryShow(){const p=dameRecoveryRead();if(!p||!dameRecoveryOverlay){dameRecoveryOverlay?.setAttribute('hidden','');return;}document.getElementById('v144DameResumeText').textContent='Deine Online-Dame-Partie wartet auf dich. '+(p.host?'Du bist Gastgeber.':'Du bist Gast.')+' Fortsetzen?';dameRecoveryOverlay.hidden=false}
+async function dameRecoveryShow(){const p=dameRecoveryRead();if(!p||!dameRecoveryOverlay){dameRecoveryOverlay?.setAttribute('hidden','');return;}
+ if(await dameRecoveryServerFinished(p)){
+  try{await dameRecoveryApi('clear',{room:p.room});localStorage.removeItem(DAME_RECOVERY_KEY)}catch(_){}
+  dameRecoveryOverlay.hidden=true;return;
+ }
+ // Older games may predate server presence tracking. Offer explicit discard.
+ const latest=dameRecoveryRead();if(!latest||latest.room!==p.room)return;
+ document.getElementById('v144DameResumeText').textContent='Deine Online-Dame-Partie wartet auf dich. '+(p.host?'Du bist Gastgeber.':'Du bist Gast.')+' Fortsetzen?';dameRecoveryOverlay.hidden=false} 
 window.addEventListener('pagehide',()=>{dameRecoveryPersist()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')dameRecoveryPersist()});
 window.addEventListener('arena:dame-finished',()=>{if(modeEl.value==='online')dameRecoveryClear()});
 window.addEventListener('v144-dame-resume',dameRecoveryResume);
 window.addEventListener('v144-dame-resume-later',()=>dameRecoveryOverlay?.setAttribute('hidden',''));
+ document.getElementById('v164DameDiscard')?.addEventListener('click',dameRecoveryDiscard);
 window.addEventListener('v144-dame-resume-dismiss',()=>dameRecoveryOverlay?.setAttribute('hidden',''));
 // Download a saved game only if there is no local one; never overwrite newer local moves.
 setTimeout(async()=>{if(!dameRecoveryRead())try{const r=await dameRecoveryApi('get');const p=r?.saved;if(dameRecoveryValid(p)){localStorage.setItem(DAME_RECOVERY_KEY,JSON.stringify(p))}}catch(e){}dameRecoveryShow()},900);
@@ -6094,6 +6126,7 @@ font-family:system-ui,-apple-system,sans-serif
 #v137ResumeBox .v137-count{color:#f6daa8;font-weight:800}
 #v137ResumeBox button{display:block;width:100%;min-height:48px;border-radius:12px;font-size:16px;font-weight:800;margin-top:10px;cursor:pointer}
 #v137ResumeYes{border:1px solid #ffecbd;background:linear-gradient(125deg,#f4d99c,#b98a4a);color:#102238}
+#v164ChessDiscard{border:1px solid #b78388;background:#49313b;color:#fff}
 #v137ResumeLater{border:1px solid #59718b;background:#1e3c59;color:#f1f4f8}
 </style>
 <div id="v137ResumeOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="v137ResumeTitle" aria-describedby="v137ResumeDesc">
@@ -6103,6 +6136,7 @@ font-family:system-ui,-apple-system,sans-serif
     <p id="v137ResumeDesc">Du hast eine laufende Online-Partie. <span id="v137MoveCount" class="v137-count"></span><br>Willst du zur Partie zurückkehren?</p>
     <button id="v137ResumeYes" type="button">↻ Partie fortsetzen</button>
     <button id="v137ResumeLater" type="button">Nicht jetzt</button>
+    <button id="v164ChessDiscard" type="button">Partie verwerfen</button>
   </div>
 </div>
 <script id="v137-resume-modal-js">
@@ -6127,6 +6161,16 @@ font-family:system-ui,-apple-system,sans-serif
  async function present(){
   const x=candidate();
   if(!x)return;
+  // Presence ledger knows disconnect losses even if old board snapshot was saved.
+  try{
+   if(x.state.recordId){const token=localStorage.getItem('arena71_token');if(token){
+    const r=await fetch('/api/presence/status',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({game:'chess',room:x.room,matchId:x.state.recordId,role:x.host?'host':'guest',side:x.side}),signal:AbortSignal.timeout(3500)});
+    if(r.ok&&(await r.json()).finished){
+     window.v138RemoteClear?.({room:x.room,recordId:x.state.recordId});
+     localStorage.removeItem(KEY);overlay.hidden=true;return;
+    }
+   }}
+  }catch(_){}
   // Verify a saved match is still active, using the persistent server clock.
   // Network errors must never destroy an unfinished local game.
   try{
@@ -6150,6 +6194,20 @@ font-family:system-ui,-apple-system,sans-serif
   later.focus({preventScroll:true});
  }
  later.addEventListener('click',()=>{overlay.hidden=true;});
+ document.getElementById('v164ChessDiscard')?.addEventListener('click',async()=>{
+  const x=candidate();if(!x)return overlay.hidden=true;
+  if(!confirm('Gespeicherte Schachpartie wirklich verwerfen? Die Statistik bleibt unverändert.'))return;
+  const btn=document.getElementById('v164ChessDiscard');btn.disabled=true;
+  try{
+   const token=localStorage.getItem('arena71_token');
+   if(token){const r=await fetch('/api/resume/clear',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:'{}'});if(!r.ok)throw Error('Server '+r.status)}
+   localStorage.removeItem(KEY);
+   document.getElementById('v135Resume')?.setAttribute('hidden','');
+   document.getElementById('v136ResumeOnline')?.setAttribute('hidden','');
+   overlay.hidden=true;
+  }catch(e){alert('Löschen aus Supabase fehlgeschlagen: '+e.message)}finally{btn.disabled=false}
+ });
+
  yes.addEventListener('click',()=>{
   const x=candidate();if(!x){overlay.hidden=true;return;}
   const resume=document.getElementById('v135Resume');
