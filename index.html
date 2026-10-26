@@ -3134,7 +3134,24 @@ function historyBeforeEugenReset(){if(hCurrent&&hCurrent.moves.length){hArchive(
 function historyEugenReset(){hCurrent={id:hUniqueId(),date:Date.now(),mode:egMode,playerSide:egHuman,moves:[],frames:[hFenCurrent()],result:'Laufend'};hWrite(HISTORY_CURRENT,hCurrent)}
 function historyAfterEugenMove(m){if(!hCurrent)historyEugenReset();hCurrent.mode=egMode;hCurrent.playerSide=hCurrent.playerSide||egHuman;hCurrent.moves.push(m.from+m.to+(m.promotion||''));hCurrent.frames.push(hFenCurrent());if(egGameOver){hCurrent.result=H('eugenStatus').textContent;hArchive(hCurrent)}hWrite(HISTORY_CURRENT,hCurrent)}
 function historyEugenUndo(){if(!hCurrent)return;hCurrent.moves=hCurrent.moves.slice(0,egHistory.length);hCurrent.frames=hCurrent.frames.slice(0,hCurrent.moves.length+1);hCurrent.result='Laufend';hWrite(HISTORY_CURRENT,hCurrent);hGames=hGames.filter(g=>g.id!==hCurrent.id);hWrite(HISTORY_KEY,hGames)}
-function hShow(forceReview=false){if(!forceReview&&typeof window.v158OpenTab==='function'){window.v158OpenTab('archive');hRenderList();return}for(let id of ['courseHome','heavyMenu','trainingView','rookGame','eugenMenu','eugenGame','liveMenu','liveGame']){let e=H(id);if(e)e.hidden=true}H('historyView').hidden=false;hRenderList();window.scrollTo(0,0)}
+function hShow(forceReview=false){
+ // v188: v158 moved historyView INSIDE the profile Archive pane. Never hide courseHome,
+ // because doing so hides the complete Stockfish analysis UI on every device.
+ if(typeof window.v158OpenTab==='function'){
+  for(const id of ['heavyMenu','trainingView','rookGame','eugenMenu','eugenGame','liveMenu','liveGame']){const e=H(id);if(e)e.hidden=true;}
+  H('courseHome').hidden=false;
+  const profileNav=document.querySelector('#courseHome .arena-bottomnav [data-page="profil"]')||document.querySelector('#courseHome [data-page="profil"]');
+  if(profileNav)profileNav.click();
+  else document.querySelectorAll('#courseHome [data-panel]').forEach(p=>p.hidden=p.dataset.panel!=='profil');
+  window.v158OpenTab('archive');
+  H('historyView').hidden=false;
+  hRenderList();
+  if(!forceReview)window.scrollTo(0,0);
+  return;
+ }
+ for(const id of ['courseHome','heavyMenu','trainingView','rookGame','eugenMenu','eugenGame','liveMenu','liveGame']){const e=H(id);if(e)e.hidden=true;}
+ H('historyView').hidden=false;hRenderList();window.scrollTo(0,0);
+}
 function hRenderList(){const list=H('historyList');list.replaceChildren();const games=hGames.slice();if(hCurrent&&hCurrent.moves.length&&!games.some(g=>g.id===hCurrent.id))games.unshift(hCurrent);if(hLive&&hLive.moves.length&&!games.some(g=>g.id===hLive.id))games.unshift(hLive);if(!games.length){let p=document.createElement('p');p.textContent='Noch keine Partien vorhanden. Spiele zuerst gegen Eugen!';list.appendChild(p)}
  for(const g of games){let row=document.createElement('div');row.className='history-entry';let info=document.createElement('div');let head=document.createElement('strong');head.textContent=hLabel(g);let sm=document.createElement('small');sm.textContent=g.moves.length+' Halbzüge · '+(g.result||'Laufend');info.append(head,sm);let btn=document.createElement('button');btn.textContent='Partie ansehen →';btn.addEventListener('click',()=>hOpen(g));let analyze=document.createElement('button');analyze.type='button';analyze.textContent='🔎 Partie analysieren';analyze.addEventListener('click',()=>{hOpen(g);hAnalyze()});row.append(info,btn,analyze);list.appendChild(row)} }
 function hOpen(g){hShow(true);hCancelAnalysis();hReview=JSON.parse(JSON.stringify(g));hAnalysis=[];H('historyGraph').replaceChildren();
@@ -3371,7 +3388,7 @@ async function hAnalyze(){
 H('liveAnalyzePartie').addEventListener('click',()=>H('v115Analyse').click());
 H('eugenAnalyzeNow').addEventListener('click',()=>{if(!hCurrent||!hCurrent.moves.length){H('eugenStatus').textContent='Spiele zuerst mindestens einen Zug.';return}hWrite(HISTORY_CURRENT,hCurrent);hShow();hOpen(hCurrent);hAnalyze()});
 H('openHistoryHome').addEventListener('click',hShow);
-H('historyBack').addEventListener('click',()=>{hCancelAnalysis();H('historyView').hidden=true;H('courseHome').hidden=false;window.scrollTo(0,0)});
+H('historyBack').addEventListener('click',()=>{hCancelAnalysis();if(typeof window.v158OpenTab==='function'){H('historyReview').hidden=true;document.querySelector('#courseHome [data-page="start"]')?.click();}else{H('historyView').hidden=true;H('courseHome').hidden=false;}window.scrollTo(0,0)});
 H('historyCurrent').addEventListener('click',()=>{if(hCurrent&&hCurrent.moves.length)hOpen(hCurrent);else if(hLive&&hLive.moves.length)hOpen(hLive);else H('historyProgress').textContent='Noch keine laufende Partie vorhanden.'});
 H('eugenSaveReview').addEventListener('click',()=>{if(!hCurrent||!hCurrent.moves.length){H('eugenStatus').textContent='Spiele zuerst mindestens einen Zug.';return}hWrite(HISTORY_CURRENT,hCurrent);hShow();hOpen(hCurrent)});
 H('historyFirst').onclick=()=>{hIndex=0;hPaint()};H('historyPrev').onclick=()=>{hIndex--;hPaint()};H('historyNext').onclick=()=>{hIndex++;hPaint()};H('historyLast').onclick=()=>{hIndex=hReview.moves.length;hPaint()};
