@@ -1289,6 +1289,19 @@ body{background:var(--arena62-bg)}
     <div class="premium-hero-piece" aria-hidden="true">♚</div>
     <button class="premium-welcome" type="button" data-page="profil"><span class="premium-avatar" aria-hidden="true">♟</span><span class="premium-welcome-text"><strong>Hallo, <span id="premiumUserName">Gast</span></strong><small>Schön, dass du da bist!</small></span><span class="premium-welcome-arrow">›</span></button>
   </section>
+  <section id="v168Home" class="v168-ui" aria-label="Spiel auswählen">
+    <div id="v168Games" class="v168-games">
+      <button type="button" class="v168-game v168-chess" data-v168-game="schach"><span class="v168-game-symbol">♔</span><span class="v168-game-label"><strong>Schach</strong><small>Spielen · Lernen · Online</small></span><span class="v168-chevron">›</span></button>
+      <button type="button" class="v168-game v168-dame" data-v168-game="dame"><span class="v168-game-symbol">⛀</span><span class="v168-game-label"><strong>Dame</strong><small>Spielen · Lernen · Online</small></span><span class="v168-chevron">›</span></button>
+    </div>
+    <div id="v168Modes" class="v168-modes" hidden>
+      <button type="button" id="v168Back" class="v168-back">← Zurück zur Spielauswahl</button>
+      <h2 id="v168ModeTitle">Schach</h2><p>Wähle deinen Modus</p>
+      <button type="button" data-v168-mode="play" class="v168-mode"><span>♟</span><strong>Spielen<small>Gegen den Computer</small></strong><em>›</em></button>
+      <button type="button" data-v168-mode="learn" class="v168-mode"><span>📖</span><strong>Lernen<small>Training und Aufgaben</small></strong><em>›</em></button>
+      <button type="button" data-v168-mode="online" class="v168-mode"><span>🌐</span><strong>Online<small>Gegen Freunde spielen</small></strong><em>›</em></button>
+    </div>
+  </section>
   <section class="premium-start-content v83-menu">
     <div class="v83-grid">
       <article class="v83-mode" data-game="schach" data-type="computer">
@@ -1588,9 +1601,7 @@ body{background:var(--arena62-bg)}
 </div>
 <nav aria-label="Hauptnavigation" class="arena-bottomnav premium-bottomnav">
 <button data-page="start" type="button"><span aria-hidden="true">⌂</span><small>Start</small></button>
-<button data-page="spielen" type="button"><span aria-hidden="true">♞</span><small>Spielen</small></button>
-<button data-page="lernen" type="button"><span aria-hidden="true">♜</span><small>Lernen</small></button>
-<button data-page="freunde" type="button"><span aria-hidden="true">♧</span><small>Online</small></button>
+<button data-page="statistik" type="button"><span aria-hidden="true">🏆</span><small>Statistik</small></button>
 <button data-page="profil" type="button"><span aria-hidden="true">♙</span><small>Profil</small></button>
 </nav>
 <div aria-hidden="true" class="arena-legacy">
@@ -6497,6 +6508,68 @@ refresh();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
  setTimeout(mount,500);
  window.addEventListener('pageshow',mount);
+})();
+</script>
+
+<style id="v168-navigation-design">
+/* Design/navigation only. Existing game, account and backend nodes are preserved. */
+#courseHome .premium-start-content.v83-menu{display:none!important}
+#courseHome [hidden]{display:none!important}
+#courseHome .v168-ui{padding:12px 0 30px;margin:0 auto;max-width:980px}
+#courseHome .v168-games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+#courseHome .v168-game,#courseHome .v168-mode{appearance:none;border:1.5px solid #d4a75c;background:linear-gradient(130deg,#10273f,#071423 78%);color:#f6d393;box-shadow:0 12px 25px #0005;border-radius:23px;min-width:0;text-align:left;cursor:pointer;display:flex;align-items:center;gap:20px;padding:26px 22px}
+#courseHome .v168-game{min-height:230px;overflow:hidden;position:relative}
+#courseHome .v168-game:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 14% 90%,#d0a65b3b,transparent 62%);pointer-events:none}
+#courseHome .v168-game-symbol{font-family:Georgia,serif;flex:0 0 35%;font-size:clamp(68px,12vw,126px);line-height:1;color:#dfb563;text-shadow:0 8px 15px #0009;text-align:center}
+#courseHome .v168-game-label{min-width:0;flex:1}
+#courseHome .v168-game-label strong{font-family:Georgia,serif;font-size:clamp(27px,3.4vw,48px);display:block;color:#ffe2a3}
+#courseHome .v168-game-label small{font-size:clamp(12px,1.5vw,16px);color:#bbcbe0;display:block;margin-top:9px}
+#courseHome .v168-chevron{font-size:44px;color:#e6b766}
+#courseHome .v168-modes{max-width:720px;margin:auto}
+#courseHome .v168-back{background:none;border:1px solid #6a7888;color:#e6d4b6;border-radius:14px;padding:11px 15px;cursor:pointer}
+#courseHome .v168-modes h2{text-align:center;color:#f4d18d;font-family:Georgia,serif;font-size:clamp(32px,5vw,48px);margin:18px 0 4px}
+#courseHome .v168-modes>p{text-align:center;color:#b9cbdf;margin-bottom:24px}
+#courseHome .v168-mode{width:100%;margin:13px 0;min-height:120px}
+#courseHome .v168-mode>span{font-size:47px;width:75px;text-align:center}
+#courseHome .v168-mode strong{font-family:Georgia,serif;font-size:28px;flex:1;color:#f6d393}
+#courseHome .v168-mode small{display:block;color:#b4c5db;font:normal 15px system-ui;margin-top:6px}
+#courseHome .v168-mode em{font-size:34px;font-style:normal}
+#courseHome .arena-bottomnav{justify-content:space-around!important}
+#courseHome .arena-bottomnav button{flex:1!important}
+@media(max-width:740px){
+ #courseHome .premium-hero{min-height:unset!important;padding-bottom:0!important}
+ #courseHome .v168-ui{padding:10px 10px 25px}
+ #courseHome .v168-games{grid-template-columns:1fr;gap:13px}
+ #courseHome .v168-game{min-height:165px;padding:18px 14px;gap:14px;border-radius:19px}
+ #courseHome .v168-game-symbol{font-size:85px;flex-basis:31%}
+ #courseHome .v168-game-label strong{font-size:36px}
+ #courseHome .v168-mode{min-height:105px;padding:17px}
+ #courseHome .v168-mode strong{font-size:26px}
+}
+</style>
+<script id="v168-simple-navigation">
+(function(){'use strict';
+ const games=document.getElementById('v168Games'),modes=document.getElementById('v168Modes'),title=document.getElementById('v168ModeTitle');
+ if(!games||!modes)return;
+ let selected='schach';
+ function choose(game){selected=game;games.hidden=true;modes.hidden=false;title.textContent=game==='schach'?'Schach':'Dame';window.scrollTo(0,0)}
+ function reset(){modes.hidden=true;games.hidden=false}
+ document.querySelectorAll('[data-v168-game]').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.v168Game)));
+ document.getElementById('v168Back')?.addEventListener('click',reset);
+ const go=id=>document.getElementById(id)?.click();
+ document.querySelectorAll('[data-v168-mode]').forEach(b=>b.addEventListener('click',()=>{
+   const mode=b.dataset.v168Mode;
+   if(selected==='schach'){
+     if(mode==='play')document.querySelector('#courseHome .arena-navitem[data-page="spielen"]')?.click();
+     else if(mode==='learn')document.querySelector('#courseHome .arena-navitem[data-page="lernen"]')?.click();
+     else go('v83OnlineChess');
+   }else{
+     if(mode==='play')go('v83PlayDame');
+     else if(mode==='learn')document.querySelector('#courseHome .arena-navitem[data-page="dame-training"]')?.click();
+     else go('v83OnlineDame');
+   }
+ }));
+ document.querySelectorAll('.arena-bottomnav [data-page="start"]').forEach(b=>b.addEventListener('click',reset));
 })();
 </script>
 </body></html>
