@@ -6473,4 +6473,31 @@ refresh();
  setTimeout(mount,450);
 })();
 </script>
+
+<style id="v166-account-switch-style">
+#v166AccountLogout{display:block;box-sizing:border-box;width:100%;margin:14px 0 16px;padding:16px;border:1px solid #cba365;border-radius:16px;background:#112b46}
+#v166AccountLogout[hidden]{display:none!important}
+#v166AccountLogout .v166-account-head{font:700 clamp(17px,4vw,23px) system-ui,sans-serif;color:#f3cf92;margin:0 0 12px}
+#v166AccountLogout #arena71-logout,#courseHome .v87-profile #v166AccountLogout #arena71-logout{display:block!important;width:100%!important;box-sizing:border-box;min-height:48px!important;margin:0!important;padding:12px 16px!important;border:1px solid #ec8c8c!important;border-radius:12px!important;background:#491f30!important;color:#ffe9ed!important;font:800 17px system-ui,sans-serif!important;cursor:pointer}
+</style>
+<script id="v166-account-switch-script">
+(function(){'use strict';
+ function mount(){
+  const profile=document.querySelector('#courseHome .arena-page[data-panel="profil"]');
+  const identity=profile?.querySelector('.v87-identity');
+  const logout=document.getElementById('arena71-logout');
+  if(!profile||!identity||!logout)return;
+  let host=document.getElementById('v166AccountLogout');
+  if(!host){host=document.createElement('section');host.id='v166AccountLogout';host.innerHTML='<div class="v166-account-head">Mein Konto</div>';identity.insertAdjacentElement('afterend',host)}
+  if(logout.parentElement!==host)host.appendChild(logout);
+  const signedIn=!!localStorage.getItem('arena71_token');
+  host.hidden=!signedIn;
+  logout.hidden=!signedIn;
+  const guest=document.getElementById('v165GuestAuth');if(guest)guest.hidden=signedIn;
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
+ setTimeout(mount,500);
+ window.addEventListener('pageshow',mount);
+})();
+</script>
 </body></html>
