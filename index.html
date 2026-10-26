@@ -2609,6 +2609,25 @@ $('eugenUndo').addEventListener('click',()=>{
 
 rebuild();
 </script><script>
+/* v161: server heartbeat for started online chess / checkers matches only. */
+window.ArenaV161Presence=(()=>{
+ const pending=new Map();
+ async function request(action,data){const token=localStorage.getItem('arena71_token');if(!token)return null;
+  const r=await fetch('/api/presence/'+action,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(data),signal:AbortSignal.timeout(8000)});
+  if(!r.ok)return null;return r.json();}
+ async function check(data,onEnd){
+  if(!data||!data.room||!data.matchId)return;
+  const key=data.game+'|'+data.matchId;
+  if(pending.has(key))return;pending.set(key,true);
+  try{const x=await request('ping',data);
+   if(x?.finished&&x.reason==='disconnect'&&['w','b'].includes(x.winner))onEnd(x.winner);
+  }catch(e){console.warn('Anwesenheit nicht erreichbar',e)}finally{pending.delete(key)}
+ }
+ function done(data){if(!data)return;request('finish',data).catch(()=>{});}
+ return {check,done};
+})();
+</script>
+<script>
 /* Live gegen Freunde v2: Gastgeber verwaltet Stellung, Zeit und Spielende. */
 (()=>{
  const $l=id=>document.getElementById(id);
@@ -2750,6 +2769,7 @@ rebuild();
  const menuStatus=s=>$l('liveMenuStatus').textContent=s;
  const show=id=>{for(const name of ['courseHome','heavyMenu','trainingView','rookGame','eugenMenu','eugenGame','liveMenu','liveGame']){let el=$l(name);if(el)el.hidden=name!==id}};
  const outText=()=>outcome?.reason==='mate'?('Schachmatt! '+(outcome.winner==='w'?'Weiß':'Schwarz')+' gewinnt.'):
+  outcome?.reason==='disconnect'?((outcome.winner==='w'?'Weiß':'Schwarz')+' gewinnt – Gegner 2 Minuten offline.'):
   outcome?.reason==='timeout'?('Zeit abgelaufen! '+(outcome.winner==='w'?'Weiß':'Schwarz')+' gewinnt.'):
   outcome?.reason==='resign'?((outcome.loser==='w'?'Weiß':'Schwarz')+' hat aufgegeben. '+(outcome.winner==='w'?'Weiß':'Schwarz')+' gewinnt.'):
   outcome?.reason==='stalemate'?'Patt – Remis.':outcome?.reason==='draw'?'Remis vereinbart.':
@@ -2757,6 +2777,7 @@ rebuild();
   outcome?.reason==='fifty'?'Remis nach der 50-Züge-Regel.':'Partie beendet.';
  const key=()=>Object.keys(position).sort().map(k=>k+position[k]).join(',')+'|'+asSide()+'|'+castle+'|'+(ep||'-');
  function baseReset(ms=timeControl){
+  v161ChessFinishedAt=0;v161ChessWasConnected=false;
   timeControl=ms;position=egInit();white=true;ep=null;castle='KQkq';half=0;full=1;last=[];selected=null;moveNo=0;
   remaining={w:ms,b:ms};clockAt=Date.now();clockRunning=false;outcome=null;drawOffer=null;rematchOffer=null;
   promotion=null;$l('livePromotion').hidden=true;historyKeys=new Map([[key(),1]]);
@@ -2806,6 +2827,19 @@ rebuild();
   if(half>=100){finish({reason:'fifty'});return}
   if((historyKeys.get(key())||0)>=3){finish({reason:'repetition'});return}
  }
+ let v161ChessFinishedAt=0,v161ChessWasConnected=false;
+ setInterval(()=>{
+  if(connected)v161ChessWasConnected=true;
+  if(!v161ChessWasConnected||!room||room==='HOST'||!liveRecordId||!side)return;
+  const data={game:'chess',room,matchId:liveRecordId,role:isHost?'host':'guest',side};
+  if(outcome){if(!v161ChessFinishedAt)v161ChessFinishedAt=Date.now();if(Date.now()-v161ChessFinishedAt<180000)window.ArenaV161Presence?.done(data);return;}
+  window.ArenaV161Presence?.check(data,winner=>{
+   if(outcome)return;
+   finish({reason:'disconnect',winner,loser:opponent(winner)});
+   setStatus((winner===side?'Gegner':'Du')+' war 2 Minuten offline. '+(winner===side?'Du gewinnst.':'Du verlierst.') );
+   sync();
+  });
+ },10000);
  function finish(result){outcome=result;clearSavedSession();window.ArenaBilanzV127?.report({matchId:liveRecordId,game:'chess',side,winner:result.winner||'draw'});finishServerClock();clockRunning=false;drawOffer=null;rematchOffer=null;selected=null;promotion=null;$l('livePromotion').hidden=true;setStatus(outText());historyLiveSync(liveRecordId,liveMoves,liveFrames,outText());render()}
  function apply(m){
   const piece=position[m.from],taken=position[m.to];castle=egChangeCastle(castle,m,piece,taken);
@@ -3582,8 +3616,20 @@ let v147OfferSent=false,v147OfferReceived=false,v147Outcome=null;
 const v147Actions=document.getElementById('v147DameActions'),v147OfferBox=document.getElementById('v147DameOfferBox');
 function v147RenderActions(){if(!v147Actions)return;const active=modeEl.value==='online'&&onlineConnected&&!gameOver&&!!onlineSide;v147Actions.hidden=!active;v147OfferBox.hidden=!(active&&v147OfferReceived);document.getElementById('v147DameOffer').disabled=!active||v147OfferSent||v147OfferReceived;}
 function v147Reset(){v147OfferSent=false;v147OfferReceived=false;v147Outcome=null;v147RenderActions();}
+let v161DameFinishedAt=0,v161DameWasConnected=false;
+setInterval(()=>{
+ if(onlineConnected)v161DameWasConnected=true;
+ if(modeEl.value!=='online'||!v161DameWasConnected||!onlineRoom||!dameMatchId||!onlineSide)return;
+ const data={game:'dame',room:onlineRoom,matchId:dameMatchId,role:onlineHost?'host':'guest',side:onlineSide};
+ if(gameOver){if(!v161DameFinishedAt)v161DameFinishedAt=Date.now();if(Date.now()-v161DameFinishedAt<180000)window.ArenaV161Presence?.done(data);return;}
+ window.ArenaV161Presence?.check(data,winner=>{
+  if(gameOver)return;
+  v147Complete('disconnect',winner);
+  status((winner===onlineSide?'Gegner':'Du')+' war 2 Minuten offline. '+(winner===onlineSide?'Du gewinnst.':'Du verlierst.'));
+ });
+},10000);
 function v147Complete(result,winner){if(gameOver)return;gameOver=true;v147OfferSent=false;v147OfferReceived=false;v147Outcome={reason:result,winner};
- status(result==='draw'?'Remis vereinbart. 🤝':result==='resign'?(winner==='w'?'Weiß':'Schwarz')+' gewinnt – Aufgabe. 🏳':'Partie beendet.');
+ status(result==='draw'?'Remis vereinbart. 🤝':result==='resign'?(winner==='w'?'Weiß':'Schwarz')+' gewinnt – Aufgabe. 🏳':result==='disconnect'?(winner==='w'?'Weiß':'Schwarz')+' gewinnt – Gegner 2 Minuten offline.':'Partie beendet.');
  render();reportDameWin(winner);if(onlineHost)broadcast();v147RenderActions();}
 
 // v144: separate Dame recovery; does not affect saved chess games.
@@ -3641,7 +3687,7 @@ function clearDamePending(){damePendingMove=null;}
 function newDameMatchId(){return 'dame-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12)}
 function reportDameWin(winner){window.dispatchEvent(new CustomEvent('arena:dame-finished',{detail:{id:dameMatchId,mode:modeEl.value,winner,playerSide:modeEl.value==='ai'?other(computerColor):onlineSide}}))}
 const idx=(r,c)=>r*8+c,inside=(r,c)=>r>=0&&r<8&&c>=0&&c<8,owner=p=>p?p.toLowerCase():null,isKing=p=>p&&p===p.toUpperCase(),other=c=>c==='w'?'b':'w';
-function init(){clearDamePending();v147Reset();dameMatchId=newDameMatchId();epoch++;onlineSequence++;board=Array(64).fill(null);for(let r=0;r<8;r++)for(let c=0;c<8;c++)if((r+c)%2===1){if(r<3)board[idx(r,c)]='b';if(r>4)board[idx(r,c)]='w'}turn='w';selected=null;forced=null;history=[];busy=false;gameOver=false;render();status('Weiß beginnt.');if(modeEl.value==='ai'&&computerColor==='w')scheduleAI();if(modeEl.value==='online'&&onlineHost&&onlineConnected)broadcast();}
+function init(){v161DameFinishedAt=0;v161DameWasConnected=false;clearDamePending();v147Reset();dameMatchId=newDameMatchId();epoch++;onlineSequence++;board=Array(64).fill(null);for(let r=0;r<8;r++)for(let c=0;c<8;c++)if((r+c)%2===1){if(r<3)board[idx(r,c)]='b';if(r>4)board[idx(r,c)]='w'}turn='w';selected=null;forced=null;history=[];busy=false;gameOver=false;render();status('Weiß beginnt.');if(modeEl.value==='ai'&&computerColor==='w')scheduleAI();if(modeEl.value==='online'&&onlineHost&&onlineConnected)broadcast();}
 function status(t){statusEl.textContent=t}
 function captureOptions(b,pos){let p=b[pos];if(!p)return[];let r=Math.floor(pos/8),c=pos%8,out=[];for(let dr of [-1,1])for(let dc of [-1,1]){
 if(!isKing(p)){let mr=r+dr,mc=c+dc,tr=r+2*dr,tc=c+2*dc;if(inside(tr,tc)&&b[idx(mr,mc)]&&owner(b[idx(mr,mc)])!==owner(p)&&!b[idx(tr,tc)])out.push({from:pos,to:idx(tr,tc),cap:idx(mr,mc)});}
