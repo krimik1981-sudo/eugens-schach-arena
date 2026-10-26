@@ -1807,7 +1807,7 @@ body{background:var(--arena62-bg)}
 <div class="rook-stats"><span id="eugenMoves">Züge: 0</span><span id="eugenLevelLabel">Anfänger</span></div>
 
 <p aria-live="polite" class="eugen-engine-status" id="eugenEngineStatus" style="font-size:13px;color:#afc8e5;line-height:1.5">Spielbereit.</p>
-<div class="rook-controls"><button id="eugenSaveReview" type="button">💾 Partie ansehen</button><button id="eugenAnalyzeNow" type="button">🔎 Partie analysieren</button><button id="eugenRestart" type="button">↻ Neues Spiel</button></div>
+<div class="rook-controls"><button id="eugenSaveReview" type="button">💾 Partie ansehen</button><button id="eugenAnalyzeNow" type="button" hidden>🔎 Partie analysieren</button><button id="eugenRestart" type="button">↻ Neues Spiel</button></div>
 
 <p id="eugenTurnInfo" class="v108-visually-hidden">Ziel: Setze den Computer schachmatt!</p>
 </aside>
@@ -2457,7 +2457,7 @@ function egPositionKey(){return Object.keys(egBoard).sort().map(s=>s+egBoard[s])
 function egReset(){
  historyBeforeEugenReset();
  egHidePromotion();
- egDisposeStockfish();clearTimeout(egTimer);egBoard=egInit();egWhite=true;egSelected=null;egLast=[];egHistory=[];egCapturedBlack=[];egCapturedWhite=[];egGameOver=false;egEP=null;egCastle='KQkq';egHalf=0;egFull=1;egReps=new Map();egReps.set(egPositionKey(),1);
+ egDisposeStockfish();clearTimeout(egTimer);egBoard=egInit();egWhite=true;egSelected=null;egLast=[];egHistory=[];egCapturedBlack=[];egCapturedWhite=[];egGameOver=false;egReviewVisibility();egEP=null;egCastle='KQkq';egHalf=0;egFull=1;egReps=new Map();egReps.set(egPositionKey(),1);
  $('eugenStatus').textContent=egHuman==='w'?'Du bist Weiß und beginnst. Wähle eine Figur.':'Du bist Schwarz. Eugen eröffnet mit Weiß.';$('eugenHeadline').textContent='♔ Weiß am Zug';egDraw();
  historyEugenReset();
 }
@@ -2558,10 +2558,15 @@ function egMove(m){
  egAssess();egDraw();
  historyAfterEugenMove(m);
 }
+function egReviewVisibility(){
+ const b=document.getElementById('eugenAnalyzeNow');
+ if(b)b.hidden=!egGameOver;
+}
 function egAssess(){
  const side=egWhite?'w':'b',legal=egLegal(egBoard,side,egEP,egCastle),checked=egCheck(egBoard,side);
- if(!legal.length){egGameOver=true;if(checked){$('eugenHeadline').textContent=side===egHuman?'♚ Eugen gewinnt':'🏆 Du hast gewonnen!';$('eugenStatus').textContent=side===egHuman?'Schachmatt! Eugen hat gewonnen.':'Schachmatt! Du hast Eugen besiegt!';if(side!==egHuman)showRookMate()}else{$('eugenHeadline').textContent='Remis';$('eugenStatus').textContent='Patt – unentschieden.'}return}
- if(egHalf>=100||(egReps.get(egPositionKey())||0)>=3){egGameOver=true;$('eugenHeadline').textContent='Remis';$('eugenStatus').textContent='Unentschieden nach der 50-Züge-Regel oder Stellungswiederholung.';return}
+ if(!legal.length){egGameOver=true;if(checked){$('eugenHeadline').textContent=side===egHuman?'♚ Eugen gewinnt':'🏆 Du hast gewonnen!';$('eugenStatus').textContent=side===egHuman?'Schachmatt! Eugen hat gewonnen.':'Schachmatt! Du hast Eugen besiegt!';if(side!==egHuman)showRookMate()}else{$('eugenHeadline').textContent='Remis';$('eugenStatus').textContent='Patt – unentschieden.'}egReviewVisibility();return}
+ if(egHalf>=100||(egReps.get(egPositionKey())||0)>=3){egGameOver=true;$('eugenHeadline').textContent='Remis';$('eugenStatus').textContent='Unentschieden nach der 50-Züge-Regel oder Stellungswiederholung.';egReviewVisibility();return}
+ egReviewVisibility();
  $('eugenHeadline').textContent=(egWhite?'♔ Weiß':'♚ Schwarz')+' am Zug';
   $('eugenStatus').textContent=checked?'Schach! '+(side===egHuman?'Du':'Eugen')+' musst den König schützen.':side===egHuman?'Du bist am Zug.':'Eugen überlegt …';
 }
@@ -2619,10 +2624,11 @@ if($('backEugenHome'))$('backEugenHome').addEventListener('click',()=>{$('eugenM
 for(const b of document.querySelectorAll('[data-level]'))b.addEventListener('click',()=>egStart(b.dataset.level));
 // v102: native link handles Zurück with a new page load.
 $('eugenRestart').addEventListener('click',()=>{hideRookMate();egReset();if(egMode==='expert')egInitStockfish();if(egHuman==='b')egTimer=setTimeout(egAIMove,380)});
+$('eugenRestart').addEventListener('click',egReviewVisibility);
 $('eugenUndo').addEventListener('click',()=>{
  clearTimeout(egTimer);try{egDisposeStockfish()}catch(e){console.warn('Stockfish cleanup:',e)};hideRookMate();if(!egHistory.length){$('eugenStatus').textContent='Noch kein Zug zum Zurücknehmen.';return;}
  let target=egHistory.length-1;while(target>0&&(egHistory[target].white?'w':'b')!==egHuman)target--;
- const s=egHistory[target];egHistory=egHistory.slice(0,target);egBoard={...s.board};egWhite=s.white;egEP=s.ep;egCastle=s.castle;egHalf=s.half;egFull=s.full;egLast=[...s.last];egCapturedBlack=[...s.capturedBlack];egCapturedWhite=[...s.capturedWhite];egSelected=null;egGameOver=false;egReps=new Map([[egPositionKey(),1]]);$('eugenHeadline').textContent=(egWhite?'♔ Weiß':'♚ Schwarz')+' am Zug';$('eugenStatus').textContent='Zug zurückgenommen. '+((egWhite?'w':'b')===egHuman?'Du bist am Zug.':'Eugen denkt …');egDraw();historyEugenUndo();if(egMode==='expert')egInitStockfish();if((egWhite?'w':'b')!==egHuman)egTimer=setTimeout(egAIMove,350);
+ const s=egHistory[target];egHistory=egHistory.slice(0,target);egBoard={...s.board};egWhite=s.white;egEP=s.ep;egCastle=s.castle;egHalf=s.half;egFull=s.full;egLast=[...s.last];egCapturedBlack=[...s.capturedBlack];egCapturedWhite=[...s.capturedWhite];egSelected=null;egGameOver=false;egReps=new Map([[egPositionKey(),1]]);$('eugenHeadline').textContent=(egWhite?'♔ Weiß':'♚ Schwarz')+' am Zug';$('eugenStatus').textContent='Zug zurückgenommen. '+((egWhite?'w':'b')===egHuman?'Du bist am Zug.':'Eugen denkt …');egDraw();historyEugenUndo();egReviewVisibility();if(egMode==='expert')egInitStockfish();if((egWhite?'w':'b')!==egHuman)egTimer=setTimeout(egAIMove,350);
 });
 
 rebuild();
@@ -3128,10 +3134,10 @@ function historyBeforeEugenReset(){if(hCurrent&&hCurrent.moves.length){hArchive(
 function historyEugenReset(){hCurrent={id:hUniqueId(),date:Date.now(),mode:egMode,playerSide:egHuman,moves:[],frames:[hFenCurrent()],result:'Laufend'};hWrite(HISTORY_CURRENT,hCurrent)}
 function historyAfterEugenMove(m){if(!hCurrent)historyEugenReset();hCurrent.mode=egMode;hCurrent.playerSide=hCurrent.playerSide||egHuman;hCurrent.moves.push(m.from+m.to+(m.promotion||''));hCurrent.frames.push(hFenCurrent());if(egGameOver){hCurrent.result=H('eugenStatus').textContent;hArchive(hCurrent)}hWrite(HISTORY_CURRENT,hCurrent)}
 function historyEugenUndo(){if(!hCurrent)return;hCurrent.moves=hCurrent.moves.slice(0,egHistory.length);hCurrent.frames=hCurrent.frames.slice(0,hCurrent.moves.length+1);hCurrent.result='Laufend';hWrite(HISTORY_CURRENT,hCurrent);hGames=hGames.filter(g=>g.id!==hCurrent.id);hWrite(HISTORY_KEY,hGames)}
-function hShow(){if(typeof window.v158OpenTab==='function'){window.v158OpenTab('archive');hRenderList();return}for(let id of ['courseHome','heavyMenu','trainingView','rookGame','eugenMenu','eugenGame','liveMenu','liveGame']){let e=H(id);if(e)e.hidden=true}H('historyView').hidden=false;hRenderList();window.scrollTo(0,0)}
+function hShow(forceReview=false){if(!forceReview&&typeof window.v158OpenTab==='function'){window.v158OpenTab('archive');hRenderList();return}for(let id of ['courseHome','heavyMenu','trainingView','rookGame','eugenMenu','eugenGame','liveMenu','liveGame']){let e=H(id);if(e)e.hidden=true}H('historyView').hidden=false;hRenderList();window.scrollTo(0,0)}
 function hRenderList(){const list=H('historyList');list.replaceChildren();const games=hGames.slice();if(hCurrent&&hCurrent.moves.length&&!games.some(g=>g.id===hCurrent.id))games.unshift(hCurrent);if(hLive&&hLive.moves.length&&!games.some(g=>g.id===hLive.id))games.unshift(hLive);if(!games.length){let p=document.createElement('p');p.textContent='Noch keine Partien vorhanden. Spiele zuerst gegen Eugen!';list.appendChild(p)}
  for(const g of games){let row=document.createElement('div');row.className='history-entry';let info=document.createElement('div');let head=document.createElement('strong');head.textContent=hLabel(g);let sm=document.createElement('small');sm.textContent=g.moves.length+' Halbzüge · '+(g.result||'Laufend');info.append(head,sm);let btn=document.createElement('button');btn.textContent='Partie ansehen →';btn.addEventListener('click',()=>hOpen(g));let analyze=document.createElement('button');analyze.type='button';analyze.textContent='🔎 Partie analysieren';analyze.addEventListener('click',()=>{hOpen(g);hAnalyze()});row.append(info,btn,analyze);list.appendChild(row)} }
-function hOpen(g){hCancelAnalysis();hReview=JSON.parse(JSON.stringify(g));hAnalysis=[];H('historyGraph').replaceChildren();
+function hOpen(g){hShow(true);hCancelAnalysis();hReview=JSON.parse(JSON.stringify(g));hAnalysis=[];H('historyGraph').replaceChildren();
  // Prefer the recorded player color. Old saves can be corrected manually.
  hReviewSide=hV95SavedSide(hReview)||((hReview.playerSide==='b'||hReview.playerSide==='w')?hReview.playerSide:'w');
  hIndex=hReview.moves.length;H('historyReview').hidden=false;H('historyGameTitle').textContent=hLabel(g)+' · '+(g.result||'Laufend');H('historyProgress').textContent='Analyse noch nicht gestartet.';hPaint();H('historyReview').scrollIntoView({behavior:'smooth',block:'start'})}
@@ -7073,4 +7079,5 @@ if(layout&&controls&&panel&&controls.parentNode!==layout){layout.insertBefore(co
 #liveGame #v115Analyse[hidden],#liveGame #v116AnalysisTip[hidden]{display:none!important}
 #liveGame .v116-live-analysis-action:has(> #v115Analyse[hidden]){display:none!important}
 </style>
+<style id="v186-computer-analysis-only-after-finish">#eugenGame #eugenAnalyzeNow[hidden]{display:none!important}</style>
 </body></html>
