@@ -3048,7 +3048,7 @@ window.ArenaV161Presence=(()=>{
   const canReview=!!outcome && (liveMoves.length>0 || !!(hLive&&hLive.moves&&hLive.moves.length));
   $l('v115Analyse').hidden=!canReview;
   $l('v116AnalysisTip').hidden=canReview;
-  for(const button of emojiEl.querySelectorAll('button'))button.disabled=!connected||!!outcome||asSide()!==side;
+  for(const button of emojiEl.querySelectorAll('button'))button.disabled=!chatConnected();
   drawClocks()
  }
  function click(sq){if(outcome||!connected||promotion||asSide()!==side)return;
