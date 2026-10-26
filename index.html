@@ -2720,7 +2720,7 @@ window.ArenaV161Presence=(()=>{
  // Chat wird über dieselbe PeerJS-Verbindung wie die Züge übertragen.
  const ARENA_EMOJIS=['😂','😡','👏','👍','😭','🎉','😎','❤️'];
  let lastChatSent=0,emojiTimeout=null;
- function chatConnected(){return connected&&!!conn?.open}
+ function chatConnected(){return !!conn?.open}
  function chatInfo(text){$l('arenaChatInfo').textContent=text}
  function addChatLine(label,message,mine){
   const log=$l('arenaChatMessages');const item=document.createElement('div');item.className='arena-chat-item'+(mine?' mine':'');
@@ -2737,13 +2737,14 @@ window.ArenaV161Presence=(()=>{
   clearTimeout(emojiTimeout);emojiTimeout=setTimeout(()=>{toast.hidden=true},2600);
  }
  function sendChat(kind,value){
-  if(!chatConnected()){chatInfo('Bitte zuerst mit einem Gegner verbinden.');return false}
-  const now=Date.now();if(now-lastChatSent<700){chatInfo('Bitte nicht so schnell senden.');return false}
+  if(!chatConnected()){chatInfo('Keine aktive Verbindung zum Gegner. Bitte die Partie wieder verbinden.');return false}
+  const now=Date.now();if(now-lastChatSent<300){chatInfo('Bitte kurz warten und erneut tippen.');return false}
   if(kind==='emoji') {if(!ARENA_EMOJIS.includes(value))return false;}
   else if(kind==='text') {value=String(value||'').trim().slice(0,200);if(!value)return false;}
   else return false;
+  try{conn.send({type:'arena-chat-v1',kind,value})}
+  catch(e){chatInfo('Senden fehlgeschlagen. Verbindung prüfen.');return false}
   lastChatSent=now;
-  send({type:'arena-chat-v1',kind,value});
   addChatLine('Du',value,true);
   chatInfo('Gesendet');return true;
  }
@@ -3048,7 +3049,7 @@ window.ArenaV161Presence=(()=>{
   const canReview=!!outcome && (liveMoves.length>0 || !!(hLive&&hLive.moves&&hLive.moves.length));
   $l('v115Analyse').hidden=!canReview;
   $l('v116AnalysisTip').hidden=canReview;
-  for(const button of emojiEl.querySelectorAll('button'))button.disabled=!chatConnected();
+  for(const button of emojiEl.querySelectorAll('button'))button.disabled=false; // v196: nie aufgrund der Zugfolge/Renderphase sperren
   drawClocks()
  }
  function click(sq){if(outcome||!connected||promotion||asSide()!==side)return;
@@ -7250,6 +7251,10 @@ layout.insertBefore(banner,layout.firstChild);
 })();
 </script>
 
+<style id="v196-emoji-pointer-fix">
+#arenaChatEmojis button,#dameChatEmojis button{touch-action:manipulation!important;pointer-events:auto!important;cursor:pointer!important}
+#arenaChatEmojis button:disabled{opacity:1!important;filter:none!important}
+</style>
 <style id="v194-isolated-chat-style">
 /* v194: the existing chat nodes are moved to body, outside old live-game CSS. */
 #v79ChatFab{display:none!important}
