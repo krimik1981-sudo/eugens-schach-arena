@@ -3737,7 +3737,7 @@ async function dameRecoveryServerFinished(p){
 function dameRecoveryApply(p){if(!dameRecoveryValid(p))return false;board=p.state.board.slice();turn=p.state.turn;forced=Number.isInteger(p.state.forced)&&p.state.forced>=0&&p.state.forced<64?p.state.forced:null;gameOver=false;v147Reset();onlineSequence=Number.isSafeInteger(p.state.seq)?p.state.seq:0;dameMatchId=typeof p.state.matchId==='string'?p.state.matchId:newDameMatchId();onlineHostSide=p.state.hostSide==='b'?'b':'w';onlineSide=p.side;selected=null;history=[];busy=false;render();status(p.state.message||'Gespeicherte Partie wird wiederhergestellt.');return true}
 async function dameRecoveryResume(){const p=dameRecoveryRead();if(!p||dameRecoveryBusy)return;dameRecoveryBusy=true;dameRecoveryOverlay?.setAttribute('hidden','');try{
  document.querySelector('#courseHome [data-page="dame"]')?.click();
- discardNetwork();modeEl.value='online';document.getElementById('dameOnlineBox').hidden=false;onlineHost=p.host;onlineRoom=p.room;onlineSide=p.side;onlineHostSide=p.state.hostSide==='b'?'b':'w';init();dameRecoveryApply(p);
+ discardNetwork();modeEl.value='online';modeEl.dispatchEvent(new Event('change',{bubbles:true}));document.getElementById('dameOnlineBox').hidden=false;document.querySelector('#courseHome .arena-page[data-panel="dame"]')?.setAttribute('data-v192-restoring','true');onlineHost=p.host;onlineRoom=p.room;onlineSide=p.side;onlineHostSide=p.state.hostSide==='b'?'b':'w';init();dameRecoveryApply(p);
  const gen=onlineGeneration;
  dameRecoveryAwaitingHost=!p.host;
  netStatus(p.host?'Gespeicherte Dame-Partie: Raum wird wieder geöffnet …':'Gespeicherte Dame-Partie: Verbinde mit Gastgeber …');
@@ -3931,7 +3931,7 @@ async function damePublicPlay(){if(publicDameBusy)return;publicDameBusy=true;con
 document.getElementById('damePublicPlay').addEventListener('click',damePublicPlay);
 setInterval(()=>{const current=publicDameRoom;if(!current)return;damePublicApi('heartbeat',{room:current.room,ready:current.role==='host'}).catch(e=>{if(publicDameRoom!==current)return;if(e.status===404){publicDameRoom=null;document.getElementById('damePublicInfo').textContent='⚠️ Suchraum abgelaufen. Bitte erneut auf Gegner automatisch finden tippen.'}else document.getElementById('damePublicInfo').textContent='⚠️ '+e.message})},12000);
 
-function discardNetwork(skipLeave=false){window.ArenaV161Presence?.hide('dame');dameRecoveryAwaitingHost=false;clearTimeout(dameRecoveryReconnectTimer);dameRecoveryReconnectTimer=null;dameRecoveryReconnectCount=0;clearDamePending();if(publicDameRoom){const previous=publicDameRoom;publicDameRoom=null;if(!skipLeave)damePublicApi('leave',{room:previous.room}).catch(()=>{});}clearDameChat();onlineGeneration++;onlineConnected=false;onlineSide=null;onlineHost=false;onlineHostSide='w';onlineRoom='';try{onlineConn?.close()}catch(e){}try{onlinePeer?.destroy()}catch(e){}onlineConn=null;onlinePeer=null;document.getElementById('dameInvite').hidden=true;document.getElementById('dameDisconnect').hidden=true;netStatus('Nicht verbunden.');}
+function discardNetwork(skipLeave=false){document.querySelector('#courseHome .arena-page[data-panel="dame"]')?.removeAttribute('data-v192-restoring');window.ArenaV161Presence?.hide('dame');dameRecoveryAwaitingHost=false;clearTimeout(dameRecoveryReconnectTimer);dameRecoveryReconnectTimer=null;dameRecoveryReconnectCount=0;clearDamePending();if(publicDameRoom){const previous=publicDameRoom;publicDameRoom=null;if(!skipLeave)damePublicApi('leave',{room:previous.room}).catch(()=>{});}clearDameChat();onlineGeneration++;onlineConnected=false;onlineSide=null;onlineHost=false;onlineHostSide='w';onlineRoom='';try{onlineConn?.close()}catch(e){}try{onlinePeer?.destroy()}catch(e){}onlineConn=null;onlinePeer=null;document.getElementById('dameInvite').hidden=true;document.getElementById('dameDisconnect').hidden=true;netStatus('Nicht verbunden.');}
 function broadcast(){if(modeEl.value!=='online'||!onlineHost)return;if(gameOver)dameRecoveryClear();else dameRecoveryPersist();if(!onlineConnected||!onlineConn?.open)return;onlineConn.send({type:'dame-state',seq:onlineSequence,hostSide:onlineHostSide,board:[...board],turn,forced,gameOver,matchId:dameMatchId,message:statusEl.textContent,v147Outcome});}
 function onlineSyncReceived(data){if(onlineHost||!data||data.type!=='dame-state'||!Array.isArray(data.board)||data.board.length!==64)return;if(!data.board.every(p=>p===null||['w','W','b','B'].includes(p)))return;if(data.turn!=='w'&&data.turn!=='b')return;if(!Number.isSafeInteger(data.seq)||(!dameRecoveryAwaitingHost&&data.seq<onlineSequence))return;if(!['w','b'].includes(data.hostSide))return;onlineHostSide=data.hostSide;onlineSide=other(onlineHostSide);netStatus('✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß (du beginnst).':'Schwarz (Gastgeber beginnt).'));if(data.forced!==null&&(!Number.isInteger(data.forced)||data.forced<0||data.forced>63))return;const previousEnded=gameOver,previousMatch=dameMatchId;if(damePendingMove&&(data.seq>damePendingMove.seq||data.turn!==onlineSide||data.board[damePendingMove.from]===null))clearDamePending();onlineSequence=data.seq;dameRecoveryAwaitingHost=false;dameRecoveryReconnectCount=0;clearTimeout(dameRecoveryReconnectTimer);dameRecoveryReconnectTimer=null;dameMatchId=typeof data.matchId==='string'&&data.matchId.length<100?data.matchId:dameMatchId;board=data.board.slice();turn=data.turn;forced=data.forced;gameOver=!!data.gameOver;v147Outcome=data.v147Outcome&&['draw','resign'].includes(data.v147Outcome.reason)?data.v147Outcome:null;selected=null;history=[];busy=false;render();status(data.message||'Stellung synchronisiert.');if(gameOver){dameRecoveryClear();if(!previousEnded||previousMatch!==dameMatchId)reportDameWin(v147Outcome?.winner||other(turn));}else dameRecoveryPersist();}
 function onlineHandleData(data){if(!data||typeof data!=='object')return;
@@ -3971,7 +3971,7 @@ function onlineHandleData(data){if(!data||typeof data!=='object')return;
  else if(data.type==='dame-hello'&&onlineHost)broadcast();
 }
 function attachConnection(c){if(onlineConn&&onlineConn!==c&&onlineConnected){try{c.close()}catch(e){}return;}onlineConn=c;const gen=onlineGeneration;
- c.on('open',()=>{if(gen!==onlineGeneration)return;clearDamePending();v147OfferSent=false;v147OfferReceived=false;onlineConnected=true;window.ArenaFriendV70?.attach('dame',d=>c.send(d),()=>onlineConnected&&c.open);dameChatInfo('Du kannst jetzt schreiben und Emojis senden.');if(publicDameRoom)document.getElementById('damePublicInfo').textContent='✅ Gegner verbunden!';document.getElementById('dameDisconnect').hidden=false;netStatus(onlineHost?'✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.')+' Dein Freund ist beigetreten.':'✅ Verbindung hergestellt. Warte auf die Farbzuweisung …');if(onlineHost)broadcast();else c.send({type:'dame-hello'});render();if(!dameRecoveryAwaitingHost)dameRecoveryPersist();});
+ c.on('open',()=>{if(gen!==onlineGeneration)return;clearDamePending();v147OfferSent=false;v147OfferReceived=false;onlineConnected=true;document.querySelector('#courseHome .arena-page[data-panel="dame"]')?.removeAttribute('data-v192-restoring');window.ArenaFriendV70?.attach('dame',d=>c.send(d),()=>onlineConnected&&c.open);dameChatInfo('Du kannst jetzt schreiben und Emojis senden.');if(publicDameRoom)document.getElementById('damePublicInfo').textContent='✅ Gegner verbunden!';document.getElementById('dameDisconnect').hidden=false;netStatus(onlineHost?'✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß.':'Schwarz.')+' Dein Freund ist beigetreten.':'✅ Verbindung hergestellt. Warte auf die Farbzuweisung …');if(onlineHost)broadcast();else c.send({type:'dame-hello'});render();if(!dameRecoveryAwaitingHost)dameRecoveryPersist();});
  c.on('data',data=>{if(gen===onlineGeneration)onlineHandleData(data)});
  const lost=()=>{if(gen!==onlineGeneration)return;clearDamePending();v147OfferSent=false;v147OfferReceived=false;onlineConnected=false;window.ArenaFriendV70?.detached('dame');netStatus(dameRecoveryAwaitingHost?'⏳ Warte auf Rückkehr des Gastgebers …':'⚠️ Verbindung unterbrochen. Bitte Partie fortsetzen wählen.');render();if(dameRecoveryAwaitingHost)dameRecoveryScheduleReconnect()};
  c.on('close',lost);c.on('error',e=>{if(gen===onlineGeneration)netStatus('Verbindungsfehler: '+(e?.message||'Unbekannt'))});
@@ -7185,4 +7185,68 @@ if(layout&&controls&&panel&&controls.parentNode!==layout){layout.insertBefore(co
 }
 @media(max-width:390px){#arenaChatEmojis button,#dameChatEmojis button{font-size:17px!important}}
 </style>
+
+<style id="v192-dame-recovery-board-visible">
+/* A saved online Dame position remains visible while a peer reconnects.
+   The engine already blocks moves until onlineConnected is true. */
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] .dame-board-area,
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] #dameStatus,
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] .dame-stats{display:block!important}
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] .dame-layout{display:flex!important;flex-direction:column!important;align-items:center!important;gap:10px!important}
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] .dame-board-area{width:100%!important;max-width:min(96vw,600px)!important;margin:0 auto!important;order:1!important}
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] .dame-panel{width:100%!important;max-width:600px!important;order:2!important}
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] #dameOnlineBox{display:block!important}
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] #dameOnlineBox>.dame-public-search,
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] #dameOnlineBox>.dame-private-room,
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] #dameOnlineBox>.dame-chat{display:none!important}
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] #dameOnlineStatus{display:block!important}
+#v192ReconnectBanner{display:none}
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] #v192ReconnectBanner{display:block!important;order:0!important;width:100%;max-width:600px;margin:8px auto;padding:12px 14px;box-sizing:border-box;border:1px solid #c49a5b;border-radius:12px;background:#173652;color:#f3d29a;text-align:center;font:600 14px/1.45 system-ui,sans-serif}
+</style>
+<script id="v192-dame-recovery-ui">
+(function(){'use strict';
+const page=document.querySelector('#courseHome .arena-page[data-panel="dame"]');
+const layout=page?.querySelector('.dame-layout');
+if(!layout)return;
+const banner=document.createElement('div');banner.id='v192ReconnectBanner';banner.setAttribute('role','status');
+banner.textContent='⏳ Gespeicherte Dame-Partie geladen. Warte auf Verbindung zum Mitspieler …';
+layout.insertBefore(banner,layout.firstChild);
+})();
+</script>
+
+<style id="v193-recovery-visibility-fix">
+/* v178 intentionally hides a setup board while #dameDisconnect is hidden.
+   A recovered game has a real saved position even if the other player is offline.
+   The selectors below outrank the old :has() selectors instead of altering gameplay. */
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"][data-v192-restoring="true"]:has(#dameDisconnect[hidden]) .dame-board-area,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"][data-v192-restoring="true"]:has(#dameDisconnect[hidden]) #dameStatus,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"][data-v192-restoring="true"]:has(#dameDisconnect[hidden]) .dame-stats,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"][data-v192-restoring="true"]:has(#dameDisconnect[hidden]) #arena70-dame{display:block!important}
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] .dame-board-area{visibility:visible!important;opacity:1!important}
+#courseHome .arena-page[data-panel="dame"][data-v192-restoring="true"] #v192ReconnectBanner{display:block!important}
+</style>
+<script id="v193-resume-screen-navigation">
+(function(){'use strict';
+ // Chess's original recovery code starts the live board via create()/join().
+ // Keep it unchanged. Dame resumes inside its own pane, which the old navigation
+ // can leave hidden on some routes. Ensure that pane is visible only on recovery.
+ const yes=document.getElementById('v144DameResumeYes');
+ if(!yes)return;
+ yes.addEventListener('click',()=>{
+   const home=document.getElementById('courseHome');
+   const page=home?.querySelector('.arena-page[data-panel="dame"]');
+   if(!page||!home)return;
+   // Wait until the installed async recovery handler has selected the page.
+   queueMicrotask(()=>{
+     if(!page.hasAttribute('data-v192-restoring'))return;
+     for(const other of home.querySelectorAll('.arena-page'))other.hidden=(other!==page);
+     home.hidden=false;
+     const modes=document.getElementById('v168Modes');
+     if(modes)modes.hidden=true;
+     const games=document.getElementById('v168Games');
+     if(games)games.hidden=true;
+   });
+ });
+})();
+</script>
 </body></html>
