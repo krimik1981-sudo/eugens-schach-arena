@@ -6606,11 +6606,11 @@ refresh();
    const mode=b.dataset.v168Mode;
    if(selected==='schach'){
      if(mode==='play'){const panel=document.querySelector('.arena-page[data-panel="spielen"]');if(panel)panel.dataset.v171Game='schach';document.querySelector('#courseHome .arena-navitem[data-page="spielen"]')?.click();}
-     else if(mode==='learn')document.querySelector('#courseHome .arena-navitem[data-page="lernen"]')?.click();
+     else if(mode==='learn')window.v173OpenLearning?.('schach');
      else go('v83OnlineChess');
    }else{
      if(mode==='play'){const panel=document.querySelector('.arena-page[data-panel="spielen"]');if(panel)panel.dataset.v171Game='dame';document.querySelector('#courseHome .arena-navitem[data-page="spielen"]')?.click();}
-     else if(mode==='learn')document.querySelector('#courseHome .arena-navitem[data-page="dame-training"]')?.click();
+     else if(mode==='learn')window.v173OpenLearning?.('dame');
      else go('v83OnlineDame');
    }
  }));
@@ -6646,6 +6646,41 @@ refresh();
   if(tile)tile.click();
   window.scrollTo(0,0);
  });
+})();
+</script>
+
+<style id="v173-lernen-navigation-style">
+/* From the new game selector, only the chosen learning section is visible. */
+#courseHome .v89-learn[data-v173-game="schach"] #v89Overview,
+#courseHome .v89-learn[data-v173-game="dame"] #v89Overview,
+#courseHome .v89-learn[data-v173-game] .v89-detail>.v89-back {display:none!important}
+#courseHome .v173-learning-back{display:inline-flex;align-items:center;gap:8px;margin:7px 0 17px;padding:11px 16px;min-height:44px;border-radius:12px;border:1px solid #d3a65f;background:#192f47;color:#ffe1a6;font:700 16px system-ui,sans-serif;cursor:pointer}
+#courseHome .v173-learning-back[hidden]{display:none!important}
+</style>
+<script id="v173-learning-nav-fix">
+(function(){'use strict';
+ const page=document.querySelector('#courseHome .arena-page[data-panel="lernen"]');
+ const nav=document.querySelector('#courseHome .arena-navitem[data-page="lernen"]');
+ if(!page||!nav)return;
+ const names={schach:'chess',dame:'dame'};
+ const start=()=>document.querySelector('#courseHome .arena-navitem[data-page="start"]')?.click();
+ function back(){const game=page.dataset.v173Game||'schach';delete page.dataset.v173Game;start();document.querySelector('#courseHome [data-v168-game="'+game+'"]')?.click();window.scrollTo(0,0)}
+ for(const [g,id] of Object.entries({schach:'v89Chess',dame:'v89Dame'})){
+  const detail=page.querySelector('#'+id);if(!detail)continue;
+  const b=document.createElement('button');b.type='button';b.className='v173-learning-back';b.textContent='← Zurück zur Moduswahl';b.hidden=true;
+  detail.insertBefore(b,detail.firstChild);b.addEventListener('click',back);
+ }
+ function show(game){
+  if(!names[game])return;
+  nav.click();page.dataset.v173Game=game;
+  // Reuse the v89 navigation handlers and preserve their training/lesson logic.
+  page.querySelector('[data-v89-screen="'+names[game]+'"]')?.click();
+  page.querySelectorAll('.v173-learning-back').forEach(b=>b.hidden=false);
+  window.scrollTo(0,0);
+ }
+ window.v173OpenLearning=show;
+ const reset=()=>{delete page.dataset.v173Game;page.querySelectorAll('.v173-learning-back').forEach(b=>b.hidden=true)};
+ document.querySelectorAll('#courseHome .arena-navitem[data-page="start"],#courseHome .arena-bottomnav [data-page="start"]').forEach(b=>b.addEventListener('click',reset));
 })();
 </script>
 </body></html>
