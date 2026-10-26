@@ -2763,6 +2763,7 @@ window.ArenaV161Presence=(()=>{
  for(const symbol of ARENA_EMOJIS){const b=document.createElement('button');b.type='button';b.textContent=symbol;b.title=symbol;b.addEventListener('click',()=>sendChat('emoji',symbol));emojiEl.appendChild(b)}
  $l('arenaChatForm').addEventListener('submit',e=>{e.preventDefault();const input=$l('arenaChatInput');if(sendChat('text',input.value))input.value=''});
  $l('v115Analyse').addEventListener('click',()=>{
+  if(!outcome){setStatus('Analyse ist erst nach dem Ende der Partie verfügbar.');return;}
   const saved=(hLive&&Array.isArray(hLive.moves)&&Array.isArray(hLive.frames)&&hLive.frames.length===hLive.moves.length+1&&hLive.moves.length)?hLive:null;
   const fresh=(liveMoves.length&&liveFrames.length===liveMoves.length+1)?{id:liveRecordId||'live-'+Date.now(),date:Date.now(),mode:'live',playerSide:side,moves:[...liveMoves],frames:[...liveFrames],result:outcome?outText():'Laufend'}:null;
   const game=fresh||saved;
@@ -3036,7 +3037,7 @@ window.ArenaV161Presence=(()=>{
   $l('liveResign').disabled=!connected||!!outcome;
   $l('liveRematch').hidden=!outcome;$l('liveRematch').disabled=!connected||!!rematchOffer;
   // Show a prominent analysis entry whenever the game has finished, even after reconnection.
-  const canReview=!!outcome||!!liveMoves.length||!!(hLive&&hLive.moves&&hLive.moves.length);
+  const canReview=!!outcome && (liveMoves.length>0 || !!(hLive&&hLive.moves&&hLive.moves.length));
   $l('v115Analyse').hidden=!canReview;
   $l('v116AnalysisTip').hidden=canReview;
   for(const button of emojiEl.querySelectorAll('button'))button.disabled=!connected||!!outcome||asSide()!==side;
@@ -7065,4 +7066,11 @@ const panel=layout&&layout.querySelector('.rook-panel');
 if(layout&&controls&&panel&&controls.parentNode!==layout){layout.insertBefore(controls,panel)}
 })();
 </script>
+
+
+
+<style id="v185-analysis-only-after-end">
+#liveGame #v115Analyse[hidden],#liveGame #v116AnalysisTip[hidden]{display:none!important}
+#liveGame .v116-live-analysis-action:has(> #v115Analyse[hidden]){display:none!important}
+</style>
 </body></html>
