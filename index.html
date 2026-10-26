@@ -6847,4 +6847,33 @@ body:has(.arena-page[data-panel="dame"][data-v175-online="true"] #dameDisconnect
  sync();
 })();
 </script>
+
+<style id="v178-dame-online-iphone-compact">
+/* Online-Dame setup should not show game-only content before connection. */
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"]:has(#dameDisconnect[hidden]) #arena70-dame,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"]:has(#dameDisconnect[hidden]) .dame-board-area,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"]:has(#dameDisconnect[hidden]) #dameStatus,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"]:has(#dameDisconnect[hidden]) .dame-stats,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"]:has(#dameDisconnect[hidden]) #dameNewGame{display:none!important}
+/* When connected, restore the live board and the player action panel. */
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #v175DameBack{font-size:14px!important;line-height:1.2!important;padding:10px 12px!important;margin:0 0 7px!important;max-width:100%!important;box-sizing:border-box!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox::before{font-size:clamp(20px,5vw,25px)!important;margin:0 0 4px!important;text-align:left!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox{gap:9px!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-public-search,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-private-room{padding:12px!important;border-radius:13px!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-public-search>strong,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-private-room>summary{font-size:19px!important;line-height:1.2!important;margin-bottom:8px!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox label{font-size:13px!important;margin:7px 0 4px!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox select,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox input{font-size:16px!important;min-height:42px!important;padding:8px 10px!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #damePublicPlay,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameCreate,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameJoin{font-size:15px!important;min-height:43px!important;padding:9px 11px!important;line-height:1.3!important;margin:8px 0!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .dame-layout{gap:0!important}
+@media(max-width:620px){
+ #courseHome .arena-page[data-panel="dame"][data-v175-online="true"]{padding:6px 10px 18px!important}
+ #courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #v175DameBack{width:auto!important;text-align:left!important;justify-content:flex-start!important}
+ #courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox::before{font-size:22px!important}
+}
+</style>
 </body></html>
