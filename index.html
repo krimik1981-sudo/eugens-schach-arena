@@ -6943,8 +6943,28 @@ body:has(.arena-page[data-panel="dame"][data-v175-online="true"] #dameDisconnect
       if(!original)continue;
       const div=document.createElement('div');div.className='v180-friend-row';
       const name=document.createElement('span');name.className='v180-friend-name';name.textContent=row.querySelector('strong')?.textContent?.replace(/^[♟\s]+/u,'')||'Freund';
-      const btn=document.createElement('button');btn.type='button';btn.className='v180-friend-invite';btn.textContent='Einladen';btn.onclick=()=>original.click();
-      div.append(name,btn);list.append(div);
+      const btn=document.createElement('button');btn.type='button';btn.className='v180-friend-invite';btn.textContent='Einladen';
+      const result=document.createElement('span');result.className='v181-invite-status';result.setAttribute('role','status');
+      let countdown=null;
+      btn.onclick=async()=>{
+        if(btn.disabled)return;
+        const friend={name:name.textContent,code:row.querySelector('small')?.textContent?.trim()||''};
+        if(!friend.code||!window.ArenaInvitesV80?.invite){result.textContent='Einladung nicht verfügbar. Bitte Profil prüfen.';return;}
+        btn.disabled=true;btn.textContent='Verbinde …';result.textContent='Spielraum wird erstellt …';
+        try{
+          const sent=await window.ArenaInvitesV80.invite(friend,kind);
+          if(!sent){result.textContent='Einladung konnte nicht gesendet werden. Bitte erneut versuchen.';btn.disabled=false;btn.textContent='Einladen';return;}
+          let remain=30;
+          btn.textContent='Gesendet ✓';result.textContent='Einladung gesendet · gültig bis zu 30 Sek.';
+          if(countdown)clearInterval(countdown);
+          countdown=setInterval(()=>{
+            remain-=1;
+            if(remain<=0){clearInterval(countdown);countdown=null;btn.disabled=false;btn.textContent='Erneut einladen';result.textContent='Einladung abgelaufen oder beantwortet. Bei Bedarf erneut einladen.';}
+            else result.textContent='Einladung gesendet · noch ca. '+remain+' Sek.';
+          },1000);
+        }catch(e){result.textContent='Fehler: '+(e?.message||'Einladung fehlgeschlagen');btn.disabled=false;btn.textContent='Erneut einladen';}
+      };
+      div.append(name,btn,result);list.append(div);
     }
     if(!list.children.length)list.append(note.cloneNode(true));
   }
@@ -6960,4 +6980,10 @@ body:has(.arena-page[data-panel="dame"][data-v175-online="true"] #dameDisconnect
  make('chess');make('dame');
 })();
 </script>
+<style id="v181-invite-status-style">
+.v181-invite-status{font-size:12px;color:#cddce9;line-height:1.35;flex-basis:100%;display:block;min-height:0}
+.v180-friend-invite:disabled{opacity:.75;cursor:wait}
+.v180-friend-row{flex-wrap:wrap}
+.v180-friend-name{flex:1}
+</style>
 </body></html>
