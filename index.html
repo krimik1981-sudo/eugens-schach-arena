@@ -6986,4 +6986,38 @@ body:has(.arena-page[data-panel="dame"][data-v175-online="true"] #dameDisconnect
 .v180-friend-row{flex-wrap:wrap}
 .v180-friend-name{flex:1}
 </style>
+
+<style id="v182-game-screen-layout">
+/* v182: presentation-only refinement; preserve all existing handlers and gameplay state. */
+#liveGame:not([hidden]){max-width:900px;margin-inline:auto;box-sizing:border-box;padding-bottom:110px}
+#liveGame:not([hidden])>h1{font-size:clamp(20px,4.8vw,27px)!important;line-height:1.2!important;margin:8px 0 4px!important;letter-spacing:0!important}
+#liveGame:not([hidden]) #liveSideLabel{font-size:clamp(13px,3.3vw,16px)!important;line-height:1.35!important;margin:4px 0 10px!important}
+#liveGame:not([hidden]) .rook-game-layout{gap:10px!important;align-items:start}
+#liveGame:not([hidden]) #liveBoardFrame{box-sizing:border-box;max-width:100%;margin-inline:auto}
+#liveGame:not([hidden]) #liveBoard{max-width:100%;touch-action:manipulation}
+#liveGame:not([hidden]) .v121-clocks{margin:6px 0!important;max-width:100%}
+#liveGame:not([hidden]) .live-clock-panel{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;max-width:100%!important}
+#liveGame:not([hidden]) .live-clock-row{min-width:0!important;display:flex!important;gap:7px!important;align-items:center;justify-content:space-between;padding:9px 11px!important;border-radius:11px!important;font-size:clamp(12px,3vw,15px)!important}
+#liveGame:not([hidden]) .live-clock-row strong{font-size:clamp(17px,4.5vw,24px)!important;font-variant-numeric:tabular-nums;white-space:nowrap}
+#liveGame:not([hidden]) .v120-live-controls>.live-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important;margin:7px 0 11px!important}
+#liveGame:not([hidden]) .v120-live-controls>.live-actions button{min-width:0!important;max-width:100%;min-height:43px!important;padding:9px 8px!important;font-size:clamp(12px,3.1vw,15px)!important;line-height:1.25!important;white-space:normal}
+#liveGame:not([hidden]) .v120-live-controls>.live-actions button[hidden]{display:none!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .dame-board-area{box-sizing:border-box;max-width:100%!important;min-width:0!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameBoard{max-width:100%!important;margin-inline:auto;touch-action:manipulation}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .dame-stats{display:flex!important;justify-content:space-between;gap:10px!important;margin:8px 0!important;flex-wrap:wrap}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .dame-stats>span{font-variant-numeric:tabular-nums;font-weight:700;font-size:clamp(15px,4vw,20px)!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameStatus{font-size:clamp(14px,3.6vw,18px)!important;line-height:1.35!important;padding:9px 12px!important;border-radius:12px!important}
+@media(max-width:640px){
+ #liveGame:not([hidden]){width:100%!important;padding-left:5px!important;padding-right:5px!important}
+ #liveGame:not([hidden]) .rook-game-layout{display:flex!important;flex-direction:column!important;gap:8px!important}
+ #liveGame:not([hidden]) .rook-game-layout>#liveBoardFrame{order:1!important;width:100%!important}
+ #liveGame:not([hidden]) .rook-game-layout>.v121-clocks{order:0!important;width:100%!important}
+ #liveGame:not([hidden]) .rook-game-layout>.v121-captured{order:2!important;width:100%!important}
+ #liveGame:not([hidden]) .rook-game-layout>.rook-panel{order:3!important;width:100%!important}
+ #liveGame:not([hidden]) .v116-live-analysis-action{margin:2px 0 7px!important}
+ #liveGame:not([hidden]) .rook-panel h2{font-size:19px!important;line-height:1.25!important}
+ #courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .dame-layout{gap:10px!important}
+ #courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .dame-panel{max-width:100%;min-width:0}
+}
+</style>
 </body></html>
