@@ -6604,11 +6604,11 @@ refresh();
  document.querySelectorAll('[data-v168-mode]').forEach(b=>b.addEventListener('click',()=>{
    const mode=b.dataset.v168Mode;
    if(selected==='schach'){
-     if(mode==='play')document.querySelector('#courseHome .arena-navitem[data-page="spielen"]')?.click();
+     if(mode==='play'){const panel=document.querySelector('.arena-page[data-panel="spielen"]');if(panel)panel.dataset.v171Game='schach';document.querySelector('#courseHome .arena-navitem[data-page="spielen"]')?.click();}
      else if(mode==='learn')document.querySelector('#courseHome .arena-navitem[data-page="lernen"]')?.click();
      else go('v83OnlineChess');
    }else{
-     if(mode==='play')go('v83PlayDame');
+     if(mode==='play'){const panel=document.querySelector('.arena-page[data-panel="spielen"]');if(panel)panel.dataset.v171Game='dame';document.querySelector('#courseHome .arena-navitem[data-page="spielen"]')?.click();}
      else if(mode==='learn')document.querySelector('#courseHome .arena-navitem[data-page="dame-training"]')?.click();
      else go('v83OnlineDame');
    }
@@ -6616,4 +6616,16 @@ refresh();
  document.querySelectorAll('.arena-bottomnav [data-page="start"]').forEach(b=>b.addEventListener('click',reset));
 })();
 </script>
+
+<style id="v171-single-game-choice">
+/* The chosen game controls which existing computer settings card is shown. */
+.arena-page[data-panel="spielen"][data-v171-game="schach"] .v85-playcard[data-kind="dame"],
+.arena-page[data-panel="spielen"][data-v171-game="dame"] .v85-playcard[data-kind="chess"]{display:none!important}
+.arena-page[data-panel="spielen"][data-v171-game] .v85-playgrid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;max-width:650px!important;margin-inline:auto!important}
+.arena-page[data-panel="spielen"][data-v171-game] .v85-playcard{width:100%!important;min-width:0!important;box-sizing:border-box!important}
+.arena-page[data-panel="spielen"][data-v171-game] .v85-title>h2{display:none!important}
+.arena-page[data-panel="spielen"][data-v171-game="schach"] .v85-title:after{content:"Schach gegen Computer";display:block;font-weight:800;font-size:clamp(24px,5vw,38px);color:#f2ca82;text-align:center}
+.arena-page[data-panel="spielen"][data-v171-game="dame"] .v85-title:after{content:"Dame gegen Computer";display:block;font-weight:800;font-size:clamp(24px,5vw,38px);color:#f2ca82;text-align:center}
+.arena-page[data-panel="spielen"][data-v171-game] .v85-title>p{display:none!important}
+</style>
 </body></html>
