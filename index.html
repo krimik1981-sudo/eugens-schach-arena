@@ -1336,6 +1336,7 @@ body{background:var(--arena62-bg)}
 <div class="arena-homebottom"><div class="arena-block"><h3>⚡ Schnell spielen</h3><p>Wähle eine Schwierigkeit und spiele gegen Eugen.</p><button class="arena-action" data-open="openEugen">♟ Gegen Eugen spielen →</button></div><div class="arena-block"><h3>🌐 Gegen Freunde</h3><p>Erstelle einen Raum und lade einen Freund ein.</p><button class="arena-action" data-open="openLive">Live-Spiel starten →</button></div><div class="arena-block"><h3>📚 Meine Partien</h3><p>Gespeicherte Partien ansehen und analysieren.</p><button class="arena-action" data-open="openHistoryHome">Partiearchiv öffnen →</button></div></div>
 </div>
 <div class="arena-page v85-spielen" data-panel="spielen" hidden>
+  <button type="button" id="v172BackToGameModes" class="v172-back-modes">← Zurück zur Moduswahl</button>
   <div class="v85-title"><span>S P I E L E N  ·  G E G E N  C O M P U T E R</span><h2>Wähle dein Spiel</h2><p>Schach oder Dame – wähle die Stärke und starte sofort.</p></div>
   <div class="v85-playgrid">
     <article class="v85-playcard" data-kind="chess">
@@ -6628,4 +6629,23 @@ refresh();
 .arena-page[data-panel="spielen"][data-v171-game="dame"] .v85-title:after{content:"Dame gegen Computer";display:block;font-weight:800;font-size:clamp(24px,5vw,38px);color:#f2ca82;text-align:center}
 .arena-page[data-panel="spielen"][data-v171-game] .v85-title>p{display:none!important}
 </style>
+<style id="v172-back-style">
+#courseHome .v172-back-modes{display:inline-flex!important;align-items:center;justify-content:center;min-height:46px;margin:4px 0 18px;padding:10px 17px;border:1px solid #d3a65f;border-radius:13px;background:#192f47;color:#ffe1a6;font:700 clamp(14px,3.8vw,18px) system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+#courseHome .v172-back-modes:focus-visible{outline:3px solid #f5c674;outline-offset:3px}
+</style>
+<script id="v172-back-to-modes">
+(function(){'use strict';
+ const back=document.getElementById('v172BackToGameModes');
+ if(!back)return;
+ back.addEventListener('click',function(){
+  const panel=document.querySelector('#courseHome .arena-page[data-panel="spielen"]');
+  const game=panel?.dataset.v171Game==='dame'?'dame':'schach';
+  const start=document.querySelector('#courseHome .arena-navitem[data-page="start"]');
+  if(start)start.click();
+  const tile=document.querySelector('#courseHome [data-v168-game="'+game+'"]');
+  if(tile)tile.click();
+  window.scrollTo(0,0);
+ });
+})();
+</script>
 </body></html>
