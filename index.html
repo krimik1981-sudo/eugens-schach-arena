@@ -7020,4 +7020,49 @@ body:has(.arena-page[data-panel="dame"][data-v175-online="true"] #dameDisconnect
  #courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .dame-panel{max-width:100%;min-width:0}
 }
 </style>
+
+<style id="v183-clean-live-board">
+/* v183: visual-only refinements. Actual controls and their original listeners are preserved. */
+#liveGame:not([hidden]) .rook-game-layout{gap:5px!important}
+#liveGame:not([hidden]) .v121-clocks{width:100%!important;margin:0 0 7px!important;overflow:visible!important}
+#liveGame:not([hidden]) .live-clock-panel{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;overflow:visible!important}
+#liveGame:not([hidden]) .live-clock-row{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;padding:6px 4px!important;min-height:0!important;line-height:1.2!important;overflow:visible!important}
+#liveGame:not([hidden]) .live-clock-row span{display:block!important;max-width:100%!important;white-space:normal!important;text-align:center!important;font-size:clamp(11px,2.8vw,15px)!important;line-height:1.2!important;opacity:1!important;visibility:visible!important}
+#liveGame:not([hidden]) .live-clock-row strong{display:block!important;font-size:clamp(19px,5vw,28px)!important;line-height:1.25!important;white-space:nowrap!important}
+#liveGame:not([hidden]) #liveBoardFrame{margin-top:0!important;margin-bottom:3px!important}
+#liveGame:not([hidden]) .v121-captured{margin:0!important;gap:3px!important}
+#liveGame:not([hidden]) .v121-captured-line{min-height:0!important;padding:2px 7px!important}
+#liveGame:not([hidden]) .v121-captured-line:empty{display:none!important}
+#liveGame:not([hidden]) .v121-captured:has(.v121-captured-line:empty) .v121-captured-line:empty{display:none!important}
+#liveGame:not([hidden]) .v121-captured:has(.v121-captured-line:empty):not(:has(.v121-captured-line:not(:empty))){display:none!important}
+#liveGame:not([hidden]) .v120-live-controls{width:100%!important;box-sizing:border-box;margin:4px 0 6px!important}
+#liveGame:not([hidden]) .v120-live-controls>.live-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin:0!important}
+#liveGame:not([hidden]) .v120-live-controls>.live-actions button{min-height:42px!important;padding:8px 6px!important;font-size:clamp(13px,3.4vw,16px)!important;border-radius:12px!important}
+#liveGame:not([hidden]) #arenaChatToggle{min-height:42px!important;padding:8px 12px!important;font-size:clamp(14px,3.8vw,17px)!important}
+#liveGame:not([hidden]) #arenaChat{margin:5px 0!important;padding:0!important}
+/* Keep coordinate labels tucked away from the visible center of each piece. */
+#liveBoard .coord,#liveBoard .coordinate,#liveBoard .file,#liveBoard .rank{font-size:clamp(9px,2.1vw,11px)!important;line-height:1!important;position:absolute!important;z-index:3!important;text-shadow:0 1px 2px #f7ecd6,0 -1px 2px #f7ecd6!important;pointer-events:none}
+#liveBoard .coord.file,#liveBoard .file{bottom:1px!important;right:2px!important;left:auto!important;top:auto!important}
+#liveBoard .coord.rank,#liveBoard .rank{top:2px!important;left:2px!important;right:auto!important;bottom:auto!important}
+@media(max-width:640px){
+ #liveGame:not([hidden]) .rook-game-layout>.v121-clocks{order:0!important}
+ #liveGame:not([hidden]) .rook-game-layout>#liveBoardFrame{order:1!important}
+ #liveGame:not([hidden]) .rook-game-layout>.v121-captured{order:2!important}
+ #liveGame:not([hidden]) .rook-game-layout>.v120-live-controls{order:3!important}
+ #liveGame:not([hidden]) .rook-game-layout>.rook-panel{order:4!important}
+ #liveGame:not([hidden]) .v116-live-analysis-action{margin:0!important}
+ #liveGame:not([hidden]) .rook-panel{padding:7px!important;margin:0!important}
+ #liveGame:not([hidden]) .rook-panel>h2{font-size:clamp(14px,3.6vw,17px)!important;margin:3px 0!important}
+ #liveGame:not([hidden]) .rook-panel>p{font-size:clamp(12px,3vw,14px)!important;margin:3px 0!important}
+}
+</style>
+<script id="v183-preserve-controls-reorder">
+(function(){'use strict';
+const game=document.getElementById('liveGame');
+const layout=game&&game.querySelector('.rook-game-layout');
+const controls=game&&game.querySelector('.v120-live-controls');
+const panel=layout&&layout.querySelector('.rook-panel');
+if(layout&&controls&&panel&&controls.parentNode!==layout){layout.insertBefore(controls,panel)}
+})();
+</script>
 </body></html>
