@@ -1167,11 +1167,12 @@ body{background:var(--arena62-bg)}
  #courseHome .v87-profile #arena77-friends .arena77-friend>button{font-size:12px!important}
 }
 </style>
-<style id="v162CountdownCSS">
-.v162-offline-banner:not([hidden]){display:flex;flex-direction:column;gap:7px;width:min(100%,680px);box-sizing:border-box;margin:12px auto;padding:14px 16px;border:2px solid #d7ab68;border-radius:16px;background:#172f49;color:#f3d092;text-align:center;box-shadow:0 6px 18px #0005;font-size:clamp(15px,3.8vw,21px);line-height:1.3;position:relative;z-index:2}
+<style id="v163CountdownCSS">
+#liveBoardFrame, .arena-page[data-panel="dame"] .dame-board-area{position:relative!important}
+.v162-offline-banner:not([hidden]){display:flex!important;flex-direction:column;justify-content:center;align-items:center;gap:8px;position:absolute!important;top:50%;left:50%;transform:translate(-50%,-50%);z-index:150!important;width:min(82%,410px);box-sizing:border-box;padding:18px 14px;border:2px solid #d7ab68;border-radius:19px;background:rgba(15,34,54,.95);color:#f3d092;text-align:center;box-shadow:0 12px 32px #0009;font-size:clamp(15px,4vw,23px);line-height:1.3;pointer-events:none;backdrop-filter:blur(4px)}
 .v162-offline-banner[hidden]{display:none!important}
-.v162-offline-banner .v162-clock{font-size:1.45em;font-variant-numeric:tabular-nums;color:#fff2d1}
-body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) .arena-page[data-panel="dame"] #v162DameOffline:not([hidden]){display:flex!important}
+.v162-offline-banner strong{font-size:clamp(21px,5.5vw,29px)}
+.v162-offline-banner .v162-clock{display:block;font-size:clamp(32px,9vw,49px);font-weight:900;font-variant-numeric:tabular-nums;color:#fff2d1;margin-top:5px}
 </style>
 </head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
@@ -2620,11 +2621,11 @@ window.ArenaV161Presence=(()=>{
  const pending=new Map(),displays=new Map();
  const format=n=>{const x=Math.max(0,Math.ceil(n));return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')};
  function banner(game){
-  const anchor=game==='chess'?document.getElementById('liveStatus'):document.getElementById('dameBoard');
+  const anchor=game==='chess'?document.getElementById('liveBoardFrame'):document.querySelector('.arena-page[data-panel="dame"] .dame-board-area');
   if(!anchor)return null;
   const id=game==='chess'?'v162ChessOffline':'v162DameOffline';
   let el=document.getElementById(id);
-  if(!el){el=document.createElement('div');el.id=id;el.className='v162-offline-banner';el.hidden=true;el.innerHTML='<strong>⚠ Gegner offline.</strong><span>Automatischer Sieg in: <b class="v162-clock">2:00</b></span>';anchor.parentNode.insertBefore(el,anchor)}
+  if(!el){el=document.createElement('div');el.id=id;el.className='v162-offline-banner';el.hidden=true;el.innerHTML='<strong>⚠ Gegner offline.</strong><span>Automatischer Sieg in:</span><b class="v162-clock">2:00</b>';anchor.appendChild(el)}
   return el;
  }
  function hide(game){const el=document.getElementById(game==='chess'?'v162ChessOffline':'v162DameOffline');if(el)el.hidden=true;displays.delete(game)}
