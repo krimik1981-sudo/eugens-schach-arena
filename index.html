@@ -6840,7 +6840,7 @@ body:has(.arena-page[data-panel="dame"][data-v175-online="true"] #dameDisconnect
  if(title)title.textContent='🌐 Gegner finden';
  if(summary)summary.textContent='♔ Privater Raum';
  const sync=()=>{
-   if(page.dataset.v175Online==='true'&&room&&document.getElementById('dameDisconnect')?.hidden)room.open=true;
+   if(page.dataset.v175Online==='true'&&room&&document.getElementById('dameDisconnect')?.hidden){/* v179: keep private room user-controlled */}
  };
  const observer=new MutationObserver(sync);
  observer.observe(page,{attributes:true,attributeFilter:['data-v175-online']});
@@ -6876,4 +6876,28 @@ body:has(.arena-page[data-panel="dame"][data-v175-online="true"] #dameDisconnect
  #courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox::before{font-size:22px!important}
 }
 </style>
+
+<style id="v179-dame-online-short-menu">
+/* The online landing screen stays short; the existing details disclosure opens the full private-room form. */
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-private-room:not([open]){padding:12px 14px!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-private-room:not([open])>summary{margin:0!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;min-height:31px!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-private-room:not([open])>summary:after{content:"▾"!important;color:#f0ca81!important;flex:0 0 auto!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-private-room[open]>summary:after{content:"▴"!important;color:#f0ca81!important;margin-left:10px!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox::before{content:"Dame · Online"!important}
+@media(max-width:620px){
+ #courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #v175DameBack{font-size:13px!important;min-height:41px!important}
+ #courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox{gap:10px!important}
+ #courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox::before{font-size:21px!important;line-height:1.2!important}
+ #courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-public-search>strong,
+ #courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-private-room>summary{font-size:18px!important}
+}
+</style>
+<script id="v179-dame-room-initial-disclosure">
+(function(){'use strict';
+  const room=document.querySelector('#dameOnlineBox .dame-private-room');
+  if(!room)return;
+  // Preserve the user's choice on repeated visits, but initially show a short online menu.
+  if(!room.dataset.v179Ready){room.open=false;room.dataset.v179Ready='1';}
+})();
+</script>
 </body></html>
