@@ -6900,4 +6900,64 @@ body:has(.arena-page[data-panel="dame"][data-v175-online="true"] #dameDisconnect
   if(!room.dataset.v179Ready){room.open=false;room.dataset.v179Ready='1';}
 })();
 </script>
+
+<style id="v180-online-friend-first-style">
+/* Show just automatic matchmaking and a direct friend invite. Legacy room controls remain in DOM for invitations. */
+#liveMenu .v112-private{display:none!important}
+#liveMenu .v112-live-grid{display:block!important;max-width:650px!important;margin:0 auto!important}
+#liveMenu .v112-public{width:100%!important;max-width:100%!important;box-sizing:border-box!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-private-room{display:none!important}
+.v180-friend-panel{border:1px solid #bc9559;border-radius:15px;background:#122b43;color:#f3e5cb;padding:16px;margin:14px 0;box-sizing:border-box;max-width:100%}
+.v180-friend-launch{width:100%;min-height:48px;border:1px solid #bb9357;border-radius:12px;background:#213d59;color:#f2cc87;font:750 17px/1.3 system-ui,sans-serif;cursor:pointer;padding:12px 14px}
+.v180-friend-list{display:grid;gap:8px;margin-top:12px}
+.v180-friend-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;background:#203953;border-radius:10px;min-width:0}
+.v180-friend-name{font-weight:700;overflow-wrap:anywhere;min-width:0}
+.v180-friend-invite{flex-shrink:0;background:#ddb16a;color:#10243a;border:0;border-radius:9px;padding:10px 12px;font-weight:800;cursor:pointer}
+.v180-friend-note{font-size:13px;color:#c2d0db;line-height:1.45;margin:8px 0 0}
+@media(max-width:620px){.v180-friend-panel{padding:12px;margin:10px 0}.v180-friend-row{flex-wrap:wrap}.v180-friend-invite{min-height:40px}}
+</style>
+<script id="v180-online-friend-first-script">
+(function(){'use strict';
+ const $=id=>document.getElementById(id);
+ function make(kind){
+  const parent=kind==='chess'?document.querySelector('#liveMenu .v112-live-grid'):$('dameOnlineBox');
+  if(!parent)return;
+  const panel=document.createElement('section');panel.id='v180Friends-'+kind;panel.className='v180-friend-panel';
+  const launch=document.createElement('button');launch.type='button';launch.className='v180-friend-launch';launch.textContent='👥 Mit Freund spielen';launch.setAttribute('aria-expanded','false');
+  const list=document.createElement('div');list.className='v180-friend-list';list.hidden=true;
+  const note=document.createElement('p');note.className='v180-friend-note';note.textContent='Wähle einen Freund, um ihn direkt einzuladen.';
+  panel.append(launch,list);
+  if(kind==='chess')parent.insertAdjacentElement('afterend',panel);else{const room=parent.querySelector('.dame-private-room');room?room.before(panel):parent.append(panel)}
+  async function render(){
+    if(list.hidden)return;
+    list.replaceChildren();
+    const friends=$('arena77-friends');
+    if(!window.ArenaFriendsV71?.logged?.()){
+      const p=document.createElement('p');p.className='v180-friend-note';p.textContent='Bitte melde dich zuerst unter Profil an und füge einen Freund hinzu.';
+      list.append(p);return;
+    }
+    const rows=friends?.querySelectorAll('.arena77-friend')||[];
+    if(!rows.length){const p=document.createElement('p');p.className='v180-friend-note';p.textContent='Noch keine bestätigten Freunde. Füge einen Freund unter Profil hinzu.';list.append(p);return;}
+    for(const row of rows){
+      const original=row.querySelector(kind==='chess'?'button[title="Zum Schach einladen"]':'button[title="Zu Dame einladen"]');
+      if(!original)continue;
+      const div=document.createElement('div');div.className='v180-friend-row';
+      const name=document.createElement('span');name.className='v180-friend-name';name.textContent=row.querySelector('strong')?.textContent?.replace(/^[♟\s]+/u,'')||'Freund';
+      const btn=document.createElement('button');btn.type='button';btn.className='v180-friend-invite';btn.textContent='Einladen';btn.onclick=()=>original.click();
+      div.append(name,btn);list.append(div);
+    }
+    if(!list.children.length)list.append(note.cloneNode(true));
+  }
+  launch.addEventListener('click',async()=>{
+    list.hidden=!list.hidden;launch.setAttribute('aria-expanded',String(!list.hidden));
+    if(list.hidden)return;
+    await window.ArenaFriendsV71?.refresh?.().catch(()=>{});
+    render();
+  });
+  // If server confirms new friends while the list is open, update without navigation.
+  const source=$('arena77-friends');if(source)new MutationObserver(()=>{if(!list.hidden)render()}).observe(source,{childList:true});
+ }
+ make('chess');make('dame');
+})();
+</script>
 </body></html>
