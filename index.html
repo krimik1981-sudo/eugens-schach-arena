@@ -3591,8 +3591,8 @@ const DAME_RECOVERY_KEY='arena_v144_dame_pending';
 const dameRecoveryOverlay=document.getElementById('v144DameResumeOverlay');
 let dameRecoveryBusy=false,dameRecoveryLast='',dameRecoveryAt=0,dameRecoveryPending=null,dameRecoverySending=false;
 let dameRecoveryAwaitingHost=false,dameRecoveryReconnectTimer=null,dameRecoveryReconnectCount=0;
-function dameRecoveryRead(){try{const p=JSON.parse(localStorage.getItem(DAME_RECOVERY_KEY)||'null');return dameRecoveryValid(p)?p:null}catch(_){return null}}
-function dameRecoveryValid(p){return !!(p&&p.v===1&&typeof p.room==='string'&&(/^(DAME-[A-Z0-9]{8}-[A-Z0-9]{4}|d[a-f0-9]{28})$/.test(p.room))&&typeof p.host==='boolean'&&['w','b'].includes(p.side)&&p.state&&Array.isArray(p.state.board)&&p.state.board.length===64&&p.state.board.every(x=>x===null||['w','W','b','B'].includes(x))&&['w','b'].includes(p.state.turn)&&!p.state.gameOver&&Number.isFinite(p.at)&&Date.now()-p.at<86400000)}
+function dameRecoveryRead(){try{const p=JSON.parse(localStorage.getItem(DAME_RECOVERY_KEY)||'null');if(!p)return null;if(!dameRecoveryValid(p)){localStorage.removeItem(DAME_RECOVERY_KEY);return null}return p}catch(_){return null}}
+function dameRecoveryValid(p){return !!(p&&p.v===1&&typeof p.room==='string'&&(/^(DAME-[A-Z0-9]{8}-[A-Z0-9]{4}|d[a-f0-9]{28})$/.test(p.room))&&typeof p.host==='boolean'&&['w','b'].includes(p.side)&&p.state&&Array.isArray(p.state.board)&&p.state.board.length===64&&p.state.board.every(x=>x===null||['w','W','b','B'].includes(x))&&['w','b'].includes(p.state.turn)&&!p.state.gameOver&&Number.isFinite(p.at)&&p.at<=Date.now()+10000&&Date.now()-p.at<86400000)}
 function dameRecoverySnapshot(){return {v:1,at:Date.now(),room:onlineRoom,host:onlineHost,side:onlineSide, state:{board:board.slice(),turn,forced,gameOver,seq:onlineSequence,matchId:dameMatchId,hostSide:onlineHostSide,message:statusEl.textContent}}}
 function dameRecoveryPersist(){if(modeEl.value!=='online'||!onlineRoom||gameOver||!['w','b'].includes(onlineSide)||!board)return;const p=dameRecoverySnapshot();try{localStorage.setItem(DAME_RECOVERY_KEY,JSON.stringify(p))}catch(_){return}const serialized=JSON.stringify(p.state);if(serialized!==dameRecoveryLast||Date.now()-dameRecoveryAt>15000){dameRecoveryLast=serialized;dameRecoveryAt=Date.now();dameRecoveryPending=p;dameRecoveryFlush()}}
 async function dameRecoveryApi(action,data={}){const token=localStorage.getItem('arena71_token');if(!token)throw Error('Bitte unter Profil anmelden.');const r=await fetch('/api/dame-resume/'+action,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(data)});if(!r.ok)throw Error('Server '+r.status);return r.json()}
@@ -3627,7 +3627,7 @@ function dameRecoveryScheduleReconnect(){
   dameRecoveryScheduleReconnect();
  },5000);
 }
-function dameRecoveryShow(){const p=dameRecoveryRead();if(!p||!dameRecoveryOverlay)return;document.getElementById('v144DameResumeText').textContent='Deine Online-Dame-Partie wartet auf dich. '+(p.host?'Du bist Gastgeber.':'Du bist Gast.')+' Fortsetzen?';dameRecoveryOverlay.hidden=false}
+function dameRecoveryShow(){const p=dameRecoveryRead();if(!p||!dameRecoveryOverlay){dameRecoveryOverlay?.setAttribute('hidden','');return;}document.getElementById('v144DameResumeText').textContent='Deine Online-Dame-Partie wartet auf dich. '+(p.host?'Du bist Gastgeber.':'Du bist Gast.')+' Fortsetzen?';dameRecoveryOverlay.hidden=false}
 window.addEventListener('pagehide',()=>{dameRecoveryPersist()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')dameRecoveryPersist()});
 window.addEventListener('arena:dame-finished',()=>{if(modeEl.value==='online')dameRecoveryClear()});
@@ -4589,11 +4589,12 @@ async function check(){
  if(polling||!token()||document.hidden)return;polling=true;
  try{
   const list=await api('list');
-  const incoming=list.incoming||[];
+  if(active&&Date.parse(active.expires_at)<=Date.now()){active=null;dialog.hidden=true;}
+  const incoming=(list.incoming||[]).filter(x=>Number.isFinite(Date.parse(x.expires_at))&&Date.parse(x.expires_at)>Date.now());
   if(!active&&incoming.length){
    const item=incoming[0];active=item;lastNotified.add(item.id);
    $('arena80-invite-text').textContent=item.from_name+' lädt dich zu '+(item.game==='chess'?'Schach':'Dame')+' ein. Möchtest du mitspielen?';
-   $('arena80-invite-note').textContent='Die Einladung gilt etwa 5 Minuten. Das Spiel startet, sobald du annimmst.';
+   $('arena80-invite-note').textContent='Die Einladung gilt 30 Sekunden. Das Spiel startet, sobald du annimmst.';
    dialog.hidden=false;
   }
  }catch(e){/* Avoid intrusive repeated errors on a background poll. */}
