@@ -380,8 +380,83 @@ async function dameResumeEndpoint(req,res,url){
  return reply(res,200,{ok:true});
 }
 
+
+// v161: server-tracked disconnect grace. Both sides must register their own
+// authenticated account. A 120-second abandonment is adjudicated only when
+// exactly one participant remained present; nobody loses if both disappear.
+async function presenceEndpoint(req,res,url){
+ if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
+ let raw='';try{for await(const c of req){raw+=c;if(raw.length>2048)return reply(res,413,{error:'Too large'})}}catch{return reply(res,400,{error:'Invalid body'})}
+ let v;try{v=JSON.parse(raw||'{}')}catch{return reply(res,400,{error:'Invalid JSON'})}
+ const id=authId(req);if(!id)return reply(res,401,{error:'Bitte anmelden'});
+ if(!['chess','dame'].includes(v?.game)||typeof v.room!=='string'||!(/^(EUGEN-[A-F0-9]{14}|[cd][a-f0-9]{28}|DAME-[A-Z0-9]{8}-[A-Z0-9]{4})$/.test(v.room))||
+ !['host','guest'].includes(v.role)||!['w','b'].includes(v.side)||typeof v.matchId!=='string'||
+ !/^(live-[a-z0-9-]{10,75}|dame-[a-z0-9-]{10,75})$/.test(v.matchId))
+ return reply(res,400,{error:'Invalid game presence'});
+ const action=url.pathname.slice('/api/presence/'.length);
+ if(!['ping','status'].includes(action))return reply(res,404,{error:'Not found'});
+ const game=v.game,match_id=v.matchId, now=Date.now();
+ const params={game:'eq.'+game,match_id:'eq.'+match_id,select:'*',limit:1};
+ for(let i=0;i<5;i++){
+  const row=(await db('arena_game_presence','GET',params))[0];
+  if(!row){
+   if(action==='status')return reply(res,404,{error:'Match not registered'});
+   const state={room:v.room,host:null,guest:null,started:false,done:false,reason:null,winner:null,created_at_ms:now};
+   state[v.role]={id,side:v.side,seen:now};
+   try{await db('arena_game_presence','POST',{}, {game,match_id,state,revision:0});return reply(res,200,{ok:true,started:false,finished:false});}
+   catch(e){if(e.status===409)continue;throw e}
+  }
+  const p=row.state;
+  if(!p||p.room!==v.room||typeof p!=='object')return reply(res,409,{error:'Conflicting match'});
+  const self=p[v.role],otherRole=v.role==='host'?'guest':'host',other=p[otherRole];
+  if(self&&(self.id!==id||self.side!==v.side))return reply(res,403,{error:'Account/side does not match match participant'});
+  if(other?.id===id)return reply(res,403,{error:'Same account cannot play both sides'});
+  if(other&&other.side===v.side)return reply(res,409,{error:'Colors conflict'});
+  if(!p.done && p.started && p.host && p.guest){
+   const hAge=now-p.host.seen,gAge=now-p.guest.seen;
+   const hostLost=hAge>120000,guestLost=gAge>120000;
+   if(hostLost||guestLost){
+    p.done=true;p.reason=hostLost&&guestLost?'both_offline':'disconnect';
+    p.winner=hostLost&&guestLost?null:hostLost?p.guest.side:p.host.side;
+    p.loserId=hostLost&&!guestLost?p.host.id:guestLost&&!hostLost?p.guest.id:null;
+   }
+  }
+  if(action==='ping'&&!p.done){
+   if(!self)p[v.role]={id,side:v.side,seen:now};
+   else self.seen=now;
+   if(p.host&&p.guest&&!p.started){
+    p.started=true;p.started_at_ms=now;
+    p.host.seen=now;p.guest.seen=now;
+   }
+  }
+  const modified=action==='ping'||(p.done&&!row.state?.done);
+  if(modified){
+   const changes=await db('arena_game_presence','PATCH',{game:'eq.'+game,match_id:'eq.'+match_id,revision:'eq.'+row.revision,select:'revision'},{state:p,revision:row.revision+1});
+   if(!changes.length)continue;
+  }
+  // Report by the server for BOTH players, so a disconnected player need not
+  // submit an acknowledgement to preserve a confirmed result.
+  if(p.done&&p.reason==='disconnect'&&p.host&&p.guest){
+   const friendship=await relation(p.host.id,p.guest.id);
+   if(friendship?.status==='accepted'){
+    const canonical=match_id.startsWith('live-')?match_id:'live-'+match_id;
+    for(const participant of [p.host,p.guest]){
+     const opponent=participant.id===p.host.id?p.guest:p.host;
+     const prior=(await db('arena_match_reports','GET',{match_id:'eq.'+canonical,player_id:'eq.'+participant.id,select:'winner',limit:1}))[0];
+     if(!prior)await db('arena_match_reports','POST',{},{
+       match_id:canonical,player_id:participant.id,opponent_id:opponent.id,game,side:participant.side,winner:p.winner
+     });
+    }
+   }
+  }
+  return reply(res,200,{ok:true,started:!!p.started,finished:!!p.done,reason:p.reason||null,winner:p.winner||null,remaining_seconds:p.done?0:Math.max(0,Math.ceil((120000-(now-(p[otherRole]?.seen||now)))/1000))});
+ }
+ return reply(res,409,{error:'Concurrent match updates; retry'});
+}
+
 async function handle(req,res) {
   const url=new URL(req.url,'http://localhost');
+  if(url.pathname.startsWith('/api/presence/'))return presenceEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/dame-resume/'))return dameResumeEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/resume/'))return resumeEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/bilanz/'))return bilanzEndpoint(req,res,url);
