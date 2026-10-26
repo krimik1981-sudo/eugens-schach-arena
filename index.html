@@ -6443,4 +6443,34 @@ refresh();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{init();show('');},{once:true});else{init();show('')}
 })();
 </script>
+
+<style id="v165-guest-auth-fix">
+/* A guest must be able to sign in without opening the hidden Friends tab. */
+#v165GuestAuth{display:block;width:100%;box-sizing:border-box;margin:14px 0 20px;padding:17px;border:1px solid #d5a75b;border-radius:18px;background:#142d47;color:#f5ebd9}
+#v165GuestAuth[hidden]{display:none!important}
+#v165GuestAuth h3{font:800 clamp(20px,5vw,27px) system-ui,sans-serif;color:#f2cd8c;margin:0 0 12px}
+#v165GuestAuth #arena71-auth{display:grid!important;gap:11px!important;padding:0!important;border:0!important;background:transparent!important}
+#v165GuestAuth #arena71-auth label{display:grid;gap:6px;font-size:15px}
+#v165GuestAuth #arena71-auth input{display:block;width:100%;box-sizing:border-box;padding:12px;min-height:44px;border-radius:11px;background:#091c2f;color:white;border:1px solid #6b8da9;font-size:16px}
+#v165GuestAuth .arena71-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#v165GuestAuth .arena71-buttons button{font-size:15px;min-height:46px;white-space:normal;border:1px solid #d5ac68;border-radius:11px;color:#0c2034;background:#ecc784;font-weight:800;cursor:pointer}
+@media(max-width:420px){#v165GuestAuth .arena71-buttons{grid-template-columns:1fr}}
+</style>
+<script id="v165-guest-auth-script">
+(function(){'use strict';
+ const mount=()=>{
+  const profile=document.querySelector('#courseHome .arena-page[data-panel="profil"]');
+  const identity=profile?.querySelector('.v87-identity');
+  const auth=document.getElementById('arena71-auth');
+  if(!profile||!identity||!auth)return;
+  let box=document.getElementById('v165GuestAuth');
+  if(!box){box=document.createElement('section');box.id='v165GuestAuth';box.innerHTML='<h3>Anmelden oder registrieren</h3>';identity.insertAdjacentElement('afterend',box)}
+  const isGuest=!localStorage.getItem('arena71_token');
+  box.hidden=!isGuest;
+  if(isGuest){if(auth.parentElement!==box)box.appendChild(auth);auth.hidden=false;}
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
+ setTimeout(mount,450);
+})();
+</script>
 </body></html>
