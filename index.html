@@ -1167,6 +1167,12 @@ body{background:var(--arena62-bg)}
  #courseHome .v87-profile #arena77-friends .arena77-friend>button{font-size:12px!important}
 }
 </style>
+<style id="v162CountdownCSS">
+.v162-offline-banner:not([hidden]){display:flex;flex-direction:column;gap:7px;width:min(100%,680px);box-sizing:border-box;margin:12px auto;padding:14px 16px;border:2px solid #d7ab68;border-radius:16px;background:#172f49;color:#f3d092;text-align:center;box-shadow:0 6px 18px #0005;font-size:clamp(15px,3.8vw,21px);line-height:1.3;position:relative;z-index:2}
+.v162-offline-banner[hidden]{display:none!important}
+.v162-offline-banner .v162-clock{font-size:1.45em;font-variant-numeric:tabular-nums;color:#fff2d1}
+body:has(.arena-page[data-panel="dame"]:not([hidden]) #dameDisconnect:not([hidden])) .arena-page[data-panel="dame"] #v162DameOffline:not([hidden]){display:flex!important}
+</style>
 </head><script>
 /* Eugens Schach Arena v70: bestätigte Freundschaft nur zwischen live verbundenen Geräten. */
 (function(){
@@ -2609,23 +2615,42 @@ $('eugenUndo').addEventListener('click',()=>{
 
 rebuild();
 </script><script>
-/* v161: server heartbeat for started online chess / checkers matches only. */
+/* v162: server-confirmed disconnect countdown, ONLY active online human matches. */
 window.ArenaV161Presence=(()=>{
- const pending=new Map();
+ const pending=new Map(),displays=new Map();
+ const format=n=>{const x=Math.max(0,Math.ceil(n));return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')};
+ function banner(game){
+  const anchor=game==='chess'?document.getElementById('liveStatus'):document.getElementById('dameBoard');
+  if(!anchor)return null;
+  const id=game==='chess'?'v162ChessOffline':'v162DameOffline';
+  let el=document.getElementById(id);
+  if(!el){el=document.createElement('div');el.id=id;el.className='v162-offline-banner';el.hidden=true;el.innerHTML='<strong>⚠ Gegner offline.</strong><span>Automatischer Sieg in: <b class="v162-clock">2:00</b></span>';anchor.parentNode.insertBefore(el,anchor)}
+  return el;
+ }
+ function hide(game){const el=document.getElementById(game==='chess'?'v162ChessOffline':'v162DameOffline');if(el)el.hidden=true;displays.delete(game)}
+ function draw(game,remaining){const el=banner(game);if(!el)return;el.hidden=false;const clk=el.querySelector('.v162-clock');if(clk)clk.textContent=format(remaining)}
  async function request(action,data){const token=localStorage.getItem('arena71_token');if(!token)return null;
   const r=await fetch('/api/presence/'+action,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(data),signal:AbortSignal.timeout(8000)});
-  if(!r.ok)return null;return r.json();}
- async function check(data,onEnd){
-  if(!data||!data.room||!data.matchId)return;
-  const key=data.game+'|'+data.matchId;
-  if(pending.has(key))return;pending.set(key,true);
-  try{const x=await request('ping',data);
-   if(x?.finished&&x.reason==='disconnect'&&['w','b'].includes(x.winner))onEnd(x.winner);
-  }catch(e){console.warn('Anwesenheit nicht erreichbar',e)}finally{pending.delete(key)}
+  if(!r.ok)return null;return r.json()}
+ async function check(data,onEnd,active=true){
+  if(!data?.room||!data.matchId||!active){if(data?.game)hide(data.game);return}
+  const k=data.game+'|'+data.matchId;
+  if(pending.has(k))return;
+  pending.set(k,true);
+  try{
+   const x=await request('ping',data);
+   if(!x)return;
+   if(x.finished){hide(data.game);if(x.reason==='disconnect'&&['w','b'].includes(x.winner))onEnd(x.winner);return}
+   if(x.started&&Number.isFinite(x.remaining_seconds)&&x.remaining_seconds<=105){
+    displays.set(data.game,{seconds:x.remaining_seconds,at:Date.now()});draw(data.game,x.remaining_seconds);
+   }else hide(data.game);
+  }catch(e){console.warn('Anwesenheit nicht erreichbar',e)}finally{pending.delete(k)}
  }
- function done(data){if(!data)return;request('finish',data).catch(()=>{});}
- return {check,done};
-})();
+ function done(data){if(!data)return;hide(data.game);request('finish',data).catch(()=>{})}
+ // The display interpolates locally; only the server decides a victory.
+ setInterval(()=>{for(const [game,p] of displays){draw(game,Math.max(0,p.seconds-(Date.now()-p.at)/1000))}},250);
+ return {check,done,hide};
+})();;
 </script>
 <script>
 /* Live gegen Freunde v2: Gastgeber verwaltet Stellung, Zeit und Spielende. */
@@ -2790,7 +2815,7 @@ window.ArenaV161Presence=(()=>{
  })}
  let liveReconnectTimer=null;
  function stopLiveReconnect(){if(liveReconnectTimer){clearInterval(liveReconnectTimer);liveReconnectTimer=null}}
- function closeSession(){serverClockKey=null;serverClockKnown=false;serverClockMoveNo=-1;stopLiveReconnect();window.ArenaFriendV70?.detached('chess');resetChat();if(publicRoomInfo){const prev=publicRoomInfo;publicRoomInfo=null;fetch('/api/match/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,room:prev.room})}).catch(()=>{});}token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
+ function closeSession(){window.ArenaV161Presence?.hide('chess');serverClockKey=null;serverClockKnown=false;serverClockMoveNo=-1;stopLiveReconnect();window.ArenaFriendV70?.detached('chess');resetChat();if(publicRoomInfo){const prev=publicRoomInfo;publicRoomInfo=null;fetch('/api/match/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:publicClientId,room:prev.room})}).catch(()=>{});}token++;try{conn?.close()}catch(e){}try{peer?.destroy()}catch(e){}conn=null;peer=null;connected=false;room='';promotion=null;drawOffer=null;rematchOffer=null;$l('livePromotion').hidden=true;clearTimeout(latencyTimer)}
  function id(){let a=new Uint8Array(7);crypto.getRandomValues(a);return 'EUGEN-'+Array.from(a,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase()}
  const valid=s=>/^EUGEN-[0-9A-F]{14}$/.test(String(s||'').trim().toUpperCase());
  function peerReady(name,myToken){return new Promise(async(ok,no)=>{
@@ -2829,8 +2854,9 @@ window.ArenaV161Presence=(()=>{
  }
  let v161ChessFinishedAt=0,v161ChessWasConnected=false;
  setInterval(()=>{
-  if(connected)v161ChessWasConnected=true;
-  if(!v161ChessWasConnected||!room||room==='HOST'||!liveRecordId||!side)return;
+  const liveVisible=!!document.getElementById('liveGame')&&!document.getElementById('liveGame').hidden;
+  if(connected&&liveVisible)v161ChessWasConnected=true;
+  if(!liveVisible||!v161ChessWasConnected||!room||room==='HOST'||!liveRecordId||!side){window.ArenaV161Presence?.hide('chess');return;}
   const data={game:'chess',room,matchId:liveRecordId,role:isHost?'host':'guest',side};
   if(outcome){if(!v161ChessFinishedAt)v161ChessFinishedAt=Date.now();if(Date.now()-v161ChessFinishedAt<180000)window.ArenaV161Presence?.done(data);return;}
   window.ArenaV161Presence?.check(data,winner=>{
@@ -2839,7 +2865,7 @@ window.ArenaV161Presence=(()=>{
    setStatus((winner===side?'Gegner':'Du')+' war 2 Minuten offline. '+(winner===side?'Du gewinnst.':'Du verlierst.') );
    sync();
   });
- },10000);
+ },4000);
  function finish(result){outcome=result;clearSavedSession();window.ArenaBilanzV127?.report({matchId:liveRecordId,game:'chess',side,winner:result.winner||'draw'});finishServerClock();clockRunning=false;drawOffer=null;rematchOffer=null;selected=null;promotion=null;$l('livePromotion').hidden=true;setStatus(outText());historyLiveSync(liveRecordId,liveMoves,liveFrames,outText());render()}
  function apply(m){
   const piece=position[m.from],taken=position[m.to];castle=egChangeCastle(castle,m,piece,taken);
@@ -3618,8 +3644,10 @@ function v147RenderActions(){if(!v147Actions)return;const active=modeEl.value===
 function v147Reset(){v147OfferSent=false;v147OfferReceived=false;v147Outcome=null;v147RenderActions();}
 let v161DameFinishedAt=0,v161DameWasConnected=false;
 setInterval(()=>{
- if(onlineConnected)v161DameWasConnected=true;
- if(modeEl.value!=='online'||!v161DameWasConnected||!onlineRoom||!dameMatchId||!onlineSide)return;
+ const damePage=document.querySelector('.arena-page[data-panel="dame"]');
+ const isOnlineGame=!!damePage&&!damePage.hidden&&modeEl.value==='online';
+ if(onlineConnected&&isOnlineGame)v161DameWasConnected=true;
+ if(!isOnlineGame||!v161DameWasConnected||!onlineRoom||!dameMatchId||!onlineSide){window.ArenaV161Presence?.hide('dame');return;}
  const data={game:'dame',room:onlineRoom,matchId:dameMatchId,role:onlineHost?'host':'guest',side:onlineSide};
  if(gameOver){if(!v161DameFinishedAt)v161DameFinishedAt=Date.now();if(Date.now()-v161DameFinishedAt<180000)window.ArenaV161Presence?.done(data);return;}
  window.ArenaV161Presence?.check(data,winner=>{
@@ -3627,7 +3655,7 @@ setInterval(()=>{
   v147Complete('disconnect',winner);
   status((winner===onlineSide?'Gegner':'Du')+' war 2 Minuten offline. '+(winner===onlineSide?'Du gewinnst.':'Du verlierst.'));
  });
-},10000);
+},4000);
 function v147Complete(result,winner){if(gameOver)return;gameOver=true;v147OfferSent=false;v147OfferReceived=false;v147Outcome={reason:result,winner};
  status(result==='draw'?'Remis vereinbart. 🤝':result==='resign'?(winner==='w'?'Weiß':'Schwarz')+' gewinnt – Aufgabe. 🏳':result==='disconnect'?(winner==='w'?'Weiß':'Schwarz')+' gewinnt – Gegner 2 Minuten offline.':'Partie beendet.');
  render();reportDameWin(winner);if(onlineHost)broadcast();v147RenderActions();}
@@ -3833,7 +3861,7 @@ async function damePublicPlay(){if(publicDameBusy)return;publicDameBusy=true;con
 document.getElementById('damePublicPlay').addEventListener('click',damePublicPlay);
 setInterval(()=>{const current=publicDameRoom;if(!current)return;damePublicApi('heartbeat',{room:current.room,ready:current.role==='host'}).catch(e=>{if(publicDameRoom!==current)return;if(e.status===404){publicDameRoom=null;document.getElementById('damePublicInfo').textContent='⚠️ Suchraum abgelaufen. Bitte erneut auf Gegner automatisch finden tippen.'}else document.getElementById('damePublicInfo').textContent='⚠️ '+e.message})},12000);
 
-function discardNetwork(skipLeave=false){dameRecoveryAwaitingHost=false;clearTimeout(dameRecoveryReconnectTimer);dameRecoveryReconnectTimer=null;dameRecoveryReconnectCount=0;clearDamePending();if(publicDameRoom){const previous=publicDameRoom;publicDameRoom=null;if(!skipLeave)damePublicApi('leave',{room:previous.room}).catch(()=>{});}clearDameChat();onlineGeneration++;onlineConnected=false;onlineSide=null;onlineHost=false;onlineHostSide='w';onlineRoom='';try{onlineConn?.close()}catch(e){}try{onlinePeer?.destroy()}catch(e){}onlineConn=null;onlinePeer=null;document.getElementById('dameInvite').hidden=true;document.getElementById('dameDisconnect').hidden=true;netStatus('Nicht verbunden.');}
+function discardNetwork(skipLeave=false){window.ArenaV161Presence?.hide('dame');dameRecoveryAwaitingHost=false;clearTimeout(dameRecoveryReconnectTimer);dameRecoveryReconnectTimer=null;dameRecoveryReconnectCount=0;clearDamePending();if(publicDameRoom){const previous=publicDameRoom;publicDameRoom=null;if(!skipLeave)damePublicApi('leave',{room:previous.room}).catch(()=>{});}clearDameChat();onlineGeneration++;onlineConnected=false;onlineSide=null;onlineHost=false;onlineHostSide='w';onlineRoom='';try{onlineConn?.close()}catch(e){}try{onlinePeer?.destroy()}catch(e){}onlineConn=null;onlinePeer=null;document.getElementById('dameInvite').hidden=true;document.getElementById('dameDisconnect').hidden=true;netStatus('Nicht verbunden.');}
 function broadcast(){if(modeEl.value!=='online'||!onlineHost)return;if(gameOver)dameRecoveryClear();else dameRecoveryPersist();if(!onlineConnected||!onlineConn?.open)return;onlineConn.send({type:'dame-state',seq:onlineSequence,hostSide:onlineHostSide,board:[...board],turn,forced,gameOver,matchId:dameMatchId,message:statusEl.textContent,v147Outcome});}
 function onlineSyncReceived(data){if(onlineHost||!data||data.type!=='dame-state'||!Array.isArray(data.board)||data.board.length!==64)return;if(!data.board.every(p=>p===null||['w','W','b','B'].includes(p)))return;if(data.turn!=='w'&&data.turn!=='b')return;if(!Number.isSafeInteger(data.seq)||(!dameRecoveryAwaitingHost&&data.seq<onlineSequence))return;if(!['w','b'].includes(data.hostSide))return;onlineHostSide=data.hostSide;onlineSide=other(onlineHostSide);netStatus('✅ Verbunden! Du spielst '+(onlineSide==='w'?'Weiß (du beginnst).':'Schwarz (Gastgeber beginnt).'));if(data.forced!==null&&(!Number.isInteger(data.forced)||data.forced<0||data.forced>63))return;const previousEnded=gameOver,previousMatch=dameMatchId;if(damePendingMove&&(data.seq>damePendingMove.seq||data.turn!==onlineSide||data.board[damePendingMove.from]===null))clearDamePending();onlineSequence=data.seq;dameRecoveryAwaitingHost=false;dameRecoveryReconnectCount=0;clearTimeout(dameRecoveryReconnectTimer);dameRecoveryReconnectTimer=null;dameMatchId=typeof data.matchId==='string'&&data.matchId.length<100?data.matchId:dameMatchId;board=data.board.slice();turn=data.turn;forced=data.forced;gameOver=!!data.gameOver;v147Outcome=data.v147Outcome&&['draw','resign'].includes(data.v147Outcome.reason)?data.v147Outcome:null;selected=null;history=[];busy=false;render();status(data.message||'Stellung synchronisiert.');if(gameOver){dameRecoveryClear();if(!previousEnded||previousMatch!==dameMatchId)reportDameWin(v147Outcome?.winner||other(turn));}else dameRecoveryPersist();}
 function onlineHandleData(data){if(!data||typeof data!=='object')return;
