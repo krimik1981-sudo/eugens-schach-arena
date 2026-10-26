@@ -7249,4 +7249,64 @@ layout.insertBefore(banner,layout.firstChild);
  });
 })();
 </script>
+
+<style id="v194-isolated-chat-style">
+/* v194: the existing chat nodes are moved to body, outside old live-game CSS. */
+#v79ChatFab{display:none!important}
+#v194ChatButton{position:fixed;right:16px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:12030;display:none;align-items:center;gap:7px;padding:11px 17px;border-radius:25px;border:1px solid #d6ac67;background:#183550;color:#f3cf8b;font:750 15px system-ui,sans-serif;box-shadow:0 6px 22px #0009;cursor:pointer}
+#v194ChatButton.v194-visible{display:flex!important}
+#v194ChatCount{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 4px;background:#be4242;color:white;border-radius:12px;font-size:12px}
+#v194ChatCount[hidden]{display:none!important}
+#v194ChatShade{display:none;position:fixed;inset:0;z-index:12038;background:#030d1abc}
+body.v194-chat-open #v194ChatShade{display:block}
+body #arenaChat,body .dame-chat.v194-portaled{display:none!important;box-sizing:border-box!important}
+body.v194-chat-open.v194-show-chess #arenaChat,body.v194-chat-open.v194-show-dame .dame-chat.v194-portaled{display:flex!important;flex-direction:column!important;position:fixed!important;z-index:12040!important;left:50%!important;right:auto!important;top:auto!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;width:min(calc(100vw - 24px),480px)!important;height:min(68dvh,540px)!important;max-height:calc(100dvh - 30px)!important;margin:0!important;padding:14px!important;background:#11263b!important;border:1px solid #cda362!important;border-radius:20px!important;box-shadow:0 16px 55px #000c!important;overflow:hidden!important;gap:8px!important;visibility:visible!important}
+#arenaChat .v194-chat-head,.dame-chat.v194-portaled .v194-chat-head{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;gap:8px;color:#f0c57d;font:750 16px system-ui,sans-serif}
+.v194-chat-close{background:#263f58!important;border:1px solid #55718b!important;color:#f9e3bb!important;border-radius:9px!important;font:700 18px system-ui!important;min-height:34px!important;min-width:38px!important;padding:3px 10px!important}
+body #arenaChatToggle,body .dame-chat.v194-portaled #dameChatToggle{display:none!important}
+body #arenaChatBody,body .dame-chat.v194-portaled #dameChatBody{display:flex!important;flex:1!important;flex-direction:column!important;min-height:0!important;gap:8px!important;padding:0!important;overflow:hidden!important}
+body #arenaChatBody[hidden],body .dame-chat.v194-portaled #dameChatBody[hidden]{display:none!important}
+body #arenaChatMessages,body #dameChatMessages{order:0!important;flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;overflow-y:auto!important;overscroll-behavior:contain!important;background:#0b1b2c!important;padding:12px!important;border-radius:11px!important}
+body #arenaChatMessages .arena-chat-item,body #dameChatMessages .dame-chat-item{font-size:14px!important;max-width:84%!important}
+body #arenaChatForm,body #dameChatForm{order:1!important;display:flex!important;gap:7px!important;margin:0!important;flex-shrink:0!important}
+body #arenaChatForm input,body #dameChatForm input{flex:1!important;min-width:0!important;width:1px!important;font-size:16px!important;min-height:42px!important}
+body #arenaChatForm button,body #dameChatForm button{flex-shrink:0!important;min-width:65px!important;max-width:95px!important;font-size:13px!important;padding:7px 9px!important}
+body #arenaChatEmojis,body #dameChatEmojis{order:2!important;display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:3px!important;flex-shrink:0!important;margin:0!important}
+body #arenaChatEmojis button,body #dameChatEmojis button{width:100%!important;min-width:0!important;min-height:32px!important;height:34px!important;line-height:1!important;font-size:18px!important;padding:0!important;border-radius:7px!important}
+body #arenaChatInfo,body #dameChatInfo{order:3!important;flex-shrink:0!important;font-size:11px!important;margin:0!important;line-height:1.25!important}
+body #arenaChatBody>.arena-chat-hint{display:none!important}
+@media(max-width:420px){body.v194-chat-open.v194-show-chess #arenaChat,body.v194-chat-open.v194-show-dame .dame-chat.v194-portaled{height:min(64dvh,490px)!important;padding:11px!important}body #arenaChatEmojis button,body #dameChatEmojis button{font-size:17px!important}}
+</style>
+<script id="v194-isolated-chat-script">
+(function(){'use strict';
+ const chess=document.getElementById('arenaChat');
+ const dame=document.querySelector('#dameOnlineBox>.dame-chat');
+ if(!chess||!dame)return;
+ // Portals remove the two chats from old forced-open / forced-hidden board layouts.
+ document.body.append(chess,dame);dame.classList.add('v194-portaled');
+ const settings={chess:{pane:chess,body:document.getElementById('arenaChatBody'),toggle:document.getElementById('arenaChatToggle'),log:document.getElementById('arenaChatMessages'),input:document.getElementById('arenaChatInput')},dame:{pane:dame,body:document.getElementById('dameChatBody'),toggle:document.getElementById('dameChatToggle'),log:document.getElementById('dameChatMessages'),input:document.getElementById('dameChatInput')}};
+ const btn=document.createElement('button');btn.type='button';btn.id='v194ChatButton';btn.innerHTML='💬 Chat <span id="v194ChatCount" hidden></span>';btn.setAttribute('aria-label','Chat öffnen');btn.setAttribute('aria-expanded','false');document.body.append(btn);
+ const count=btn.querySelector('#v194ChatCount');const shade=document.createElement('div');shade.id='v194ChatShade';document.body.append(shade);
+ let openKind=null;const unread={chess:0,dame:0};
+ function visible(el){return !!el && !el.hidden && getComputedStyle(el).display!=='none'}
+ function active(){
+  const live=document.getElementById('liveGame');if(visible(live))return 'chess';
+  const page=document.querySelector('.arena-page[data-panel="dame"]'),mode=document.getElementById('dameMode');
+  const disconnect=document.getElementById('dameDisconnect');
+  if(visible(page)&&mode?.value==='online'&&disconnect&&!disconnect.hidden)return 'dame';
+  return null;
+ }
+ function update(){const kind=active();if(openKind&&kind!==openKind)close();btn.classList.toggle('v194-visible',!!kind);const n=kind?unread[kind]:0;count.hidden=!n;count.textContent=n>99?'99+':String(n);btn.setAttribute('aria-expanded',String(!!openKind));}
+ function close(){if(!openKind)return;const kind=openKind;openKind=null;document.body.classList.remove('v194-chat-open','v194-show-chess','v194-show-dame');const d=settings[kind];if(d.body&&!d.body.hidden)d.toggle.click();update()}
+ function open(kind){const d=settings[kind];if(!d)return;if(d.body.hidden)d.toggle.click();openKind=kind;unread[kind]=0;document.body.classList.add('v194-chat-open','v194-show-'+kind);update();d.log.scrollTop=d.log.scrollHeight;}
+ for(const kind of ['chess','dame']){
+  const d=settings[kind];const head=document.createElement('div');head.className='v194-chat-head';const title=document.createElement('strong');title.textContent='💬 Chat · '+(kind==='chess'?'Schach':'Dame');const x=document.createElement('button');x.type='button';x.className='v194-chat-close';x.textContent='✕';x.setAttribute('aria-label','Chat schließen');x.onclick=close;head.append(title,x);d.pane.prepend(head);
+  new MutationObserver(records=>{let added=0;for(const r of records)for(const node of r.addedNodes)if(node.nodeType===1&&!node.classList.contains('mine'))added++;if(added&&openKind!==kind){unread[kind]+=added;update()}}).observe(d.log,{childList:true});
+ }
+ btn.addEventListener('click',()=>{const kind=active();if(!kind)return;if(openKind===kind)close();else {if(openKind)close();open(kind)}});shade.addEventListener('click',close);document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+ const obs=new MutationObserver(update);for(const e of [document.getElementById('liveGame'),document.querySelector('.arena-page[data-panel="dame"]'),document.getElementById('dameDisconnect')])if(e)obs.observe(e,{attributes:true,attributeFilter:['hidden']});
+ document.getElementById('dameMode')?.addEventListener('change',update);document.querySelectorAll('#courseHome [data-page]').forEach(e=>e.addEventListener('click',()=>setTimeout(update,0)));
+ update();
+})();
+</script>
 </body></html>
