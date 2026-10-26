@@ -394,7 +394,7 @@ async function presenceEndpoint(req,res,url){
  !/^(live-[a-z0-9-]{10,75}|dame-[a-z0-9-]{10,75})$/.test(v.matchId))
  return reply(res,400,{error:'Invalid game presence'});
  const action=url.pathname.slice('/api/presence/'.length);
- if(!['ping','status'].includes(action))return reply(res,404,{error:'Not found'});
+ if(!['ping','status','finish'].includes(action))return reply(res,404,{error:'Not found'});
  const game=v.game,match_id=v.matchId, now=Date.now();
  const params={game:'eq.'+game,match_id:'eq.'+match_id,select:'*',limit:1};
  for(let i=0;i<5;i++){
@@ -421,6 +421,15 @@ async function presenceEndpoint(req,res,url){
     p.loserId=hostLost&&!guestLost?p.host.id:guestLost&&!hostLost?p.guest.id:null;
    }
   }
+  if(action==='finish'&&!p.done){
+   // Only close the presence tracker after both independently authenticated
+   // players have posted their matching final result to the result ledger.
+   const canonical=match_id.startsWith('live-')?match_id:'live-'+match_id;
+   const reports=await db('arena_match_reports','GET',{match_id:'eq.'+canonical,select:'player_id,opponent_id,winner'});
+   if(p.host&&p.guest&&reports.some(x=>x.player_id===p.host.id&&x.opponent_id===p.guest.id)&&reports.some(x=>x.player_id===p.guest.id&&x.opponent_id===p.host.id)){
+    p.done=true;p.reason='completed';p.winner=reports[0].winner;
+   }
+  }
   if(action==='ping'&&!p.done){
    if(!self)p[v.role]={id,side:v.side,seen:now};
    else self.seen=now;
@@ -429,7 +438,7 @@ async function presenceEndpoint(req,res,url){
     p.host.seen=now;p.guest.seen=now;
    }
   }
-  const modified=action==='ping'||(p.done&&!row.state?.done);
+  const modified=action==='ping'||action==='finish'||p.done;
   if(modified){
    const changes=await db('arena_game_presence','PATCH',{game:'eq.'+game,match_id:'eq.'+match_id,revision:'eq.'+row.revision,select:'revision'},{state:p,revision:row.revision+1});
    if(!changes.length)continue;
