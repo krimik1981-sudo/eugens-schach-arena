@@ -353,7 +353,7 @@ async function dameResumeEndpoint(req,res,url){
  const action=url.pathname.slice('/api/dame-resume/'.length);
  const table='arena_saved_dame';
  const prior=(await db(table,'GET',{player_id:'eq.'+id,select:'payload',limit:1}))[0]?.payload||null;
- if(action==='get')return reply(res,200,{saved:prior?.done?null:prior});
+ if(action==='get')return reply(res,200,{saved:prior?.done||!Number.isFinite(prior?.at)||Date.now()-prior.at>30000?null:prior});
  if(action==='clear'){
   const room=v?.room;
   if(typeof room!=='string'||!/^(DAME-[A-Z0-9]{8}-[A-Z0-9]{4}|d[a-f0-9]{28})$/.test(room))return reply(res,400,{error:'Invalid room'});
@@ -370,7 +370,7 @@ async function dameResumeEndpoint(req,res,url){
  !p.state.board.every(x=>x===null||['w','W','b','B'].includes(x))||
  !['w','b'].includes(p.state.turn)||p.state.gameOver||
  !Number.isSafeInteger(p.state.seq)||typeof p.state.matchId!=='string'||p.state.matchId.length>100||
- !Number.isFinite(p.at)||Date.now()-p.at>86400000||p.at>Date.now()+10000)
+ !Number.isFinite(p.at)||Date.now()-p.at>30000||p.at>Date.now()+10000)
  return reply(res,400,{error:'Invalid Dame save'});
  // Tombstone prevents delayed network autosaves from resurrecting a finished match.
  if(prior?.done&&prior.room===p.room)return reply(res,409,{error:'Partie bereits beendet'});
