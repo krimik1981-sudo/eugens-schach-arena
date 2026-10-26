@@ -6707,4 +6707,67 @@ refresh();
 @media(min-width:701px){#courseHome .arena-page.v85-spielen[data-v171-game] .v85-difficulty span{font-size:14px!important}}
 @media(max-width:355px){#courseHome .arena-page.v85-spielen[data-v171-game]{padding-inline:8px!important}#courseHome .arena-page.v85-spielen[data-v171-game] .v85-playcard{padding:12px!important}#courseHome .arena-page.v85-spielen[data-v171-game] .v85-difficulty span{font-size:9px!important}}
 </style>
+
+<style id="v175-compact-online">
+/* v175: Online-Startmenüs, vorhandene Spiellogik unverändert */
+#liveMenu .v112-live-wrap{width:min(100%,780px)!important;margin:0 auto!important;box-sizing:border-box!important;padding:clamp(12px,3vw,22px)!important}
+#liveMenu .v112-head{margin:4px 0 15px!important;text-align:center!important}
+#liveMenu .v112-head .v112-kicker,#liveMenu .v112-head p{display:none!important}
+#liveMenu .v112-head h1{font-size:clamp(23px,5vw,31px)!important;line-height:1.2!important;margin:5px 0!important;color:#f0ca81!important}
+#liveMenu .v112-live-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+#liveMenu .v112-card{min-width:0!important;box-sizing:border-box!important;padding:clamp(12px,3vw,18px)!important;border-radius:15px!important}
+#liveMenu .v112-card-heading{gap:10px!important;margin-bottom:11px!important}
+#liveMenu .v112-card-heading h2{font-size:clamp(18px,4vw,22px)!important;margin:0!important;line-height:1.25!important}
+#liveMenu .v112-card-heading p{display:none!important}
+#liveMenu .v112-glyph{font-size:30px!important}
+#liveMenu .v112-card label{display:block!important;font-size:13px!important;line-height:1.4!important;margin:8px 0 5px!important;overflow-wrap:anywhere!important}
+#liveMenu .v112-card select,#liveMenu .v112-card input{width:100%!important;max-width:100%!important;box-sizing:border-box!important;min-height:43px!important;font-size:16px!important}
+#liveMenu .v112-primary,#liveMenu #liveJoin{min-height:45px!important;padding:10px 14px!important;border-radius:11px!important;white-space:normal!important}
+#liveMenu .v112-help{margin-top:12px!important}
+#liveMenu .v112-or{margin:12px 0 8px!important;font-size:12px!important}
+#liveMenu .v112-join{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important}
+#liveMenu .v112-feedback{font-size:12px!important;line-height:1.35!important;overflow-wrap:anywhere!important}
+/* Dame-online controls remain inside the existing Dame engine. */
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .v104-head .v104-eyebrow,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .v104-head h2,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .dame-panel>h3,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .dame-panel>label[for="dameMode"],
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameMode,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameComputerColorBox,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .dame-panel>label[for="dameLevel"],
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameLevel{display:none!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] .dame-panel{min-width:0!important;max-width:700px!important;width:100%!important;box-sizing:border-box!important;margin:0 auto!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox{box-sizing:border-box!important;width:100%!important;max-width:100%!important;border-radius:15px!important;padding:clamp(12px,3vw,18px)!important;gap:12px!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox>h3{font-size:clamp(21px,5vw,27px)!important;color:#f0ca81!important;text-align:center!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-public-search,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-private-room{padding:13px!important;border:1px solid #96794c!important;border-radius:12px!important;background:#122b43!important;min-width:0!important;box-sizing:border-box!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox .dame-note{display:none!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox input,
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox select{max-width:100%!important;box-sizing:border-box!important;font-size:16px!important}
+#courseHome .arena-page[data-panel="dame"][data-v175-online="true"] #dameOnlineBox button{white-space:normal!important;min-height:43px!important}
+#v175DameBack{display:inline-flex;align-items:center;margin:5px 0 12px;padding:10px 15px;border-radius:11px;border:1px solid #d3a65f;background:#192f47;color:#ffe1a6;font:bold 15px system-ui,sans-serif;cursor:pointer}
+#v175DameBack[hidden]{display:none!important}
+@media(max-width:620px){#liveMenu .v112-live-grid{gap:10px!important}#liveMenu .v112-join{grid-template-columns:minmax(0,1fr)!important}#liveMenu .v112-join button{width:100%!important}#liveMenu .v112-card{padding:12px!important}}
+</style>
+<script id="v175-online-navigation">
+(function(){'use strict';
+ const page=document.querySelector('#courseHome .arena-page[data-panel="dame"]');
+ const mode=document.getElementById('dameMode');
+ const online=document.getElementById('dameOnlineBox');
+ if(!page||!mode||!online)return;
+ const back=document.createElement('button');back.type='button';back.id='v175DameBack';back.textContent='← Zurück zur Moduswahl';back.hidden=true;
+ online.parentNode.insertBefore(back,online);
+ function sync(){const active=mode.value==='online'&&!page.hidden;page.dataset.v175Online=active?'true':'false';back.hidden=!active;}
+ back.addEventListener('click',()=>{
+   const home=document.querySelector('#courseHome .arena-bottomnav [data-page="start"]')||document.querySelector('#courseHome .arena-navitem[data-page="start"]');
+   home?.click();
+   document.querySelector('#courseHome [data-v168-game="dame"]')?.click();
+   window.scrollTo(0,0);
+ });
+ mode.addEventListener('change',sync);
+ const watch=new MutationObserver(sync);watch.observe(page,{attributes:true,attributeFilter:['hidden']});
+ sync();
+})();
+</script>
+
 </body></html>
