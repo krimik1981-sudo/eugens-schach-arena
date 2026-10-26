@@ -1601,9 +1601,9 @@ body{background:var(--arena62-bg)}
 </div>
 </div>
 <nav aria-label="Hauptnavigation" class="arena-bottomnav premium-bottomnav">
-<button data-page="start" type="button"><span aria-hidden="true">⌂</span><small>Start</small></button>
-<button data-page="statistik" type="button"><span aria-hidden="true">🏆</span><small>Statistik</small></button>
-<button data-page="profil" type="button"><span aria-hidden="true">♙</span><small>Profil</small></button>
+<button data-page="start" type="button"><span class="v197-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></span><small>Start</small></button>
+<button data-page="statistik" type="button"><span class="v197-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V12h4v8M10 20V4h4v16M16 20v-9h4v9M2 20h20"/></svg></span><small>Statistik</small></button>
+<button data-page="profil" type="button"><span class="v197-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2z"/></svg></span><small>Profil</small></button>
 </nav>
 <div aria-hidden="true" class="arena-legacy">
 <h1>♟ Wähle deine Aufgabe</h1><p class="lead">Starte einen Kurs in Eugens Schach Arena.</p>
@@ -7314,4 +7314,58 @@ body #arenaChatBody>.arena-chat-hint{display:none!important}
  update();
 })();
 </script>
+
+<style id="v197-bottom-navigation-symmetric">
+/* Equal three-column navigation. Scoped to the existing bottom nav only. */
+@media (max-width: 740px) {
+  #courseHome:not([hidden]) .arena-bottomnav.premium-bottomnav {
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    justify-items:stretch!important;
+    align-items:center!important;
+    column-gap:0!important;
+    box-sizing:border-box!important;
+    padding:7px 12px calc(7px + env(safe-area-inset-bottom))!important;
+    min-height:68px!important;
+  }
+  .arena-bottomnav.premium-bottomnav {
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    display:grid!important;
+    align-items:center!important;
+    justify-items:stretch!important;
+    padding:7px 12px calc(7px + env(safe-area-inset-bottom))!important;
+  }
+  .arena-bottomnav.premium-bottomnav>button {
+    display:flex!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:53px!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:5px!important;
+    padding:4px 0!important;
+    font-size:inherit!important;
+    line-height:normal!important;
+    transform:none!important;
+  }
+  .arena-bottomnav.premium-bottomnav>button>.v197-nav-icon {
+    display:flex!important;
+    width:25px!important;height:25px!important;
+    min-height:25px!important;flex:0 0 25px!important;
+    justify-content:center!important;align-items:center!important;
+    font-size:0!important;line-height:0!important;
+  }
+  .arena-bottomnav.premium-bottomnav>button>.v197-nav-icon svg {
+    display:block;width:24px;height:24px;overflow:visible;
+  }
+  .arena-bottomnav.premium-bottomnav>button>small {
+    display:block!important;width:100%!important;
+    margin:0!important;padding:0!important;
+    font:500 12px/1.2 system-ui,-apple-system,BlinkMacSystemFont,sans-serif!important;
+    text-align:center!important;white-space:nowrap!important;
+  }
+  body:has(#courseHome[hidden]) .arena-bottomnav.premium-bottomnav {display:none!important;}
+}
+</style>
 </body></html>
