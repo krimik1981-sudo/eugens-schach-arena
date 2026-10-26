@@ -6584,6 +6584,13 @@ refresh();
  #courseHome .v168-game-label strong{font-size:26px!important}
 }
 </style>
+<style id="v170-navigation-visible-fix">
+/* Hidden attribute must override v169 mobile display:grid!important. */
+#courseHome #v168Games[hidden],
+#courseHome #v168Modes[hidden]{display:none!important}
+#courseHome #v168Modes:not([hidden]){display:block!important;width:100%;box-sizing:border-box}
+#courseHome #v168Games:not([hidden]){display:grid!important}
+</style>
 <script id="v168-simple-navigation">
 (function(){'use strict';
  const games=document.getElementById('v168Games'),modes=document.getElementById('v168Modes'),title=document.getElementById('v168ModeTitle');
