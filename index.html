@@ -7423,4 +7423,99 @@ body:has(#liveGame:not([hidden])) #liveGame #arena70-chess{display:block!importa
  setTimeout(install,650);
 })();
 </script>
+
+<style id="v200-friend-action-style">
+#arena77-whatsapp{display:block;width:100%;margin-top:10px;background:#168a4a!important;color:white!important;border:1px solid #33b570!important;border-radius:10px;padding:12px;font-weight:800;min-height:46px;cursor:pointer}
+.v200-feedback{display:block;white-space:normal;color:#f5d391;font-size:13px;margin-top:7px;line-height:1.4}
+#v200FriendChooser{padding:12px;border:1px solid #57738f;background:#142b44;border-radius:12px;margin:8px 0}
+#v200FriendChooser button{width:100%;margin:6px 0;padding:11px;border-radius:8px;background:#dab16e;color:#102238;font-weight:700}
+</style>
+<script id="v200-friend-action-fix">
+(function(){'use strict';
+const $=id=>document.getElementById(id);
+function profile(){return window.ArenaFriendsV71?.profile?.()}
+function notice(parent,message){
+ let span=parent.querySelector('.v200-feedback');
+ if(!span){span=document.createElement('span');span.className='v200-feedback';span.setAttribute('role','status');parent.append(span)}
+ span.textContent=message;
+}
+function installWhatsapp(){
+ const box=$('arena77-add');
+ if(!box||$('arena77-whatsapp'))return;
+ const b=document.createElement('button');b.id='arena77-whatsapp';b.type='button';
+ b.textContent='🟢 Über WhatsApp einladen';
+ b.addEventListener('click',()=>{
+  const p=profile();
+  if(!p?.code || !/^EF-[A-F0-9]{18}$/.test(p.code)){notice(box,'Bitte zuerst mit deinem Serverkonto anmelden.');return}
+  const link=new URL('/freund?code='+encodeURIComponent(p.code),location.origin).href;
+  const text='♟️ Hallo! Füge mich in Eugens Schach Arena als Freund hinzu. Wir können Schach und Dame spielen: '+link;
+  window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener,noreferrer');
+ });
+ box.appendChild(b);
+}
+function friendRows(){return [...document.querySelectorAll('#arena77-friends .arena77-friend')]}
+function showChooser(panel,kind){
+ let menu=panel.querySelector('#v200FriendChooser');
+ if(menu){menu.remove();return}
+ menu=document.createElement('div');menu.id='v200FriendChooser';
+ panel.append(menu);
+ const rows=friendRows();
+ if(!window.ArenaFriendsV71?.logged?.()){notice(menu,'Bitte zuerst unter Profil anmelden.');return}
+ if(!rows.length){notice(menu,'Keine Freunde gefunden. Öffne Profil → Meine Freunde und füge einen Freund hinzu.');return}
+ for(const row of rows){
+  const name=row.querySelector('strong')?.textContent?.trim()||'Freund';
+  const code=row.querySelector('small')?.textContent?.trim()||'';
+  const btn=document.createElement('button');btn.type='button';btn.textContent='♟ '+name+' einladen';
+  btn.addEventListener('click',async()=>{
+    btn.disabled=true;
+    notice(menu,'Einladung wird gesendet …');
+    try{
+      if(!window.ArenaInvitesV80?.invite)throw Error('Einladungsfunktion derzeit nicht verfügbar.');
+      const result=await window.ArenaInvitesV80.invite({name,code},kind);
+      notice(menu,result?'Einladung gesendet (30 Sekunden gültig).':'Einladung konnte nicht gesendet werden. Bitte erneut versuchen.');
+    }catch(err){notice(menu,'Fehler: '+(err.message||'Unbekannt'))}
+    finally{btn.disabled=false}
+  });
+  menu.append(btn);
+ }
+}
+function openFriends(){
+ const nav=document.querySelector('#courseHome .arena-bottomnav [data-page="profil"]')||
+ document.querySelector('#courseHome .arena-navitem[data-page="profil"]')||
+ document.querySelector('#courseHome [data-page="profil"]');
+ if(nav)nav.click();
+ if(typeof window.v158OpenTab==='function')window.v158OpenTab('friends');
+ else $('v118Friends')?.click();
+ const el=$('arena71-panel')||$('arena77-add');
+ if(el)setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'center'}),140);
+}
+document.addEventListener('click',async e=>{
+ const hub=e.target.closest('.v199-friend-hub');
+ if(hub){e.preventDefault();e.stopImmediatePropagation();openFriends();return}
+ const launch=e.target.closest('.v180-friend-launch');
+ if(launch){
+  e.preventDefault();e.stopImmediatePropagation();
+  const panel=launch.closest('[id^="v180Friends-"]');
+  if(panel)showChooser(panel,panel.id.endsWith('dame')?'dame':'chess');
+  return;
+ }
+ const invite=e.target.closest('#arena77-friends button[title="Zum Schach einladen"],#arena77-friends button[title="Zu Dame einladen"]');
+ if(invite){
+  e.preventDefault();e.stopImmediatePropagation();
+  const row=invite.closest('.arena77-friend'),kind=invite.title.includes('Schach')?'chess':'dame';
+  const name=row?.querySelector('strong')?.textContent?.replace(/^♟\s*/,'')||'Freund';
+  const code=row?.querySelector('small')?.textContent?.trim();
+  if(!code)return notice(row,'Kein Freundescode gefunden.');
+  if(!window.ArenaInvitesV80?.invite)return notice(row,'Einladungsfunktion noch nicht bereit. Bitte Seite neu laden.');
+  notice(row,'Einladung wird gesendet …');
+  try{const result=await window.ArenaInvitesV80.invite({name,code},kind);notice(row,result?'Einladung gesendet (30 Sekunden gültig).':'Einladung konnte nicht gesendet werden.')}
+  catch(err){notice(row,'Fehler: '+(err.message||'Einladung fehlgeschlagen.'))}
+ }
+},true);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installWhatsapp,{once:true});
+else installWhatsapp();
+new MutationObserver(installWhatsapp).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+
 </body></html>
