@@ -463,8 +463,65 @@ async function presenceEndpoint(req,res,url){
  return reply(res,409,{error:'Concurrent match updates; retry'});
 }
 
+
+const AVATAR_BUCKET='arena-avatars';
+const avatarKey=id=>id+'/profile.jpg';
+const avatarFallback='<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><rect width="256" height="256" fill="#233951"/><text x="128" y="166" text-anchor="middle" font-size="132">♟</text></svg>';
+async function avatarStorage(method,id,bytes){
+ const url=BASE+'/storage/v1/object/'+AVATAR_BUCKET+'/'+avatarKey(id);
+ const headers={'apikey':SECRET};
+ if(!SECRET.startsWith('sb_secret_'))headers.Authorization='Bearer '+SECRET;
+ if(method==='POST'){headers['Content-Type']='image/jpeg';headers['x-upsert']='true';}
+ let r;
+ try{r=await fetch(url,{method,headers,body:bytes,signal:AbortSignal.timeout(12000)});}
+ catch{throw new DatabaseError('Bildspeicher nicht erreichbar.',503);}
+ return r;
+}
+async function avatarEndpoint(req,res,url){
+ if(req.method==='GET' && url.pathname.startsWith('/api/avatar/image/')){
+   const code=decodeURIComponent(url.pathname.slice('/api/avatar/image/'.length));
+   if(!/^EF-[A-F0-9]{18}$/.test(code))return reply(res,404,{error:'Unbekannter Spieler'});
+   const person=await findCode(code);if(!person)return reply(res,404,{error:'Unbekannter Spieler'});
+   const r=await avatarStorage('GET',person.id);
+   if(r.status===404||!r.ok){res.writeHead(200,{'Content-Type':'image/svg+xml','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});return res.end(avatarFallback);}
+   const data=Buffer.from(await r.arrayBuffer());
+   if(data.length>2000000)return reply(res,502,{error:'Bild zu groß'});
+   res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'public, max-age=120','X-Content-Type-Options':'nosniff'});
+   return res.end(data);
+ }
+ if(req.method!=='POST')return reply(res,405,{error:'POST erforderlich'});
+ const id=authId(req),person=id?await findId(id):null;
+ if(!person)return reply(res,401,{error:'Bitte anmelden'});
+ const action=url.pathname.slice('/api/avatar/'.length);
+ if(action==='profile')return reply(res,200,{profile:pub(person)});
+ if(action==='delete'){
+   const r=await avatarStorage('DELETE',id);
+   if(!r.ok&&r.status!==404)return reply(res,503,{error:'Bild konnte nicht gelöscht werden. Storage-Bucket prüfen.'});
+   return reply(res,200,{ok:true});
+ }
+ if(action!=='save')return reply(res,404,{error:'Nicht gefunden'});
+ let raw='';try{for await(const chunk of req){raw+=chunk;if(raw.length>550000)return reply(res,413,{error:'Bild zu groß'});}}
+ catch{return reply(res,400,{error:'Ungültige Anfrage'});}
+ let v;try{v=JSON.parse(raw)}catch{return reply(res,400,{error:'Ungültiges JSON'});}
+ if(typeof v?.image!=='string'||!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(v.image))
+ return reply(res,400,{error:'Ungültiges Bildformat'});
+ const bytes=Buffer.from(v.image.split(',')[1],'base64');
+ if(bytes.length<100||bytes.length>350000||bytes[0]!==255||bytes[1]!==216||bytes[2]!==255)
+ return reply(res,400,{error:'Foto muss JPEG sein (maximal 350 KB)'});
+ const stored=await avatarStorage('POST',id,bytes);
+ if(!stored.ok){console.error('Avatar storage error',stored.status,(await stored.text()).slice(0,250));return reply(res,503,{error:'Profilbildspeicher nicht eingerichtet. Supabase Storage Bucket arena-avatars erstellen.'});}
+ return reply(res,200,{ok:true});
+}
+
 async function handle(req,res) {
   const url=new URL(req.url,'http://localhost');
+  if(url.pathname.startsWith('/api/avatar/'))return avatarEndpoint(req,res,url);
+  if(url.pathname==='/profilbild'||url.pathname==='/profilbild.html'){
+    if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405);return res.end();}
+    res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
+    if(req.method==='HEAD')return res.end();
+    return fs.createReadStream(path.join(__dirname,'profilbild.html')).pipe(res);
+  }
   if(url.pathname.startsWith('/api/presence/'))return presenceEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/dame-resume/'))return dameResumeEndpoint(req,res,url);
   if(url.pathname.startsWith('/api/resume/'))return resumeEndpoint(req,res,url);
