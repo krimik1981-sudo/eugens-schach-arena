@@ -7520,4 +7520,24 @@ new MutationObserver(installWhatsapp).observe(document.body,{childList:true,subt
 })();
 </script>
 
-</body></html>
+<script id="server-avatar-v1">
+(function(){
+ const button=document.getElementById('v87Avatar'), codeNode=document.getElementById('v87FriendCode');
+ if(!button||!codeNode)return;
+ let last='';
+ function update(){
+  const code=codeNode.textContent.trim();
+  if(!/^EF-[A-F0-9]{18}$/.test(code)||code===last)return;
+  last=code;
+  const img=document.createElement('img');
+  img.alt='Profilbild';img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%';
+  img.onload=()=>{if(last===code)button.replaceChildren(img)};
+  img.onerror=()=>{};
+  img.src='/api/avatar/image/'+encodeURIComponent(code)+'?v='+Date.now();
+ }
+ new MutationObserver(update).observe(codeNode,{childList:true,characterData:true,subtree:true});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){last='';update()}});
+ window.addEventListener('pageshow',()=>{last='';update()});
+ setTimeout(update,400);
+})();
+</script></body></html>
