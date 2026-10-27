@@ -594,6 +594,11 @@ async function handle(req,res) {
     if(req.method==='HEAD')return res.end();
     return fs.createReadStream(art).pipe(res);
   }
+  if(file==='/freund'||file==='/freunde-einladen'||file==='/freunde-einladen.html') {
+    res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'"});
+    if(req.method==='HEAD')return res.end();
+    return fs.createReadStream(path.join(__dirname,'freunde-einladen.html')).on('error',()=>res.end('Page missing')).pipe(res);
+  }
   if(file!=='/index.html'){res.writeHead(404);return res.end('Not found');}
   res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff'});
   if(req.method==='HEAD')return res.end();
