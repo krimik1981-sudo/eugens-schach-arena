@@ -7379,4 +7379,48 @@ body #arenaChatBody>.arena-chat-hint{display:none!important}
   }
 }
 </style>
+
+<style id="v199-friend-visibility">
+/* Show the existing trusted player-identification / friendship request UI. */
+body:has(#liveGame:not([hidden])) #liveGame #arena70-chess{display:block!important;visibility:visible!important;opacity:1!important;max-width:650px;width:100%;box-sizing:border-box;margin:9px auto!important;padding:11px!important}
+#arena70-chess .arena70-opponent,#arena70-dame .arena70-opponent{display:block;width:100%;text-align:left;min-height:43px!important}
+#arena70-chess .arena70-menu[hidden],#arena70-dame .arena70-menu[hidden]{display:none!important}
+#arena70-chess .arena70-menu:not([hidden]),#arena70-dame .arena70-menu:not([hidden]){display:flex!important}
+.v199-friend-hub{display:block!important;width:100%;margin:9px 0 0!important;border:1px solid #bc9559;border-radius:12px;background:#213d59;color:#f2cc87;font:700 15px/1.35 system-ui,sans-serif;padding:12px;cursor:pointer;box-sizing:border-box}
+.v199-friend-hub:focus-visible,.arena70-opponent:focus-visible{outline:3px solid #f2cc87;outline-offset:3px}
+@media(max-width:640px){#arena70-chess,#arena70-dame{font-size:14px!important}.v199-friend-hub{min-height:45px}}
+</style>
+<script id="v199-friend-access">
+(function(){'use strict';
+ function install(){
+   // Keep the original controls, identities and friend-request handlers: only move the hidden chess widget.
+   const widget=document.getElementById('arena70-chess');
+   const game=document.getElementById('liveGame');
+   if(widget&&game&&widget.closest('.rook-panel')){
+     const layout=game.querySelector('.rook-game-layout');
+     if(layout)layout.insertAdjacentElement('afterend',widget);
+     else game.appendChild(widget);
+   }
+   for(const kind of ['chess','dame']){
+     const panel=document.getElementById('v180Friends-'+kind);
+     if(!panel||panel.querySelector('.v199-friend-hub'))continue;
+     const btn=document.createElement('button');
+     btn.type='button';btn.className='v199-friend-hub';
+     btn.textContent='👥 Meine Freunde & Einladungen';
+     btn.addEventListener('click',()=>{
+       // Navigate through existing profile tab handlers; friend list remains server-synced.
+       const profile=document.querySelector('#courseHome .arena-bottomnav [data-page="profil"]')||document.querySelector('#courseHome .arena-navitem[data-page="profil"]');
+       profile?.click();
+       if(typeof window.v158OpenTab==='function')window.v158OpenTab('friends');
+       else document.getElementById('v118Friends')?.click();
+     });
+     panel.appendChild(btn);
+   }
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+ else install();
+ // Some existing widgets are mounted in late initialization.
+ setTimeout(install,650);
+})();
+</script>
 </body></html>
