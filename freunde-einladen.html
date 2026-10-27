@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Freunde einladen – Eugens Schach Arena</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif}body{margin:0;background:#0c1426;color:#f7fafc;min-height:100vh;display:grid;place-items:center}
+main{width:min(430px,calc(100% - 36px));padding:26px;border:1px solid #354664;border-radius:18px;background:#17243c;box-sizing:border-box}
+h1{font-size:24px;margin:0 0 8px}p{color:#ccd7eb}label{display:block;margin-top:15px;margin-bottom:6px}
+input,button{width:100%;box-sizing:border-box;padding:13px;border-radius:9px;font:inherit}input{background:#0e1a30;border:1px solid #52617c;color:white}
+button{border:0;margin-top:13px;cursor:pointer;background:#5287f5;color:white;font-weight:700}button.secondary{background:#324768}button:disabled{opacity:.6;cursor:wait}
+#status{min-height:22px;white-space:pre-wrap}a{color:#b4d2ff}#account{display:none}small{color:#b1bfda}
+</style></head><body><main>
+<h1>♟ Eugens Schach Arena</h1><p id="intro">Lade Freunde über WhatsApp zu Schach und Dame ein.</p>
+<section id="login"><label for="name">Spielername</label><input id="name" autocomplete="username" maxlength="28">
+<label for="password">Passwort</label><input id="password" type="password" autocomplete="current-password">
+<button id="signIn">Anmelden</button><button id="signUp" class="secondary">Neues Konto erstellen</button>
+<small>Bei Neuanmeldung mindestens 10 Zeichen Passwort.</small></section>
+<section id="account"><p id="who"></p><button id="share">🟢 Über WhatsApp einladen</button>
+<button id="copy" class="secondary">Einladungslink kopieren</button><button id="logout" class="secondary">Abmelden</button>
+<p><a href="/">Zur Arena</a></p></section>
+<p id="status" role="status" aria-live="polite"></p>
+</main><script>
+'use strict';
+const $=id=>document.getElementById(id);
+const qs=new URLSearchParams(location.search);
+const invited=qs.get('code');
+const codeOk=v=>/^EF-[A-F0-9]{18}$/.test(v||'');
+let token=sessionStorage.getItem('arena_friend_share_token')||'';
+let profile=null;
+const say=s=>{$('status').textContent=s;};
+async function api(action,data={}) {
+ const r=await fetch('/api/friends/'+action,{method:'POST',headers:{'Content-Type':'application/json',...(token?{'Authorization':'Bearer '+token}:{})},body:JSON.stringify(data)});
+ const body=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(body.error||'Fehler bei der Anfrage');
+ return body;
+}
+function view(){
+ $('login').style.display=profile?'none':'block';
+ $('account').style.display=profile?'block':'none';
+ if(profile)$('who').textContent='Angemeldet als '+profile.name;
+}
+async function inviteIfPresent(){
+ if(!codeOk(invited))return;
+ if(invited===profile.code){say('Das ist dein eigener Einladungslink.');return;}
+ const result=await api('request',{code:invited});
+ say(result.message||'Freundschaftsanfrage gesendet! Dein Freund kann sie in der Arena annehmen.');
+}
+async function login(register){
+ say('');
+ const name=$('name').value.trim(),password=$('password').value;
+ if(!name||!password)return say('Bitte Name und Passwort eingeben.');
+ for(const btn of [$('signIn'),$('signUp')])btn.disabled=true;
+ try{
+  const r=await api(register?'register':'login',{name,password});
+  token=r.token;sessionStorage.setItem('arena_friend_share_token',token);
+  profile=r.profile;$('password').value='';view();
+  if(codeOk(invited))await inviteIfPresent();else say('Bereit! Du kannst jetzt einen WhatsApp-Link teilen.');
+ }catch(e){say(e.message);}
+ finally{for(const btn of [$('signIn'),$('signUp')])btn.disabled=false;}
+}
+$('signIn').onclick=()=>login(false);
+$('signUp').onclick=()=>login(true);
+function shareLink(){return new URL('/freund?code='+encodeURIComponent(profile.code),location.origin).href;}
+$('share').onclick=()=>{
+ if(!profile)return;
+ const msg='♟️ Hallo! Füge mich als Freund in Eugens Schach Arena hinzu. Wir können Schach und Dame spielen: '+shareLink();
+ window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank','noopener,noreferrer');
+};
+$('copy').onclick=async()=>{
+ try{await navigator.clipboard.writeText(shareLink());say('Einladungslink kopiert.');}
+ catch{say('Link: '+shareLink());}
+};
+$('logout').onclick=()=>{sessionStorage.removeItem('arena_friend_share_token');token='';profile=null;view();say('Abgemeldet.');};
+if(invited){$('intro').textContent=codeOk(invited)?'Du wurdest als Freund eingeladen. Melde dich an oder registriere dich, um eine Freundschaftsanfrage zu senden.':'Ungültiger Einladungslink.';}
+(async()=>{if(!token)return;try{const r=await api('list');profile=r.profile;view();if(codeOk(invited))await inviteIfPresent();}catch{sessionStorage.removeItem('arena_friend_share_token');token='';}})();
+</script></body></html>
